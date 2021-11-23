@@ -1,0 +1,13 @@
+name = "WhittleLikelihoodInference"
+uuid = "3fdf5847-2998-4bb9-885b-ec39b41f41a6"
+authors = ["Jake Grainger <j.p.grainger2@outlook.com> and contributors"]
+version = "0.1.0"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[compat]
+julia = "1"
+
+[targets]
+test = ["Test"]

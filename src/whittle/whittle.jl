@@ -1,0 +1,74 @@
+"Functor which generates appropriate memory for the Whittle likelihood."
+struct WhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
+    data::WhittleData{T}
+    memory::S
+    model::M
+    function WhittleLikelihood(
+        model::Type{<:TimeSeriesModel{D}}, ts, Δ;
+        lowerΩcutoff = 0, upperΩcutoff = Inf) where {D}
+
+        D == size(ts,2) || error("timeseries is $(size(ts,2)) dimensional, but model is $D dimensional.")
+        wdata = WhittleData(model, ts, Δ, lowerΩcutoff = lowerΩcutoff, upperΩcutoff = upperΩcutoff)
+        mem = allocate_memory_sdf_FGH(model, size(ts,1), Δ)
+        new{eltype(wdata.I),typeof(mem),typeof(model)}(wdata,mem,model)
+    end
+end
+function (f::WhittleLikelihood)(θ)
+    whittle!(f.model,f.data,f.memory,θ)
+end
+function (f::WhittleLikelihood)(F,G,H,θ)
+    whittle_FGH!(f.model,F,G,H,f.data,f.memory,θ)
+end
+Base.show(io::IO, W::WhittleLikelihood) = print(io, "Whittle likelihood for the $(W.model) model.")
+
+## internal functions
+
+"Function to compute the Whittle likelihood using a preallocated store."
+function whittle!(model::Type{<:TimeSeriesModel}, data::GenWhittleData, store, θ)
+    asdf!(model, store, θ)
+    return @views generalwhittle(store, data)
+end
+
+"""
+Function to compute the Whittle likelihood and its gradient using a preallocated store.
+First argument is the model (a type). F and G are then provided to signify which quantities are required.
+This is in keeping with Optims interface.
+"""
+function whittle_FG!(model::Type{<:TimeSeriesModel{D}}, F, G, data::GenWhittleData, store, θ) where {D}
+    if F !== nothing || G !== nothing
+        asdf!(model, store, θ)
+    end
+    if G !== nothing
+        grad_asdf!(model, store, θ)
+        grad_generalwhittle!(G, store, data)
+    end
+    if F !== nothing
+        return generalwhittle(store, data)
+    end
+    return nothing
+end
+
+"""
+Function to compute the debiased Whittle likelihood and its gradient and hessian using a preallocated store.
+First argument is the model (a type). F, G and H are then provided to signify which quantities are required.
+This is in keeping with Optims interface.
+"""
+function whittle_FGH!(model::Type{<:TimeSeriesModel{D}}, F, G, H, data::GenWhittleData, store, θ) where {D}
+    if F !== nothing || G !== nothing || H !== nothing
+        asdf!(model, store, θ)
+    end
+    if G !== nothing || H !== nothing
+        grad_asdf!(model, store, θ)
+    end
+    if H !== nothing
+        hess_asdf!(model, store, θ)
+        hess_generalwhittle!(H, store, data)
+    end
+    if G !== nothing
+        grad_generalwhittle!(G, store, data)
+    end
+    if F !== nothing
+        return generalwhittle(store, data)
+    end
+    return nothing
+end

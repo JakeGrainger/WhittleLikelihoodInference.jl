@@ -14,13 +14,13 @@ end
 npars(::Type{CorrelatedOU}) = 3
 
 function add_sdf!(out, m::CorrelatedOU, ω)
-    s = m.σ²/((2π)*(m.θ²+ω^2))
+    s = 2m.σ²/((2π)*(m.θ²+ω^2))
     out[1] += s
     out[2] += s*m.ρ
     out[3] += s
 end
 function add_acv!(out, m::CorrelatedOU, τ) 
-    a = exp(-m.θ*abs(τ)) * m.σ² / (2m.θ)
+    a = exp(-m.θ*abs(τ)) * m.σ² / m.θ
     out[1] += a
     out[2] += a*m.ρ
     out[3] += a
@@ -28,7 +28,7 @@ end
 function grad_add_acv!(out, m::CorrelatedOU, τ)
     σ, θ, ρ = m.σ, m.θ, m.ρ
     absτ = abs(τ)
-    σ_part = exp(-θ*absτ)*σ/θ
+    σ_part = 2exp(-θ*absτ)*σ/θ
     # ∂σ
     out[1,1] += σ_part
     out[2,1] += σ_part * ρ
@@ -48,9 +48,9 @@ end
 function hess_add_acv!(::Type{CorrelatedOU}, out, τ, θ)
     σ, θ = m.σ, m.θ
     absτ = abs(τ)
-    σ_part = exp(-θ*absτ)/θ
-    θσ_part = -part*σ*(1/θ+absτ)
-    θ_part = part*(m.σ²)*(1/(m.θ²) + absτ/θ + (absτ^2)/2)
+    σ_part = 2exp(-θ*absτ)/θ
+    θσ_part = -σ_part*σ*(1/θ+absτ)
+    θ_part = σ_part*(m.σ²)*(1/(m.θ²) + absτ/θ + (absτ^2)/2)
 
     # ∂σ²
     out[1,1] += σ_part

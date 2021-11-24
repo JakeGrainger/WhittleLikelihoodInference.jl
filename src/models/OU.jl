@@ -12,25 +12,25 @@ end
 
 npars(::Type{OU}) = 2
 
-sdf(m::OU, ω) = m.σ²/((2π)*(m.θ²+ω^2))
+sdf(m::OU, ω) = 2m.σ²/((2π)*(m.θ²+ω^2))
 
-acv(m::OU, τ) = exp(-m.θ*abs(τ)) * m.σ² / (2m.θ)
+acv(m::OU, τ) = exp(-m.θ*abs(τ)) * m.σ² / m.θ
 
 function grad_add_acv!(out, m::OU, τ)
     σ, θ = m.σ, m.θ
     absτ = abs(τ)
-    part = exp(-θ*absτ)*σ/θ
-    out[1] = part
-    out[2] = -part*σ*(1/θ+absτ)/2
+    part = 2exp(-θ*absτ)*σ/θ
+    out[1] += part
+    out[2] += -part*σ*(1/θ+absτ)/2
     nothing
 end
 
 function hess_add_acv!(out, m::OU, τ)
     σ, θ = m.σ, m.θ
     absτ = abs(τ)
-    part = exp(-θ*absτ)/θ
-    out[1] = part
-    out[2] = -part*σ*(1/θ+absτ)
-    out[3] = part*(m.σ²)*(1/(m.θ²) + absτ/θ + (absτ^2)/2)
+    part = 2exp(-θ*absτ)/θ
+    out[1] += part
+    out[2] += -part*σ*(1/θ+absτ)
+    out[3] += part*(m.σ²)*(1/(m.θ²) + absτ/θ + (absτ^2)/2)
     nothing
 end

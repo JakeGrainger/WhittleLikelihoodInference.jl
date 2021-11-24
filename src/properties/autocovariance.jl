@@ -20,11 +20,11 @@ function acv!(store::Sdf2EIStorage, model::UnknownAcvTimeSeriesModel, encodedtim
 end
 
 """
-    acv!(out, model::TimeSeriesModel, τ::Number)
+    acv!(out, model::TimeSeriesModel, τ)
 
 Compute the acv for a single lag and when acv is known.
 """
-function acv!(out, model::TimeSeriesModel, τ::Number) # default acv returns error
+function acv!(out, model::TimeSeriesModel, τ) # default acv returns error
     error("acv not yet defined for model of type $(typeof(model)).")
 end
 
@@ -107,7 +107,7 @@ function acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1}, enco
     return nothing
 end
 
-function acv(model::TimeSeriesModel{1}, τ::Number) # default acv returns error
+function acv(model::TimeSeriesModel{1}, τ) # default acv returns error
     error("acv not yet defined for model of type $(typeof(model)).")
 end
 
@@ -134,7 +134,7 @@ function acv(model::TimeSeriesModel{1}, n, Δ)
     return real.(fftshift(extract_acv(store))[2:end]) # remove imaginary floating point error
 end
 
-function acv(model::TimeSeriesModel{1}, lags)
+function acv(model::TimeSeriesModel{1}, lags::AbstractVector{T}) where {T}
     !(model isa UnknownAcvTimeSeriesModel) || error("Custom lag vector only possible if model has known acv.")
     store = ones(1:length(lags))
     for i ∈ 1:length(store)
@@ -181,7 +181,7 @@ function grad_acv!(store::Sdf2EIStorage, model::UnknownAcvTimeSeriesModel, encod
     return nothing
 end
 
-function grad_acv!(out, model::TimeSeriesModel, τ::Number) # default acv returns error
+function grad_acv!(out, model::TimeSeriesModel, τ) # default acv returns error
     error("acv not yet defined for model of type $(typeof(model)). Maybe define as an UnknownAcvTimeSeriesModel.")
 end
 
@@ -250,7 +250,7 @@ function hess_acv!(store::Sdf2EIStorage, model::UnknownAcvTimeSeriesModel, encod
     return nothing
 end
 
-function hess_acv!(out, model::TimeSeriesModel, τ::Number) # default acv returns error
+function hess_acv!(out, model::TimeSeriesModel, τ) # default acv returns error
     error("acv not yet defined for model of type $(typeof(model)).")
 end
 

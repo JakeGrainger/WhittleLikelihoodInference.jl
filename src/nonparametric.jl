@@ -52,7 +52,7 @@ function Base.:+(ŝ₁::T, ŝ₂::T) where {T<:SpectralEstimate}
     getfield(ŝ₁,1) == getfield(ŝ₂,1) || error("Frequencies must be the same to add spectral estimates.")
     T(getfield(ŝ₁,1), getfield(ŝ₁,2) .+ getfield(ŝ₂,2))
 end
-function /(ŝ::T, a::S) where {T<:SpectralEstimate, S<:Real}
+function Base.:/(ŝ::T, a::S) where {T<:SpectralEstimate, S<:Real}
     T(getfield(ŝ,1), getfield(ŝ,2)./a)
 end
 

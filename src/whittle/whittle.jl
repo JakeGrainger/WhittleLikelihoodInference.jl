@@ -1,4 +1,16 @@
-"Functor which generates appropriate memory for the Whittle likelihood."
+"""
+    WhittleLikelihood(model::Type{<:TimeSeriesModel}, ts, Δ; lowerΩcutoff, upperΩcutoff)
+
+Generate a function to evaluate the Whittle likelihood and it's first and second derivatives.
+
+Create a callable struct which prealloctes memory appropriately.
+Aruguments are:
+- `model`: the model for the process.
+- `ts`: the timeseries in the form of an n by d matrix (where d is the dimension of the time series model).
+- `Δ`: the sampling rate of the time series.
+- `lowerΩcutoff`: the lower bound of the frequency range included in the likelihood.
+- `upperΩcutoff`: the upper bound of the frequency range included in the likelihood.
+"""
 struct WhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
     data::WhittleData{T}
     memory::S

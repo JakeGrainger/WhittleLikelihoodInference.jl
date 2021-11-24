@@ -1,27 +1,32 @@
 struct OU <: TimeSeriesModel{1}
-    θ::Vector{Float64}
+    σ::Float64
+    θ::Float64
+    σ²::Float64
+    θ²::Float64
 end
 
 npars(::Type{OU}) = 2
-parameternames(::Type{OU}) = ["σ", "θ"]
+parameternames(::Type{OU}) = ("σ", "θ")
 
-sdf(::Type{OU}, ω, θ) = θ[1]^2/((2π)*(θ[2]^2+ω^2))
+sdf(m::OU, ω) = m.σ²/((2π)*(m.θ²+ω^2))
 
-acv(::Type{OU}, τ, θ) = exp(-θ[2]*abs(τ)) * θ[1]^2 / (2θ[2])
+acv(m::OU, τ) = exp(-m.θ*abs(τ)) * m.σ² / (2m.θ)
 
-function grad_add_acv!(::Type{OU}, out, τ, θ)
+function grad_add_acv!(out, m::OU, τ)
+    σ, θ = m.σ, m.θ
     absτ = abs(τ)
-    part = exp(-θ[2]*absτ)*θ[1]/θ[2]
+    part = exp(-θ*absτ)*σ/θ
     out[1] = part
-    out[2] = -part*θ[1]*(1/θ[2]+absτ)/2
+    out[2] = -part*σ*(1/θ+absτ)/2
     nothing
 end
 
 function hess_add_acv!(::Type{OU}, out, τ, θ)
+    σ, θ = m.σ, m.θ
     absτ = abs(τ)
-    part = exp(-θ[2]*absτ)/θ[2]
+    part = exp(-θ*absτ)/θ
     out[1] = part
-    out[2] = -part*θ[1]*(1/θ[2]+absτ)
-    out[3] = part*(θ[1]^2)*(1/(θ[2]^2) + absτ/θ[2] + (absτ^2)/2)
+    out[2] = -part*σ*(1/θ+absτ)
+    out[3] = part*(m.σ²)*(1/(m.θ²) + absτ/θ + (absτ^2)/2)
     nothing
 end

@@ -11,7 +11,6 @@ struct OU <: TimeSeriesModel{1}
 end
 
 npars(::Type{OU}) = 2
-parameternames(::Type{OU}) = ("σ", "θ")
 
 sdf(m::OU, ω) = m.σ²/((2π)*(m.θ²+ω^2))
 
@@ -26,7 +25,7 @@ function grad_add_acv!(out, m::OU, τ)
     nothing
 end
 
-function hess_add_acv!(::Type{OU}, out, τ, θ)
+function hess_add_acv!(out, m::OU, τ)
     σ, θ = m.σ, m.θ
     absτ = abs(τ)
     part = exp(-θ*absτ)/θ

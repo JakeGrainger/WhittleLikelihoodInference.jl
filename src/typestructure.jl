@@ -61,14 +61,8 @@ nlowertriangle_dimension(::Type{<:TimeSeriesModel{D}}) where {D} =
 Return the parameter names for a given timeseries model
 """
 parameternames(model::TimeSeriesModel) = parameternames(typeof(model))
+parameternames(model::Type{<:TimeSeriesModel}) = fieldnames(model)[1:npars(model)]
 
-# """
-#     parameter(::TimeSeriesModel) -> Vector
-
-# Returns the parameter vector for a timeseries model
-# """
-# parameter(model::AdditiveTimeSeriesModel) =
-#     vcat(parameter(model.model1), parameter(model.model2))
 npars(model::TimeSeriesModel) = npars(typeof(model))
 npars(
     ::Type{AdditiveTimeSeriesModel{M₁,M₂,D}},

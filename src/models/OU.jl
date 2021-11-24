@@ -3,6 +3,11 @@ struct OU <: TimeSeriesModel{1}
     θ::Float64
     σ²::Float64
     θ²::Float64
+    OU(σ,θ) = new(σ,θ,σ^2,θ^2)
+    function OU(x::Vector{Float64})
+        length(x) == 2 || error("Incorrect number of parameters for OU process")
+        @inbounds OU(x[1], x[2])
+    end
 end
 
 npars(::Type{OU}) = 2

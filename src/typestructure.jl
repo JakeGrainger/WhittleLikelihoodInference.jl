@@ -62,13 +62,13 @@ Return the parameter names for a given timeseries model
 """
 parameternames(model::TimeSeriesModel) = parameternames(typeof(model))
 
-"""
-    parameter(::TimeSeriesModel) -> Vector
+# """
+#     parameter(::TimeSeriesModel) -> Vector
 
-Returns the parameter vector for a timeseries model
-"""
-parameter(model::AdditiveTimeSeriesModel) =
-    vcat(parameter(model.model1), parameter(model.model2))
+# Returns the parameter vector for a timeseries model
+# """
+# parameter(model::AdditiveTimeSeriesModel) =
+#     vcat(parameter(model.model1), parameter(model.model2))
 npars(model::TimeSeriesModel) = npars(typeof(model))
 npars(
     ::Type{AdditiveTimeSeriesModel{M₁,M₂,D}},

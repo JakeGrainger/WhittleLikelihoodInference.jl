@@ -15,19 +15,19 @@ function parameternames(::Type{Matern{D}}) where {D}
     return [σ;ν;a]
 end
 
-"""
-    parameter(model::Matern)
+# """
+#     parameter(model::Matern)
 
-Return the parameter vector of a Matern model.
+# Return the parameter vector of a Matern model.
 
-In the D=3 case, θ = [σ₁,ρ₂₁,ρ₃₁,σ₂,ρ₂₃,σ₃,ν₁,ν₂₁,ν₃₁,ν₂,ν₂₃,ν₃,a₁,a₂₁,a₃₁,a₂,a₂₃,a₃].
-We have 3*D(D+1)/2 parameters.
-- σᵢ is the standard deviation of the ith process.
-- ρᵢⱼ is the colocated correlation coefficient between the ith and jth processes.
-- νᵢⱼ is the smoothness parameter between the ith and jth process.
-- aᵢⱼ is the scale parameter between the ith and jth process.
-"""
-parameter(model::Matern) = model.θ
+# In the D=3 case, θ = [σ₁,ρ₂₁,ρ₃₁,σ₂,ρ₂₃,σ₃,ν₁,ν₂₁,ν₃₁,ν₂,ν₂₃,ν₃,a₁,a₂₁,a₃₁,a₂,a₂₃,a₃].
+# We have 3*D(D+1)/2 parameters.
+# - σᵢ is the standard deviation of the ith process.
+# - ρᵢⱼ is the colocated correlation coefficient between the ith and jth processes.
+# - νᵢⱼ is the smoothness parameter between the ith and jth process.
+# - aᵢⱼ is the scale parameter between the ith and jth process.
+# """
+# parameter(model::Matern) = model.θ
 
 function add_sdf!(::Type{Matern{D}}, out, ω, θ) where {D}
     ndims_lt = triangularnumber(D)

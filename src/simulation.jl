@@ -1,7 +1,7 @@
 function covmatrix(model::TimeSeriesModel, n, Δ)
     d = ndims(model)
     store = allocate_memory_EI_F(typeof(model), n , Δ)
-    acv!(typeof(model), store, parameter(model))
+    acv!(store, model)
     Areal = real.(extract_acv(store))
     C = Matrix{eltype(Areal)}(undef, n * d, n * d)
     for ii = 1:d # increase row
@@ -41,7 +41,7 @@ end
 
 function covmatrix(model::TimeSeriesModel{1}, n, Δ)
     store = allocate_memory_EI_F(typeof(model), n , Δ)
-    acv!(typeof(model), store, parameter(model))
+    acv!(store, model)
     Areal = real.(extract_acv(store))
     return Matrix(Toeplitz(Areal[1:n], Areal[1:n]))
 end

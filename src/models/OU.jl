@@ -3,7 +3,6 @@ struct OU <: TimeSeriesModel{1}
 end
 
 npars(::Type{OU}) = 2
-parameter(model::OU) = model.θ
 parameternames(::Type{OU}) = ["σ", "θ"]
 
 sdf(::Type{OU}, ω, θ) = θ[1]^2/((2π)*(θ[2]^2+ω^2))

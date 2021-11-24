@@ -25,8 +25,8 @@ Base.show(io::IO, W::DebiasedWhittleLikelihood) = print(io, "Debiased Whittle li
 
 ##
 "Function to compute the debiased Whittle likelihood using a preallocated store."
-function debiasedwhittle!(model::Type{<:TimeSeriesModel}, data::GenWhittleData, store::TimeSeriesModelStorage, θ)
-    EI!(model, store, θ)
+function debiasedwhittle!(store::TimeSeriesModelStorage, model::TimeSeriesModel, data::GenWhittleData)
+    EI!(store, model)
     return generalwhittle(store, data)
 end
 
@@ -35,12 +35,12 @@ Function to compute the debiased Whittle likelihood and its gradient using a pre
 First argument is the model (a type). F and G are then provided to signify which quantities are required.
 This is in keeping with Optims interface.
 """
-function debiasedwhittle_FG!!(model::Type{<:TimeSeriesModel{D}}, F, G, data::GenWhittleData, store, θ) where {D}
+function debiasedwhittle_FG!!(F, G, store, model::TimeSeriesModel ,data::GenWhittleData)
     if F !== nothing || G !== nothing
-        EI!(model, store, θ)
+        EI!(store, model)
     end
     if G !== nothing
-        grad_EI!(model, store, θ)
+        grad_EI!(store, model)
         grad_generalwhittle!(G, store, data)
     end
     if F !== nothing
@@ -54,15 +54,15 @@ Function to compute the debiased Whittle likelihood and its gradient and hessian
 First argument is the model (a type). F, G and H are then provided to signify which quantities are required.
 This is in keeping with Optims interface.
 """
-function debiasedwhittle_FGH(model::Type{<:TimeSeriesModel{D}}, F, G, H, data::GenWhittleData, store, θ) where {D}
+function debiasedwhittle_FGH(F, G, H, store, model::TimeSeriesModel, data::GenWhittleData)
     if F !== nothing || G !== nothing || H !== nothing
-        EI!(model, store, θ)
+        EI!(store, model)
     end
     if G !== nothing || H !== nothing
-        grad_EI!(model, store, θ)
+        grad_EI!(store, model)
     end
     if H !== nothing
-        hess_EI!(model, store, θ)
+        hess_EI!(store, model)
         hess_generalwhittle!(H, store, data)
     end
     if G !== nothing
@@ -102,12 +102,12 @@ function debiasedwhittle_Ehess!(EH, store, data::GenWhittleData)
 end
 
 "Function to compute the debiased Whittle likelihood, its gradient and fisher information."
-function debiasedwhittle_Fisher(model::Type{<:TimeSeriesModel{D}}, F, G, H, data::GenWhittleData, store, θ) where {D}
+function debiasedwhittle_Fisher(F, G, H, store, model::TimeSeriesModel, data::GenWhittleData)
     if F !== nothing || G !== nothing || H !== nothing
-        EI!(model, store, θ)
+        EI!(store, model)
     end
     if G !== nothing || H !== nothing
-        grad_EI!(model, store, θ)
+        grad_EI!(store, model)
     end
     if H !== nothing
         debiasedwhittle_Ehess!(H, store, data)

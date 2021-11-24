@@ -21,18 +21,16 @@ struct AdditiveTimeSeriesModel{M₁,M₂,D} <: TimeSeriesModel{D}
     ) where {M₁<:TimeSeriesModel{D},M₂<:TimeSeriesModel{D}} where {D}
         new{M₁,M₂,D}(model1, model2)
     end
+    function AdditiveTimeSeriesModel{M₁,M₂,D}(θ) where {M₁<:TimeSeriesModel{D},M₂<:TimeSeriesModel{D}} where {D}
+        @views new{M₁,M₂,D}(M₁(θ[1:npars(M₁)]), M₂(θ[npars(M₁)+1:end]))
+    end
 end
 
 """
     M₁::Type{<:TimeSeriesModel{D}}, M₂::Type{<:TimeSeriesModel{D}} -> AdditiveTimeSeriesModel{M₁,M₂,D}
 """
-+(M₁::Type{<:TimeSeriesModel{D}}, M₂::Type{<:TimeSeriesModel{D}}) where {D} =
+Base.:+(M₁::Type{<:TimeSeriesModel{D}}, M₂::Type{<:TimeSeriesModel{D}}) where {D} =
     AdditiveTimeSeriesModel{M₁,M₂,D}
-
-# Construct an instance of an additive model
-function (T::Type{<:AdditiveTimeSeriesModel{M₁,M₂,D}})(θ) where {M₁<:TimeSeriesModel{D},M₂<:TimeSeriesModel{D}} where {D}
-    @views AdditiveTimeSeriesModel(M₁(θ[1:npars(M₁)]), M₂(θ[npars(M₁)+1:end]))
-end
 
 # Broadcasting support for models
 Base.broadcastable(model::TimeSeriesModel) = Ref(model)

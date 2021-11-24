@@ -3,13 +3,13 @@
 ### Multivariate ###
 
 """
-    EI!(model::Type{<:TimeSeriesModel}, store::TimeSeriesModelStorageFunction, θ)
+    EI!(store::TimeSeriesModelStorageFunction, model::TimeSeriesModel)
 
 Compute the expected periodogram and assign to appropriate place in memory (note this computes at twice the desired resolution).
 """
-function EI!(model::Type{<:TimeSeriesModel}, store::TimeSeriesModelStorageFunction, θ)
-    acv!(model, store, θ)
-    _EI!(store.funcmemory, store.encodedtime.n, store.encodedtime.Δ)
+function EI!(store::TimeSeriesModelStorageFunction, model::TimeSeriesModel)
+    acv!(store, model)
+    _EI!(store)
     return nothing
 end
 
@@ -18,6 +18,7 @@ end
 
 Interior function for `EI!`.
 """
+_EI!(store::TimeSeriesModelStorageFunction) = _EI!(store.funcmemory, store.encodedtime.n, store.encodedtime.Δ)
 function _EI!(store::Sdf2EIStorage, n, Δ) # dispatch to alternate version to pull out correct storage
     _EI!(store.acv2EI, n, Δ)
     return nothing
@@ -49,19 +50,17 @@ extract_EI(store::Sdf2EIStorage) = extract_EI(store.acv2EI)
 extract_EI(store::Acv2EIStorage) = store.hermitianarray
 
 """
-    EI(model::Type{<:TimeSeriesModel}, n, Δ, θ)
     EI(model::TimeSeriesModel, n, Δ)
 
-Compute EI at Fourier frequencies `fftshift(fftfreq(n,Δ,θ))`.
+Compute EI at Fourier frequencies `fftshift(fftfreq(n,2π/Δ))`.
 
 Note internal computation provides values at twice the resolution, this function returns at the desired resolution.
 """
-function EI(model::Type{<:TimeSeriesModel}, n, Δ, θ)
-    store = allocate_memory_EI_F(model, n , Δ)
-    EI!(model, store, θ)
+function EI(model::TimeSeriesModel, n, Δ)
+    store = allocate_memory_EI_F(typeof(model), n , Δ)
+    EI!(store, model)
     return fftshift(copy(extract_EI(store)))[1:2:end]
 end
-EI(model::TimeSeriesModel, n, Δ) = EI(typeof(model), n, Δ, parameter(model))
 
 ### Univariate ###
 
@@ -88,18 +87,7 @@ extract_EI(store::Acv2EIStorageUni) = store.allocatedarray
 
 ### Additive ###
 
-"""
-EI!(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, store::AdditiveStorage, θ) 
-
-Compute the expected periodogram for additive models.
-"""
-function EI!(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, store::AdditiveStorage, θ) where {M₁<:TimeSeriesModel{D},M₂<:TimeSeriesModel{D}} where {D}
-    acv!(model, store, θ)
-    _EI!(store.store1)
-end
-
 _EI!(store::AdditiveStorage) = _EI!(store.store1)
-_EI!(store::TimeSeriesModelStorageFunction) = _EI!(store.funcmemory, store.encodedtime.n, store.encodedtime.Δ)
 
 
 
@@ -108,12 +96,12 @@ _EI!(store::TimeSeriesModelStorageFunction) = _EI!(store.funcmemory, store.encod
 ### Multivariate ###
 
 """
-grad_EI!(model::Type{<:TimeSeriesModel}, store::TimeSeriesModelStorageGradient, θ)
+    grad_EI!(store::TimeSeriesModelStorageGradient, model::TimeSeriesModel)
 
 Compute the gradient of the expected periodogram and assign to appropriate place in memory (note this computes at twice the desired resolution).
 """
-function grad_EI!(model::Type{<:TimeSeriesModel}, store::TimeSeriesModelStorageGradient, θ)
-    grad_acv!(model, store, θ)
+function grad_EI!(store::TimeSeriesModelStorageGradient, model::TimeSeriesModel)
+    grad_acv!(store, model)
     _grad_EI!(store.gradmemory, store.encodedtime.n, store.encodedtime.Δ)
     return nothing
 end
@@ -163,9 +151,9 @@ end
 
 ### Additive ###
 
-function grad_EI!(::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, store::AdditiveStorage, θ) where {M₁<:TimeSeriesModel{D},M₂<:TimeSeriesModel{D}} where {D}
-    @views grad_EI!(M₁, store.store1, θ[1:npars(M₁)])
-    @views grad_EI!(M₂, store.store2, θ[npars(M₁)+1:end])
+function grad_EI!(store::AdditiveStorage, model::AdditiveTimeSeriesModel)
+    @views grad_EI!(store.store1, model.model1)
+    @views grad_EI!(store.store1, model.model1)
     return nothing
 end
 
@@ -173,13 +161,14 @@ end
 ## Hessian of expected periodogram ##
 
 ### Multivariate ###
+
 """
-    hess_EI!(model::Type{<:TimeSeriesModel}, store::TimeSeriesModelStorageHessian, θ)
+    hess_EI!(store::TimeSeriesModelStorageHessian, model::TimeSeriesModel)
 
 Compute the Hessian of the expected periodogram and assign to appropriate place in memory (note this computes at twice the desired resolution).
 """
-function hess_EI!(model::Type{<:TimeSeriesModel}, store::TimeSeriesModelStorageHessian, θ)
-    hess_acv!(model, store, θ)
+function hess_EI!(store::TimeSeriesModelStorageHessian, model::TimeSeriesModel)
+    hess_acv!(store, model)
     _hess_EI!(store.hessmemory, store.encodedtime.n, store.encodedtime.Δ)
     return nothing
 end
@@ -229,8 +218,8 @@ end
 
 ### Additive ###
 
-function hess_EI!(::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, store::AdditiveStorage, θ) where {M₁<:TimeSeriesModel{D},M₂<:TimeSeriesModel{D}} where {D}
-    @views hess_EI!(M₁, store.store1, θ[1:npars(M₁)])
-    @views hess_EI!(M₂, store.store2, θ[npars(M₁)+1:end])
+function hess_EI!(store::AdditiveStorage, model::AdditiveTimeSeriesModel)
+    @views hess_EI!(store.store1, model.model1)
+    @views hess_EI!(store.store1, model.model1)
     return nothing
 end

@@ -1,3 +1,7 @@
+####
+#  NOT UPDATED
+
+####
 struct Matern{D} <: TimeSeriesModel{D}
     θ
     function Matern{D}(θ) where {D}

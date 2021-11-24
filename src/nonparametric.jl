@@ -26,9 +26,9 @@ end
 
 ndims(::SpectralEstimate{D,T}) where {D,T} = D
 size(ŝ::SpectralEstimate) = (length(getfield(ŝ,1)),)
-getindex(ŝ::T, inds) where {T<:SpectralEstimate} = constructorof(T)(getfield(ŝ,1)[inds], getfield(ŝ,2)[inds])
+getindex(ŝ::T, inds) where {T<:SpectralEstimate} = T(getfield(ŝ,1)[inds], getfield(ŝ,2)[inds])
 getindex(ŝ::SpectralEstimate, ind::Int) = (getfield(ŝ,1)[ind],getfield(ŝ,2)[ind])
-log10(ŝ::T) where {T<:SpectralEstimate} = constructorof(T)(getfield(ŝ,1), log10.(getfield(ŝ,2)))
+log10(ŝ::T) where {T<:SpectralEstimate} = T(getfield(ŝ,1), log10.(getfield(ŝ,2)))
 
 
 @recipe function f(ŝ::SpectralEstimate)
@@ -48,12 +48,12 @@ log10(ŝ::T) where {T<:SpectralEstimate} = constructorof(T)(getfield(ŝ,1), lo
 end
 
 
-function +(ŝ₁::T, ŝ₂::T) where {T<:SpectralEstimate}
+function Base.:+(ŝ₁::T, ŝ₂::T) where {T<:SpectralEstimate}
     getfield(ŝ₁,1) == getfield(ŝ₂,1) || error("Frequencies must be the same to add spectral estimates.")
-    constructorof(T)(getfield(ŝ₁,1), getfield(ŝ₁,2) .+ getfield(ŝ₂,2))
+    T(getfield(ŝ₁,1), getfield(ŝ₁,2) .+ getfield(ŝ₂,2))
 end
 function /(ŝ::T, a::S) where {T<:SpectralEstimate, S<:Real}
-    constructorof(T)(getfield(ŝ,1), getfield(ŝ,2)./a)
+    T(getfield(ŝ,1), getfield(ŝ,2)./a)
 end
 
 

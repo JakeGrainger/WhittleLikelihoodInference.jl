@@ -14,10 +14,10 @@ struct DebiasedWhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
     end
 end
 function (f::DebiasedWhittleLikelihood)(θ)
-    debiasedwhittle!(f.model,f.data,f.memory,θ)
+    debiasedwhittle!(f.memory,f.model(θ),f.data)
 end
 function (f::DebiasedWhittleLikelihood)(F,G,EH,θ)
-    debiasedwhittle_Fisher(f.model,F,G,EH,f.data,f.memory,θ)
+    debiasedwhittle_Fisher(F,G,EH,f.memory,f.model(θ),f.data)
 end
 Base.show(io::IO, W::DebiasedWhittleLikelihood) = print(io, "Debiased Whittle likelihood for the $(W.model) model.")
 

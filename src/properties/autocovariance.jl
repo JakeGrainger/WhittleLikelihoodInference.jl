@@ -25,7 +25,7 @@ end
 Compute the acv for a single lag and when acv is known.
 """
 function acv!(out, model::TimeSeriesModel, τ) # default acv returns error
-    error("acv not yet defined for model of type $(typeof(model)).")
+    error("acv! not yet defined for model of type $(typeof(model)).")
 end
 
 """
@@ -119,7 +119,7 @@ Compute the acv at many lags and allocate to storage when acv is known in the un
 function acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
     
     for i ∈ 1:size(store.allocatedarray, 2)
-        store.allocatedarray[i] = @views acv(model, encodedtime.T[i])
+        store.allocatedarray[i] = @views acv(model, encodedtime.lags[i])
     end
     
     return nothing
@@ -182,13 +182,13 @@ function grad_acv!(store::Sdf2EIStorage, model::UnknownAcvTimeSeriesModel, encod
 end
 
 function grad_acv!(out, model::TimeSeriesModel, τ) # default acv returns error
-    error("acv not yet defined for model of type $(typeof(model)). Maybe define as an UnknownAcvTimeSeriesModel.")
+    error("grad_acv! not yet defined for model of type $(typeof(model)). Maybe define as an UnknownAcvTimeSeriesModel.")
 end
 
 function grad_acv!(store::Acv2EIStorage, model::TimeSeriesModel, encodedtime::LagsEI)
     
     for i ∈ 1:size(store.allocatedarray, 3)
-        @views grad_acv!(store.allocatedarray[:, :, i], model, encodedtime.T[i])
+        @views grad_acv!(store.allocatedarray[:, :, i], model, encodedtime.lags[i])
     end
     
     return nothing
@@ -215,7 +215,7 @@ end
 
 function grad_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
     for i ∈ 1:size(store.allocatedarray, 2)
-        @views grad_acv!(store.allocatedarray[:, i], model, encodedtime.T[i])
+        @views grad_acv!(store.allocatedarray[:, i], model, encodedtime.lags[i])
     end
     return nothing
 end
@@ -251,12 +251,12 @@ function hess_acv!(store::Sdf2EIStorage, model::UnknownAcvTimeSeriesModel, encod
 end
 
 function hess_acv!(out, model::TimeSeriesModel, τ) # default acv returns error
-    error("acv not yet defined for model of type $(typeof(model)).")
+    error("hess_acv! not yet defined for model of type $(typeof(model)).")
 end
 
 function hess_acv!(store::Acv2EIStorage, model::TimeSeriesModel, encodedtime::LagsEI)
     for i ∈ 1:size(store.allocatedarray, 3)
-        @views hess_acv!(store.allocatedarray[:, :, i], model, encodedtime.T[i])
+        @views hess_acv!(store.allocatedarray[:, :, i], model, encodedtime.lags[i])
     end
     return nothing
 end
@@ -282,7 +282,7 @@ end
 
 function hess_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
     for i ∈ 1:size(store.allocatedarray, 2)
-        @views hess_acv!(store.allocatedarray[:, i], model, encodedtime.T[i])
+        @views hess_acv!(store.allocatedarray[:, i], model, encodedtime.lags[i])
     end
     return nothing
 end

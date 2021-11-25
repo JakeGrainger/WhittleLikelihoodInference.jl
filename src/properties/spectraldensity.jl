@@ -122,7 +122,7 @@ end
 Add the gradient of the sdf of a model to an input storage vector.
 """
 function grad_add_sdf!(out, model::TimeSeriesModel, ω) # default sdf returns error
-    error("sdf not yet defined for model of type $(typeof(model)).")
+    error("grad_add_sdf! not yet defined for model of type $(typeof(model)).")
 end
 
 """
@@ -213,7 +213,7 @@ end
 Add the Hessian of the sdf of a model to an input storage vector.
 """
 function hess_add_sdf!(out, model::TimeSeriesModel, ω) # default sdf returns error
-    error("sdf not yet defined for model of type $(typeof(model)).")
+    error("hess_add_sdf! not yet defined for model of type $(typeof(model)).")
 end
 
 """

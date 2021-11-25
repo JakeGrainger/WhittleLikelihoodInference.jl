@@ -409,17 +409,17 @@ end
 
 "Function to allocate storage for the function part of sdf calculations for univariate case."
 function sdfstorage_function(model::Type{<:TimeSeriesModel{1}}, n)
-    allocatedarray = zeros(ComplexF64, nlowertriangle_dimension(model), n)
+    allocatedarray = zeros(ComplexF64, n)
     return SdfStorageUni(allocatedarray)
 end
 "Function to allocate storage for the gradient part of sdf calculations for univariate case."
 function sdfstorage_gradient(model::Type{<:TimeSeriesModel{1}}, n)
-    allocatedarray = zeros(ComplexF64, nlowertriangle_dimension(model), npars(model), n)
+    allocatedarray = zeros(ComplexF64, npars(model), n)
     return SdfStorageUni(allocatedarray)
 end
 "Function to allocate storage for the hessian part of sdf calculations for univariate case."
 function sdfstorage_hessian(model::Type{<:TimeSeriesModel{1}}, n)
-    allocatedarray = zeros(ComplexF64, nlowertriangle_dimension(model), nlowertriangle_parameter(model), n)
+    allocatedarray = zeros(ComplexF64, nlowertriangle_parameter(model), n)
     return SdfStorageUni(allocatedarray)
 end
 
@@ -427,6 +427,13 @@ end
 extract_array(store::Sdf2EIStorageUni) = extract_array(store.acv2EI)
 extract_array(store::Acv2EIStorageUni) = store.allocatedarray
 
+## Unitily functions for pulling out desired vector from storage for Whittle
+unpack(store::Sdf2EIStorage)    = store.acv2EI.hermitianarray
+unpack(store::Acv2EIStorage)    = store.hermitianarray
+unpack(store::SdfStorage)       = store.hermitianarray
+unpack(store::Sdf2EIStorageUni) = store.acv2EI.allocatedarray
+unpack(store::Acv2EIStorageUni) = store.allocatedarray
+unpack(store::SdfStorageUni)    = store.allocatedarray
 
 ## Whittle data ##
 

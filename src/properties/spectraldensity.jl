@@ -221,7 +221,7 @@ end
 
 Add the Hessian of the aliased sdf of a model to an input storage vector.
 """
-function hess_add_asdf!(out, model::Type{<:TimeSeriesModel}, ω, Δ) # default method approximates the asdf (overload if known)
+function hess_add_asdf!(out, model::TimeSeriesModel, ω, Δ) # default method approximates the asdf (overload if known)
     for k ∈ -nalias(model):nalias(model)
         hess_add_sdf!(out, model, ω + k * 2π / Δ)
     end

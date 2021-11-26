@@ -37,7 +37,7 @@ end
 """
     asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω, Δ)
 
-Compute the asdf for all frequencies and allocates to appropriate location in storage."
+Compute the asdf for all frequencies and allocates to appropriate location in storage.
 """
 function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω, Δ)
     for i ∈ 1:size(store.allocatedarray, 2)

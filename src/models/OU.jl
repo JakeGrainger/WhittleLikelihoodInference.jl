@@ -14,9 +14,9 @@ npars(::Type{OU}) = 2
 
 sdf(m::OU, ω) = 2m.σ²/((2π)*(m.θ²+ω^2))
 
-acv(m::OU, τ) = exp(-m.θ*abs(τ)) * m.σ² / m.θ
+acv(m::OU, τ::Number) = exp(-m.θ*abs(τ)) * m.σ² / m.θ
 
-function grad_acv!(out, m::OU, τ)
+function grad_acv!(out, m::OU, τ::Number)
     σ, θ = m.σ, m.θ
     absτ = abs(τ)
     part = 2exp(-θ*absτ)*σ/θ
@@ -25,7 +25,7 @@ function grad_acv!(out, m::OU, τ)
     nothing
 end
 
-function hess_acv!(out, m::OU, τ)
+function hess_acv!(out, m::OU, τ::Number)
     σ, θ = m.σ, m.θ
     absτ = abs(τ)
     part = 2exp(-θ*absτ)/θ

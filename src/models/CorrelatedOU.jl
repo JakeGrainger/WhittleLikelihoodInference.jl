@@ -5,7 +5,7 @@ struct CorrelatedOU <: TimeSeriesModel{2}
     σ²::Float64
     θ²::Float64
     CorrelatedOU(σ,θ,ρ) = new(σ,θ,ρ,σ^2,θ^2)
-    function CorrelatedOU(x::Float64)
+    function CorrelatedOU(x::Vector{Float64})
         length(x) == npars(CorrelatedOU) || error("CorrelatedOU process has $(npars(CorrelatedOU)) parameters, but $(length(x)) were provided.")
         @inbounds CorrelatedOU(x[1], x[2], x[3])
     end
@@ -19,13 +19,13 @@ function add_sdf!(out, m::CorrelatedOU, ω)
     out[2] += s*m.ρ
     out[3] += s
 end
-function acv!(out, m::CorrelatedOU, τ) 
+function acv!(out, m::CorrelatedOU, τ::Number) 
     a = exp(-m.θ*abs(τ)) * m.σ² / m.θ
     out[1] = a
     out[2] = a*m.ρ
     out[3] = a
 end
-function grad_acv!(out, m::CorrelatedOU, τ)
+function grad_acv!(out, m::CorrelatedOU, τ::Number)
     σ, θ, ρ = m.σ, m.θ, m.ρ
     absτ = abs(τ)
     σ_part = 2exp(-θ*absτ)*σ/θ
@@ -39,13 +39,13 @@ function grad_acv!(out, m::CorrelatedOU, τ)
     out[2,2] = θ_part * ρ
     out[3,2] = θ_part
     # ∂ρ
-    # out[1,2] = 0
-    out[2,2] = σ_part * σ/2
-    # out[3,2] = 0
+    # out[1,3] = 0
+    out[2,3] = σ_part * σ/2
+    # out[3,3] = 0
     nothing
 end
 
-function hess_acv!(::Type{CorrelatedOU}, out, τ, θ)
+function hess_acv!(out, m::CorrelatedOU, τ::Number)
     σ, θ = m.σ, m.θ
     absτ = abs(τ)
     σ_part = 2exp(-θ*absτ)/θ

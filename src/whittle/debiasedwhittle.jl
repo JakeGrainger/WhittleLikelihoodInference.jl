@@ -1,4 +1,54 @@
-"Functor which generates appropriate memory for the debiased Whittle likelihood."
+"""
+    DebiasedWhittleLikelihood(model::Type{<:TimeSeriesModel}, ts, Δ; lowerΩcutoff, upperΩcutoff)
+
+Generate a function to evaluate the Debiased Whittle likelihood it's gradient and expected Hessian.
+
+Create a callable struct which prealloctes memory appropriately.
+
+    (f::DebiasedWhittleLikelihood)(θ)
+
+Evaluates the Whittle likelihood at θ.
+
+    (f::DebiasedWhittleLikelihood)(F,G,EH,θ)
+
+Evaluates the Whittle likelihood at θ and stores the gradient and expected Hessian in G and EH respectively.
+If F, G or EH equal nothing, then the function, gradient or expected Hessian are not evaluated repsectively.
+
+# Aruguments
+- `model`: the model for the process.
+- `ts`: the timeseries in the form of an n by d matrix (where d is the dimension of the time series model).
+- `Δ`: the sampling rate of the time series.
+- `lowerΩcutoff`: the lower bound of the frequency range included in the likelihood.
+- `upperΩcutoff`: the upper bound of the frequency range included in the likelihood.
+
+Note that to use the gradient the model must have `grad_add_sdf!` or `grad_acv!` specified.
+Similarly, to use the Hessian, the model must have `hess_add_sdf!` or `hess_acv!` specified.
+
+# Examples
+```julia-repl
+julia> obj = DebiasedWhittleLikelihood(OU, ones(1000), 1)
+Debiased Whittle likelihood for the OU model.
+
+julia> obj([1.0, 1.0])
+-1982.0676530999626
+
+julia> F, G, EH = 0.0, zeros(2), zeros(2,2)
+(0.0, [0.0, 0.0], [0.0 0.0; 0.0 0.0])
+
+julia> obj(F, G, EH, [1.0, 1.0])
+-1982.0676530999626
+
+julia> G
+2-element Vector{Float64}:
+ 1998.3136810970122
+ -685.7904154568779
+
+julia> H
+2×2 Matrix{Float64}:
+ -0.00967179   0.0607696
+  0.0607696   -0.381827
+```
+"""
 struct DebiasedWhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
     data::DebiasedWhittleData{T}
     memory::S
@@ -13,29 +63,29 @@ struct DebiasedWhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
         new{eltype(wdata.I),typeof(mem),typeof(model)}(wdata,mem,model)
     end
 end
-function (f::DebiasedWhittleLikelihood)(θ)
-    debiasedwhittle!(f.memory,f.model(θ),f.data)
-end
-function (f::DebiasedWhittleLikelihood)(F,G,EH,θ)
-    debiasedwhittle_Fisher(F,G,EH,f.memory,f.model(θ),f.data)
-end
+(f::DebiasedWhittleLikelihood)(θ) = debiasedwhittle!(f.memory,f.model(θ),f.data)
+(f::DebiasedWhittleLikelihood)(F,G,EH,θ) = debiasedwhittle_Fisher!(F,G,EH,f.memory,f.model(θ),f.data)
 Base.show(io::IO, W::DebiasedWhittleLikelihood) = print(io, "Debiased Whittle likelihood for the $(W.model) model.")
 
-## Interior functions 
+## Interior functions
 
 ##
-"Function to compute the debiased Whittle likelihood using a preallocated store."
+"""
+    debiasedwhittle!(store::TimeSeriesModelStorage, model::TimeSeriesModel, data::GenWhittleData)
+
+Function to compute the debiased Whittle likelihood using a preallocated store.
+"""
 function debiasedwhittle!(store::TimeSeriesModelStorage, model::TimeSeriesModel, data::GenWhittleData)
     EI!(store, model)
     return generalwhittle(store, data)
 end
 
 """
-Function to compute the debiased Whittle likelihood and its gradient using a preallocated store.
-First argument is the model (a type). F and G are then provided to signify which quantities are required.
-This is in keeping with Optims interface.
+    debiasedwhittle_FG!(F, G, store, model::TimeSeriesModel ,data::GenWhittleData)
+
+Compute the debiased Whittle likelihood and its gradient using a preallocated store.
 """
-function debiasedwhittle_FG!!(F, G, store, model::TimeSeriesModel ,data::GenWhittleData)
+function debiasedwhittle_FG!(F, G, store, model::TimeSeriesModel ,data::GenWhittleData)
     if F !== nothing || G !== nothing
         EI!(store, model)
     end
@@ -50,11 +100,11 @@ function debiasedwhittle_FG!!(F, G, store, model::TimeSeriesModel ,data::GenWhit
 end
 
 """
-Function to compute the debiased Whittle likelihood and its gradient and hessian using a preallocated store.
-First argument is the model (a type). F, G and H are then provided to signify which quantities are required.
-This is in keeping with Optims interface.
+    debiasedwhittle_FGH!(F, G, H, store, model::TimeSeriesModel, data::GenWhittleData)
+
+Compute the debiased Whittle likelihood and its gradient and hessian using a preallocated store.
 """
-function debiasedwhittle_FGH(F, G, H, store, model::TimeSeriesModel, data::GenWhittleData)
+function debiasedwhittle_FGH!(F, G, H, store, model::TimeSeriesModel, data::GenWhittleData)
     if F !== nothing || G !== nothing || H !== nothing
         EI!(store, model)
     end
@@ -74,17 +124,31 @@ function debiasedwhittle_FGH(F, G, H, store, model::TimeSeriesModel, data::GenWh
     return nothing
 end
 
-"Function to extract all of the derivatives from a generic store."
+"""
+    getallderiv(store::AdditiveStorage)
+    getallderiv(store::TimeSeriesModelStorageGradient)
+
+Extract all of the derivatives from a generic store.
+"""
 function getallderiv(store::AdditiveStorage)
     Vcat(getallderiv(store.store1), getallderiv(store.store2))
 end
 getallderiv(store::TimeSeriesModelStorageGradient) = extract_array(store.gradmemory)
 
-"Function to extract array from storage."
+"""
+    extract_array(store::Sdf2EIStorage)
+    extract_array(store::Acv2EIStorage)
+
+Extract array from storage.
+"""
 extract_array(store::Sdf2EIStorage) = extract_array(store.acv2EI)
 extract_array(store::Acv2EIStorage) = store.hermitianarray
 
-"Function to compute the expected hessian of the de-biased Whittle likelihood."
+"""
+    debiasedwhittle_Ehess!(EH, store, data::GenWhittleData)
+
+Compute the expected hessian of the de-biased Whittle likelihood.
+"""
 function debiasedwhittle_Ehess!(EH, store, data::GenWhittleData)
     EH .= zero(eltype(EH))
     ∇S = getallderiv(store)
@@ -101,8 +165,12 @@ function debiasedwhittle_Ehess!(EH, store, data::GenWhittleData)
     return nothing
 end
 
-"Function to compute the debiased Whittle likelihood, its gradient and fisher information."
-function debiasedwhittle_Fisher(F, G, H, store, model::TimeSeriesModel, data::GenWhittleData)
+"""
+    debiasedwhittle_Fisher!(F, G, H, store, model::TimeSeriesModel, data::GenWhittleData)
+
+Compute the debiased Whittle likelihood, its gradient and fisher information.
+"""
+function debiasedwhittle_Fisher!(F, G, H, store, model::TimeSeriesModel, data::GenWhittleData)
     if F !== nothing || G !== nothing || H !== nothing
         EI!(store, model)
     end

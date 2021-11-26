@@ -49,5 +49,6 @@ export
 
     include("simulation.jl")
     include("nonparametric.jl")
+    include("plotting.jl")
 
 end

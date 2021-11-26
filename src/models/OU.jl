@@ -18,19 +18,19 @@ acv(m::OU, τ::Number) = exp(-m.θ*abs(τ)) * m.σ² / m.θ
 
 function grad_add_sdf!(out, m::OU, ω)
     σ, θ = m.σ, m.θ
-    part = σ / (π*(m.θ²+ω^2))
-    out[1] = part
-    out[2] = -part*2π*θ
+    σ_part = σ / (π*(m.θ²+ω^2))
+    out[1] = σ_part
+    out[2] = -σ_part*2π*θ
     nothing
 end
 
 function hess_add_sdf!(out, m::OU, ω)
     σ, θ = m.σ, m.θ
-    partσ = 1 / (π*(m.θ²+ω^2))
-    partθσ = -partσ*2π*θ
-    out[1] = partσ
+    σ_part = 1 / (π*(m.θ²+ω^2))
+    partθσ = -σ_part*2π*θ
+    out[1] = σ_part
     out[2] = partθσ
-    out[3] = -2π * (θ*partθσ+σ*partσ)
+    out[3] = -2π * (θ*partθσ+σ*σ_part)
     nothing
 end
 

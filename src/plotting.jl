@@ -19,7 +19,7 @@ end
 
 Plots the spectral density matrix function over frequency with the lower triangle being the real part and upper triangle being the imaginary.
 """
-@shorthand hermitianmatrixfunctionplot
+@shorthands hermitianmatrixfunctionplot
 
 @recipe function f(::Type{Val{:realmatrixfunctionplot}},x,y,z)
     all(size(yi)==size(y[1]) for yi in y) || error("Matricies not the same size")
@@ -43,7 +43,7 @@ end
 
 Plots a matrix valued function by plotting each element of the matrix in a separate panel.
 """
-@shorthand realmatrixfunctionplot
+@shorthands realmatrixfunctionplot
 
 
 @userplot PlotSdf

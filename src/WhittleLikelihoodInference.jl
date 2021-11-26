@@ -46,6 +46,8 @@ export
 
     include("models/OU.jl")
     include("models/CorrelatedOU.jl")
+    include("models/OUUnknown.jl")
+    include("models/CorrelatedOUUnknown.jl")
 
     include("simulation.jl")
     include("nonparametric.jl")

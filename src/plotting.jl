@@ -1,5 +1,12 @@
-@recipe function f(::Type{Val{:hermitianmatrixfunctionplot}},x,y,z)
-    y isa AbstractVector{AbstractMatrix{T}} where {T<:Number} || error("When using hermitianmatrixfunctionplot, y should be a vector of matricies of numbers.")
+struct HermitianPlot{A,B}
+    x::A
+    y::B
+    function HermitianPlot(x::AbstractVector{T},y::AbstractVector{R}) where {R<:AbstractMatrix{S}} where {S<:Number,T<:Number}
+        new{typeof(x),typeof(y)}(x,y)
+    end
+end
+@recipe function f(h::HermitianPlot)
+    x,y = h.x,h.y
     y_new = Vector{Matrix{Float64}}(undef, length(y))
     for i = 1:length(y)
         y_temp = zeros(size(y[i]))
@@ -8,21 +15,19 @@
         end
         y_new[i] = y_temp
     end
-    seriestype := :realmatrixfunctionplot
-    x := x
-    y := y_new
+    MatrixPlot(x,y_new)
 end
 
-"""
-    hermitianmatrixfunctionplot(x,y)
-    hermitianmatrixfunctionplot!(x,y)
-
-Plots the spectral density matrix function over frequency with the lower triangle being the real part and upper triangle being the imaginary.
-"""
-@shorthands hermitianmatrixfunctionplot
-
-@recipe function f(::Type{Val{:realmatrixfunctionplot}},x,y,z)
-    all(size(yi)==size(y[1]) for yi in y) || error("Matricies not the same size")
+struct MatrixPlot{A,B}
+    x::A
+    y::B
+    function MatrixPlot(x::AbstractVector{T},y::AbstractVector{R}) where {R<:AbstractMatrix{S}} where {S<:Number,T<:Number}
+        all(size(yi)==size(y[1]) for yi in y) || error("Matricies given to MatrixPlot are not all the same size.")
+        new{typeof(x),typeof(y)}(x,y)
+    end
+end
+@recipe function f(m::MatrixPlot)
+    x,y = m.x,m.y
     layout --> size(y[1])
     link --> :all
     label --> false
@@ -32,8 +37,7 @@ Plots the spectral density matrix function over frequency with the lower triangl
             subplot --> count
             count += 1
             seriestype := :line
-            x := x
-            y := getindex.(y,i,j)
+            x, getindex.(y,i,j)
         end
     end
 end
@@ -59,10 +63,9 @@ Plots a matrix valued function by plotting each element of the matrix in a separ
         error("A maximum of two numbers should be passed to plotsdf.")
     end
     model = p.args[1]
-    y = sdf(model, Ω)
+    y = sdf.(model, Ω)
     if ndims(model) > 1
-        seriestype := :hermitianmatrixfunctionplot
-        return Ω, y
+        return HermitianPlot(Ω, y)
     else
         return Ω, real.(y)
     end
@@ -103,10 +106,9 @@ checkposreal(x) = x isa Real && x > 0
         error("Either only a model should be provided to plotasdf or a model, vector of frequencies and sampling rate Δ.")
     end
     model = p.args[1]
-    y = asdf(model, Ω, Δ)
+    y = asdf.(model, Ω, Δ)
     if ndims(model) > 1
-        seriestype := :hermitianmatrixfunctionplot
-        return Ω, y
+        return HermitianPlot(Ω, y)
     else
         return Ω, real.(y)
     end
@@ -146,10 +148,9 @@ plotasdf
         error("Either only a model should be provided to plotacv or a model, number of observations and sampling rate Δ (or vector of lags if appropriate).")
     end
     model = p.args[1]
-    y = length(p.args==2) ? acv(model, τ) : acv(model, n, Δ)
+    y = length(p.args)==2 ? acv(model, τ) : acv(model, n, Δ)
     if ndims(model) > 1
-        seriestype := :realmatrixfunctionplot
-        return τ, y
+        return MatrixPlot(τ, y)
     else
         return τ, real.(y)
     end
@@ -181,7 +182,7 @@ plotacv
         p.args[1] isa TimeSeriesModel || error("First argument to plotei must be a TimeSeriesModel.")
         checkposreal(p.args[2]) || error("Second argument to plotei should be the number of observations, a positive real number.")
         checkposreal(p.args[3]) || error("Third argument to plotei should be the sampling rate, a positive real number.")
-        Ω = p.args[2]
+        n = p.args[2]
         Δ = p.args[3]
     else
         error("Either only a model should be provided to plotei or a model, number of observations and sampling rate Δ.")
@@ -190,8 +191,7 @@ plotacv
     model = p.args[1]
     y = EI(model, n, Δ)
     if ndims(model) > 1
-        seriestype := :hermitianmatrixfunctionplot
-        return Ω, y
+        return HermitianPlot(Ω, y)
     else
         return Ω, real.(y)
     end

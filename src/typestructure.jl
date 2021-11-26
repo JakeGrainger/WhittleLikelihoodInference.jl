@@ -93,7 +93,7 @@ Returns the number of times a sdf should be alised for a given model."
 nalias(::TimeSeriesModel) = 5 # default aliasing method
 
 "
-    minbins(::TimeSeriesModel)
+    minbins(model::TimeSeriesModel)
 
 Returns the minimum number of bins required for a good approximation of the sdf from the acv for a given model."
-minbins(::TimeSeriesModel) = 8192 # default min bins method
+minbins(::Type{<:TimeSeriesModel}) = 8192 # default min bins method

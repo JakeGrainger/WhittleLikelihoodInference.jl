@@ -117,11 +117,9 @@ end
 Compute the acv at many lags and allocate to storage when acv is known in the univariate case.
 """
 function acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
-    
-    for i ∈ 1:size(store.allocatedarray, 2)
+    for i ∈ 1:length(store.allocatedarray)
         store.allocatedarray[i] = @views acv(model, encodedtime.lags[i])
     end
-    
     return nothing
 end
 

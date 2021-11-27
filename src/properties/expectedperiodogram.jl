@@ -86,8 +86,11 @@ extract_EI(store::Sdf2EIStorageUni) = extract_EI(store.acv2EI)
 extract_EI(store::Acv2EIStorageUni) = store.allocatedarray
 
 ### Additive ###
-
-_EI!(store::AdditiveStorage) = _EI!(store.store1)
+function EI!(store::AdditiveStorage, model::AdditiveTimeSeriesModel)
+    acv!(store, model)
+    _EI!(store.store1)
+end
+_EI!(store::AdditiveStorage) = _EI!(store.store1) # store could contain additive store so need this for recursion.
 
 
 
@@ -153,7 +156,7 @@ end
 
 function grad_EI!(store::AdditiveStorage, model::AdditiveTimeSeriesModel)
     @views grad_EI!(store.store1, model.model1)
-    @views grad_EI!(store.store1, model.model1)
+    @views grad_EI!(store.store2, model.model2)
     return nothing
 end
 
@@ -220,6 +223,6 @@ end
 
 function hess_EI!(store::AdditiveStorage, model::AdditiveTimeSeriesModel)
     @views hess_EI!(store.store1, model.model1)
-    @views hess_EI!(store.store1, model.model1)
+    @views hess_EI!(store.store2, model.model2)
     return nothing
 end

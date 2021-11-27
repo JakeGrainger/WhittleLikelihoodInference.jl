@@ -103,8 +103,8 @@ end
 
 extract_asdf(store) = extract_asdf(extract_S(store))
 extract_asdf(store::SdfStorage) = store.allocatedarray
+extract_asdf(store::SdfStorageUni) = store.allocatedarray
 
-# slightly cheaper than constructing the additive model first, though that still works (and is used for add_asdf!)
 function asdf!(store::AdditiveStorage, model::AdditiveTimeSeriesModel)
     @views asdf!(store.store1, model.model1)
     @views asdf!(store.store2, model.model2)

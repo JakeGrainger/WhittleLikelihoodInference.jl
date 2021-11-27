@@ -15,7 +15,7 @@ Evaluates the Whittle likelihood at θ and stores the gradient and expected Hess
 If F, G or EH equal nothing, then the function, gradient or expected Hessian are not evaluated repsectively.
 
 # Aruguments
-- `model`: the model for the process.
+- `model`: the model for the process. Should be of type TimeSeriesModel, so `OU` and not `OU(1,1)`.
 - `ts`: the timeseries in the form of an n by d matrix (where d is the dimension of the time series model).
 - `Δ`: the sampling rate of the time series.
 - `lowerΩcutoff`: the lower bound of the frequency range included in the likelihood.

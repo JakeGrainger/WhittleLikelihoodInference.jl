@@ -56,7 +56,8 @@ struct DebiasedWhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
     function DebiasedWhittleLikelihood(
         model::Type{<:TimeSeriesModel{D}}, ts, Δ;
         lowerΩcutoff = 0, upperΩcutoff = Inf) where {D}
-
+        
+        Δ > 0 || error("Δ should be a positive.")
         D == size(ts,2) || error("timeseries is $(size(ts,2)) dimensional, but model is $D dimensional.")
         wdata = DebiasedWhittleData(model, ts, Δ, lowerΩcutoff = lowerΩcutoff, upperΩcutoff = upperΩcutoff)
         mem = allocate_memory_EI_FG(model, size(ts,1), Δ)

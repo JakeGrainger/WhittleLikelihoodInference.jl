@@ -1,10 +1,19 @@
 abstract type SpectralEstimate{D,T} <: AbstractVector{T} end
 
+"""
+    Periodogram(timeseries, Δ)
 
+Compute the periodogram for the provided timeseries with sampling rate Δ.
+
+# Arguments
+- `timeseries`: A `Vector` if univariate and an `n` by `d` `Matrix` if multivariate, where `n` is the number of observations and `d` is the dimension of the timeseries.
+- `Δ`: A positive real number.
+"""
 struct Periodogram{D,T,V} <: SpectralEstimate{D,T}
     Ω::V
     ordinates::Vector{T}
     function Periodogram(timeseries::Matrix{T}, Δ::Real) where {T}
+        Δ > 0 || error("Δ should be a positive.")
         J = fftshift(fft(timeseries, 1),1)
         n = size(J,1)
         D = size(J,2)
@@ -13,6 +22,7 @@ struct Periodogram{D,T,V} <: SpectralEstimate{D,T}
         new{D, eltype(ordinates), typeof(Ω)}(Ω, ordinates)
     end
     function Periodogram(timeseries::Vector{T}, Δ::Real) where {T}
+        Δ > 0 || error("Δ should be a positive.")
         J = fftshift(fft(timeseries, 1),1)
         n = size(J,1)
         ordinates = abs.(J.^2).*(Δ / (2π * n))

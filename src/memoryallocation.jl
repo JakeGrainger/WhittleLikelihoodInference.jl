@@ -1,7 +1,9 @@
 ## Multivariate ##
 
 """
-`TimeSeriesModelStorage` preallocated storage for model manipulation including preplanned ffts.
+    TimeSeriesModelStorage
+
+Preallocated storage for model manipulation including preplanned ffts.
 """
 abstract type TimeSeriesModelStorage end
 
@@ -38,11 +40,12 @@ struct Sdf2AcvStorage{M,Q} <: TimeSeriesModelStorage
     end
 end
 
-"Return the type of the fftplan from Acv2EIStorage and Sdf2AcvStorage types."
+# Return the type of the fftplan from Acv2EIStorage and Sdf2AcvStorage types.
 fft_plan_type(::Acv2EIStorage{N,M,D,L,P}) where {N,M,D,L,P} = P
 fft_plan_type(::Sdf2AcvStorage{M,Q}) where {M,Q} = Q
 
-"Struct to store required storage for computing EI when acv is not specified."
+
+# Struct to store required storage for computing EI when acv is not specified.
 struct Sdf2EIStorage{N,M,D,L,Q,P} <: TimeSeriesModelStorage
     sdf2acv::Sdf2AcvStorage{M,Q}
     acv2EI::Acv2EIStorage{N,M,D,L,P}
@@ -63,7 +66,7 @@ struct Sdf2EIStorage{N,M,D,L,Q,P} <: TimeSeriesModelStorage
     end
 end
 
-"Generate required storage for computing the EI for a general time series model."
+# Generate required storage for computing the EI for a general time series model.
 function EIstorage_function(model::Type{<:TimeSeriesModel{D}}, n, fft_flags = FFTW.MEASURE) where {D}
     acv_array = zeros(ComplexF64, nlowertriangle_dimension(model), 2n)
     hermitianarray = reinterpret(SHermitianCompact{D,eltype(acv_array),nlowertriangle_dimension(model)}, vec(acv_array))
@@ -76,7 +79,7 @@ function EIstorage_function(model::Type{<:UnknownAcvTimeSeriesModel{D}}, n, fft_
     return Sdf2EIStorage(sdf_array, acv_array, hermitianarray, fft_flags)
 end
 
-"Generate required storage for computing the gradient of EI for a general time series model."
+# Generate required storage for computing the gradient of EI for a general time series model.
 function EIstorage_gradient(model::Type{<:TimeSeriesModel{D}}, n, fft_flags = FFTW.MEASURE) where {D}
     acv_array = zeros(ComplexF64, nlowertriangle_dimension(model), npars(model), 2n)
     hermitianarray = reinterpret(SHermitianCompact{D,eltype(acv_array),nlowertriangle_dimension(model)}, reshape(acv_array, (:, 2n)))
@@ -89,7 +92,7 @@ function EIstorage_gradient(model::Type{<:UnknownAcvTimeSeriesModel{D}}, n, fft_
     return Sdf2EIStorage(sdf_array, acv_array, hermitianarray, fft_flags)
 end
 
-"Generate required storage for computing the hessian of EI for a general time series model."
+# Generate required storage for computing the hessian of EI for a general time series model.
 function EIstorage_hessian(model::Type{<:TimeSeriesModel{D}}, n, fft_flags = FFTW.MEASURE) where {D}
     acv_array = zeros(ComplexF64, nlowertriangle_dimension(model), nlowertriangle_parameter(model), 2n)
     hermitianarray = reinterpret(SHermitianCompact{D,eltype(acv_array),nlowertriangle_dimension(model)}, reshape(acv_array, (:, 2n)))
@@ -102,7 +105,7 @@ function EIstorage_hessian(model::Type{<:UnknownAcvTimeSeriesModel{D}}, n, fft_f
     return Sdf2EIStorage(sdf_array, acv_array, hermitianarray, fft_flags)
 end
 
-"Storage for useful quanties associated with the EI memory when estimating the acv, namely n, Δ and Ωₘ."
+#  Storage for useful quanties associated with the EI memory when estimating the acv, namely n, Δ and Ωₘ.
 struct FreqAcvEst
     n::Int
     Δ::Float64
@@ -117,7 +120,7 @@ struct FreqAcvEst
     end
 end
 
-"Storage for useful quanties associated with the EI memory when the acv is known, namely n, Δ and Ωₘ."
+# Storage for useful quanties associated with the EI memory when the acv is known, namely n, Δ and Ωₘ.
 struct LagsEI
     n::Int
     Δ::Float64
@@ -128,7 +131,7 @@ struct LagsEI
     end
 end
 
-"Function to choose additional storage depending on whether the acv is known or not."
+# Function to choose additional storage depending on whether the acv is known or not.
 encodetimescale(model::Type{<:TimeSeriesModel},n,Δ) = LagsEI(n,Δ)
 encodetimescale(model::Type{<:UnknownAcvTimeSeriesModel},n,Δ) = FreqAcvEst(model,n,Δ)
 
@@ -136,7 +139,7 @@ abstract type TimeSeriesModelStorageFunction <: TimeSeriesModelStorage end
 abstract type TimeSeriesModelStorageGradient <: TimeSeriesModelStorageFunction end
 abstract type TimeSeriesModelStorageHessian  <: TimeSeriesModelStorageGradient end
 
-"Structure to store memory if only the EI is required."
+# Structure to store memory if only the EI is required.
 struct PreallocatedEI{T,F} <: TimeSeriesModelStorageFunction
     encodedtime::T
     funcmemory::F
@@ -147,7 +150,7 @@ struct PreallocatedEI{T,F} <: TimeSeriesModelStorageFunction
     end
 end
 
-"Structure to store memory if the EI and its gradient is required."
+# Structure to store memory if the EI and its gradient is required.
 struct PreallocatedEIGradient{T,F,G} <: TimeSeriesModelStorageGradient
     encodedtime::T
     funcmemory::F
@@ -160,7 +163,7 @@ struct PreallocatedEIGradient{T,F,G} <: TimeSeriesModelStorageGradient
     end
 end
 
-"Structure to store memory if the EI, its gradient and its hessian are required."
+# Structure to store memory if the EI, its gradient and its hessian are required.
 struct PreallocatedEIHessian{T,F,G,H} <: TimeSeriesModelStorageHessian
     encodedtime::T
     funcmemory::F
@@ -175,18 +178,18 @@ struct PreallocatedEIHessian{T,F,G,H} <: TimeSeriesModelStorageHessian
     end
 end
 
-"Storage for additive models."
+# Storage for additive models.
 struct AdditiveStorage{S₁<:TimeSeriesModelStorage,S₂<:TimeSeriesModelStorage} <: TimeSeriesModelStorage
     store1::S₁
     store2::S₂
     npar1::Int
 end
 
-"Helper function for extracting the function value from additive storage (which is only stored in the left most storage)."
+# Helper function for extracting the function value from additive storage (which is only stored in the left most storage).
 extract_S(store::TimeSeriesModelStorageFunction) = store.funcmemory
 extract_S(store::AdditiveStorage) = extract_S(store.store1) # returns the left hand store if additive storage
 
-"Interface level function for allocating the memory for EI computation."
+# Interface level function for allocating the memory for EI computation.
 function allocate_memory_EI_F(model::Type{<:TimeSeriesModel}, n, Δ; fft_flags = FFTW.MEASURE)
     return PreallocatedEI(model, n, Δ; fft_flags = fft_flags)
 end
@@ -196,7 +199,7 @@ function allocate_memory_EI_F(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}},
                             npars(M₁))
 end
 
-"Interface level function for allocating the memory for EI computation with gradient."
+# Interface level function for allocating the memory for EI computation with gradient.
 function allocate_memory_EI_FG(model::Type{<:TimeSeriesModel}, n, Δ; fft_flags = FFTW.MEASURE)
     return PreallocatedEIGradient(model, n, Δ; fft_flags = fft_flags)
 end
@@ -206,7 +209,7 @@ function allocate_memory_EI_FG(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}
                             npars(M₁))
 end
 
-"Interface level function for allocating the memory for EI computation with gradient and hessian."
+# Interface level function for allocating the memory for EI computation with gradient and hessian.
 function allocate_memory_EI_FGH(model::Type{<:TimeSeriesModel}, n, Δ; fft_flags = FFTW.MEASURE)
     return PreallocatedEIHessian(model, n, Δ; fft_flags = fft_flags)
 end
@@ -235,26 +238,26 @@ struct SdfStorage{N,M,D,L} <: TimeSeriesModelStorage
         new{N,M,D,L}(allocatedarray,hermitianarray)
     end
 end
-"Function to allocate storage for the function part of sdf calculations."
+# Function to allocate storage for the function part of sdf calculations.
 function sdfstorage_function(model::Type{<:TimeSeriesModel{D}}, n) where {D}
     allocatedarray = zeros(ComplexF64, nlowertriangle_dimension(model), n)
     hermitianarray = reinterpret(SHermitianCompact{D,eltype(allocatedarray),nlowertriangle_dimension(model)}, vec(allocatedarray))
     return SdfStorage(allocatedarray,hermitianarray)
 end
-"Function to allocate storage for the gradient part of sdf calculations."
+# Function to allocate storage for the gradient part of sdf calculations.
 function sdfstorage_gradient(model::Type{<:TimeSeriesModel{D}}, n) where {D}
     allocatedarray = zeros(ComplexF64, nlowertriangle_dimension(model), npars(model), n)
     hermitianarray = reinterpret(SHermitianCompact{D,eltype(allocatedarray),nlowertriangle_dimension(model)}, reshape(allocatedarray, (:, n)))
     return SdfStorage(allocatedarray,hermitianarray)
 end
-"Function to allocate storage for the hessian part of sdf calculations."
+# Function to allocate storage for the hessian part of sdf calculations.
 function sdfstorage_hessian(model::Type{<:TimeSeriesModel{D}}, n) where {D}
     allocatedarray = zeros(ComplexF64, nlowertriangle_dimension(model), nlowertriangle_parameter(model), n)
     hermitianarray = reinterpret(SHermitianCompact{D,eltype(allocatedarray),nlowertriangle_dimension(model)}, reshape(allocatedarray, (:, n)))
     return SdfStorage(allocatedarray,hermitianarray)
 end
 
-"Structure to store memory if the sdf and its gradient is required."
+# Structure to store memory if the sdf and its gradient is required.
 struct PreallocatedSdf{F} <: TimeSeriesModelStorageFunction
     encodedtime::FreqAcvEst
     funcmemory::F
@@ -265,7 +268,7 @@ struct PreallocatedSdf{F} <: TimeSeriesModelStorageFunction
     end
 end
 
-"Structure to store memory if the sdf and its gradient is required."
+# Structure to store memory if the sdf and its gradient is required.
 struct PreallocatedSdfGradient{F,G} <: TimeSeriesModelStorageGradient
     encodedtime::FreqAcvEst
     funcmemory::F
@@ -278,7 +281,7 @@ struct PreallocatedSdfGradient{F,G} <: TimeSeriesModelStorageGradient
     end
 end
 
-"Structure to store memory if the sdf, its gradient and its hessian are required."
+# Structure to store memory if the sdf, its gradient and its hessian are required.
 struct PreallocatedSdfHessian{F,G,H} <: TimeSeriesModelStorageHessian
     encodedtime::FreqAcvEst
     funcmemory::F
@@ -293,7 +296,7 @@ struct PreallocatedSdfHessian{F,G,H} <: TimeSeriesModelStorageHessian
     end
 end
 
-"Interface level function for allocating the memory for EI computation."
+# Interface level function for allocating the memory for EI computation.
 function allocate_memory_sdf_F(model::Type{<:TimeSeriesModel}, n, Δ)
     return PreallocatedSdf(model, n, Δ)
 end
@@ -303,7 +306,7 @@ function allocate_memory_sdf_F(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}
                             npars(M₁))
 end
 
-"Interface level function for allocating the memory for sdf computation with gradient."
+# Interface level function for allocating the memory for sdf computation with gradient.
 function allocate_memory_sdf_FG(model::Type{<:TimeSeriesModel}, n, Δ)
     return PreallocatedSdfGradient(model, n, Δ)
 end
@@ -313,7 +316,7 @@ function allocate_memory_sdf_FG(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}
                             npars(M₁))
 end
 
-"Interface level function for allocating the memory for sdf computation with gradient and hessian."
+# Interface level function for allocating the memory for sdf computation with gradient and hessian.
 function allocate_memory_sdf_FGH(model::Type{<:TimeSeriesModel}, n, Δ)
     return PreallocatedSdfHessian(model, n, Δ)
 end
@@ -347,11 +350,11 @@ struct Sdf2AcvStorageUni{M,Q} <: TimeSeriesModelStorage
     end
 end
 
-"Return the type of the fftplan from Acv2EIStorageUni and Sdf2AcvStorageUni types."
+# Return the type of the fftplan from Acv2EIStorageUni and Sdf2AcvStorageUni types.
 fft_plan_type(::Acv2EIStorageUni{M,P}) where {M,P} = P
 fft_plan_type(::Sdf2AcvStorageUni{M,Q}) where {M,Q} = Q
 
-"Struct to store required storage for computing EI when acv is not specified."
+# Struct to store required storage for computing EI when acv is not specified.
 struct Sdf2EIStorageUni{M,Q,P} <: TimeSeriesModelStorage
     sdf2acv::Sdf2AcvStorageUni{M,Q}
     acv2EI::Acv2EIStorageUni{M,P}
@@ -366,7 +369,7 @@ struct Sdf2EIStorageUni{M,Q,P} <: TimeSeriesModelStorage
     end
 end
 
-"Generate required storage for computing the EI for a univariate time series model."
+# Generate required storage for computing the EI for a univariate time series model.
 function EIstorage_function(model::Type{<:TimeSeriesModel{1}}, n, fft_flags = FFTW.MEASURE)
     acv_array = zeros(ComplexF64, 2n)
     return Acv2EIStorageUni(acv_array, fft_flags)
@@ -377,7 +380,7 @@ function EIstorage_function(model::Type{<:UnknownAcvTimeSeriesModel{1}}, n, fft_
     return Sdf2EIStorageUni(sdf_array, acv_array, fft_flags)
 end
 
-"Generate required storage for computing the gradient of EI for a univariate time series model."
+# Generate required storage for computing the gradient of EI for a univariate time series model.
 function EIstorage_gradient(model::Type{<:TimeSeriesModel{1}}, n, fft_flags = FFTW.MEASURE)
     acv_array = zeros(ComplexF64, npars(model), 2n)
     return Acv2EIStorageUni(acv_array, fft_flags)
@@ -388,7 +391,7 @@ function EIstorage_gradient(model::Type{<:UnknownAcvTimeSeriesModel{1}}, n, fft_
     return Sdf2EIStorageUni(sdf_array, acv_array, fft_flags)
 end
 
-"Generate required storage for computing the hessian of EI for a univariate time series model."
+# Generate required storage for computing the hessian of EI for a univariate time series model.
 function EIstorage_hessian(model::Type{<:TimeSeriesModel{1}}, n, fft_flags = FFTW.MEASURE)
     acv_array = zeros(ComplexF64, nlowertriangle_parameter(model), 2n)
     return Acv2EIStorageUni(acv_array, fft_flags)
@@ -407,23 +410,23 @@ struct SdfStorageUni{M} <: TimeSeriesModelStorage
     end
 end
 
-"Function to allocate storage for the function part of sdf calculations for univariate case."
+# Function to allocate storage for the function part of sdf calculations for univariate case.
 function sdfstorage_function(model::Type{<:TimeSeriesModel{1}}, n)
     allocatedarray = zeros(ComplexF64, n)
     return SdfStorageUni(allocatedarray)
 end
-"Function to allocate storage for the gradient part of sdf calculations for univariate case."
+# Function to allocate storage for the gradient part of sdf calculations for univariate case.
 function sdfstorage_gradient(model::Type{<:TimeSeriesModel{1}}, n)
     allocatedarray = zeros(ComplexF64, npars(model), n)
     return SdfStorageUni(allocatedarray)
 end
-"Function to allocate storage for the hessian part of sdf calculations for univariate case."
+# Function to allocate storage for the hessian part of sdf calculations for univariate case.
 function sdfstorage_hessian(model::Type{<:TimeSeriesModel{1}}, n)
     allocatedarray = zeros(ComplexF64, nlowertriangle_parameter(model), n)
     return SdfStorageUni(allocatedarray)
 end
 
-"Function to extract array from storage for univariate."
+# Function to extract array from storage for univariate.
 extract_array(store::Sdf2EIStorageUni) = extract_array(store.acv2EI)
 extract_array(store::Acv2EIStorageUni) = store.allocatedarray
 
@@ -437,10 +440,14 @@ unpack(store::SdfStorageUni)    = store.allocatedarray
 
 ## Whittle data ##
 
-"General structure for storing timeseries for Whittle type computation."
+# General structure for storing timeseries for Whittle type computation.
 abstract type GenWhittleData end
 
-"Structure to store timeseries data in a format which is useful for Whittle methods."
+"""
+    WhittleData(model::Type{<:TimeSeriesModel{D}}, timeseries, Δ; lowerΩcutoff, upperΩcutoff)
+
+Create storage for timeseries data in a format which is useful for Whittle methods.
+"""
 struct WhittleData{T} <: GenWhittleData
     I::Vector{T}
     N::Int64
@@ -465,7 +472,11 @@ struct WhittleData{T} <: GenWhittleData
     end
 end
 
-"Structure to store timeseries data in a format which is useful for debiased Whittle methods."
+"""
+    DebiasedWhittleData(model::Type{<:TimeSeriesModel{D}}, timeseries, Δ; lowerΩcutoff, upperΩcutoff)
+
+Create storage for timeseries data in a format which is useful for debiased Whittle methods.
+"""
 struct DebiasedWhittleData{T} <: GenWhittleData
     I::Vector{T}
     N::Int64

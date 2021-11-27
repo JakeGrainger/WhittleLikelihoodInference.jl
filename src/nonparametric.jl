@@ -25,10 +25,16 @@ struct Periodogram{D,T,V} <: SpectralEstimate{D,T}
 end
 
 ndims(::SpectralEstimate{D,T}) where {D,T} = D
-size(ŝ::SpectralEstimate) = (length(getfield(ŝ,1)),)
-getindex(ŝ::T, inds) where {T<:SpectralEstimate} = T(getfield(ŝ,1)[inds], getfield(ŝ,2)[inds])
-getindex(ŝ::SpectralEstimate, ind::Int) = (getfield(ŝ,1)[ind],getfield(ŝ,2)[ind])
-log10(ŝ::T) where {T<:SpectralEstimate} = T(getfield(ŝ,1), log10.(getfield(ŝ,2)))
+size(ŝ::SpectralEstimate) = (length(getfreq(ŝ)),)
+getindex(ŝ::T, inds) where {T<:SpectralEstimate} = T(getfreq(ŝ)[inds], getordinate(ŝ)[inds])
+getindex(ŝ::SpectralEstimate, ind::Int) = (getfreq(ŝ)[ind],getordinate(ŝ)[ind])
+log10(ŝ::T) where {T<:SpectralEstimate} = T(getfreq(ŝ), log10.(getordinate(ŝ)))
+getfreq(p::Periodogram) = p.Ω
+getfreq(b::BartlettPeriodogram) = b.Ω
+getfreq(c::CoherancyEstimate) = c.Ω
+getordinate(p::Periodogram) = p.ordinates
+getordinate(b::BartlettPeriodogram) = b.ordinates
+getordinate(c::CoherancyEstimate) = c.ordinates
 
 
 @recipe function f(ŝ::SpectralEstimate)
@@ -40,20 +46,20 @@ log10(ŝ::T) where {T<:SpectralEstimate} = T(getfield(ŝ,1), log10.(getfield(s
         @series begin
             subplot := count
             count += 1
-            y = [getfield(ŝ,2)[k][i,j] for k ∈ 1:length(ŝ)]
+            y = [getordinate(ŝ)[k][i,j] for k ∈ 1:length(ŝ)]
             z = (i >= j) ? real.(y) : imag(y)
-            getfield(ŝ,1), z
+            MatrixPlot(getfreq(ŝ), z)
         end
     end
 end
 
 
 function Base.:+(ŝ₁::T, ŝ₂::T) where {T<:SpectralEstimate}
-    getfield(ŝ₁,1) == getfield(ŝ₂,1) || error("Frequencies must be the same to add spectral estimates.")
-    T(getfield(ŝ₁,1), getfield(ŝ₁,2) .+ getfield(ŝ₂,2))
+    getfreq(ŝ₁) == getfreq(ŝ₂) || error("Frequencies must be the same to add spectral estimates.")
+    T(getfreq(ŝ₁), getordinate(ŝ₁) .+ getordinate(ŝ₂))
 end
-function Base.:/(ŝ::T, a::S) where {T<:SpectralEstimate, S<:Real}
-    T(getfield(ŝ,1), getfield(ŝ,2)./a)
+function Base.:/(ŝ::T, a::Real) where {T<:SpectralEstimate}
+    T(getfreq(ŝ), getordinate(ŝ)./a)
 end
 
 

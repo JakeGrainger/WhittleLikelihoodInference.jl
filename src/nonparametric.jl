@@ -1,6 +1,6 @@
 abstract type SpectralEstimate{D,T} <: AbstractVector{T} end
 
-"""
+@doc raw"""
     Periodogram(timeseries, Δ)
 
 Compute the periodogram for the provided timeseries with sampling rate Δ.
@@ -8,6 +8,14 @@ Compute the periodogram for the provided timeseries with sampling rate Δ.
 # Arguments
 - `timeseries`: A `Vector` if univariate and an `n` by `d` `Matrix` if multivariate, where `n` is the number of observations and `d` is the dimension of the timeseries.
 - `Δ`: A positive real number.
+
+The periodogram is defined as
+```math
+\boldsymbol I(ω)&=\boldsymbol J(ω) \boldsymbol J(ω)^H \quad \text{where} \quad \boldsymbol J(ω) = \sqrt{\frac{Δ}{2π n}}\sum_{t=0}^{n-1} \boldsymbol{P}_{tΔ}e^{-itΔ ω}
+```
+
+Note the periodogram is in terms of angular frequency here, and uses the normalisation ``Δ/2π``.
+The choice of normalisation is essentially arbitrary; however, this matches our definition for the spectral density function.
 """
 struct Periodogram{D,T,V} <: SpectralEstimate{D,T}
     Ω::V
@@ -34,45 +42,23 @@ struct Periodogram{D,T,V} <: SpectralEstimate{D,T}
     end
 end
 
-ndims(::SpectralEstimate{D,T}) where {D,T} = D
-size(ŝ::SpectralEstimate) = (length(getfreq(ŝ)),)
-getindex(ŝ::T, inds) where {T<:SpectralEstimate} = T(getfreq(ŝ)[inds], getordinate(ŝ)[inds])
-getindex(ŝ::SpectralEstimate, ind::Int) = (getfreq(ŝ)[ind],getordinate(ŝ)[ind])
-log10(ŝ::T) where {T<:SpectralEstimate} = T(getfreq(ŝ), log10.(getordinate(ŝ)))
-getfreq(p::Periodogram) = p.Ω
-getfreq(b::BartlettPeriodogram) = b.Ω
-getfreq(c::CoherancyEstimate) = c.Ω
-getordinate(p::Periodogram) = p.ordinates
-getordinate(b::BartlettPeriodogram) = b.ordinates
-getordinate(c::CoherancyEstimate) = c.ordinates
+@doc raw"""
+    BartlettPeriodogram(timeseries, Δ, segmentlength)
 
+Compute the Bartlett periodogram for the provided timeseries with sampling rate Δ.
 
-@recipe function f(ŝ::SpectralEstimate)
-    layout := (ndims(ŝ), ndims(ŝ))
-    label --> false
-    link --> :all
-    count = 1
-    for i ∈ 1:ndims(ŝ), j ∈ 1:ndims(ŝ)
-        @series begin
-            subplot := count
-            count += 1
-            y = [getordinate(ŝ)[k][i,j] for k ∈ 1:length(ŝ)]
-            z = (i >= j) ? real.(y) : imag(y)
-            MatrixPlot(getfreq(ŝ), z)
-        end
-    end
-end
+# Arguments
+- `timeseries`: A `Vector` if univariate and an `n` by `d` `Matrix` if multivariate, where `n` is the number of observations and `d` is the dimension of the timeseries.
+- `Δ`: A positive real number.
+- `segmentlength`: the length of series used in each segment.
 
+Computes an estimate of the spectral density function using Bartlett's method. Using the same normalisation as `Periodogram`.
 
-function Base.:+(ŝ₁::T, ŝ₂::T) where {T<:SpectralEstimate}
-    getfreq(ŝ₁) == getfreq(ŝ₂) || error("Frequencies must be the same to add spectral estimates.")
-    T(getfreq(ŝ₁), getordinate(ŝ₁) .+ getordinate(ŝ₂))
-end
-function Base.:/(ŝ::T, a::Real) where {T<:SpectralEstimate}
-    T(getfreq(ŝ), getordinate(ŝ)./a)
-end
+# External links
 
+* [Bartlett's method on Wikipedia](https://en.wikipedia.org/wiki/Bartlett%27s_method)
 
+"""
 struct BartlettPeriodogram{D,T,V} <: SpectralEstimate{D,T}
     Ω::V
     ordinates::Vector{T}
@@ -121,4 +107,30 @@ struct CoherancyEstimate{D,T,V} <: SpectralEstimate{D,T}
     function CoherancyEstimate(Ω, ordinates::Vector{T}) where {T}
         new{size(ordinates[1],1), T, typeof(Ω)}(Ω, ordinates)
     end
+end
+
+ndims(::SpectralEstimate{D,T}) where {D,T} = D
+size(ŝ::SpectralEstimate) = (length(getfreq(ŝ)),)
+getindex(ŝ::T, inds) where {T<:SpectralEstimate} = T(getfreq(ŝ)[inds], getordinate(ŝ)[inds])
+getindex(ŝ::SpectralEstimate, ind::Int) = (getfreq(ŝ)[ind],getordinate(ŝ)[ind])
+log10(ŝ::T) where {T<:SpectralEstimate} = T(getfreq(ŝ), log10.(getordinate(ŝ)))
+getfreq(p::Periodogram) = p.Ω
+getfreq(b::BartlettPeriodogram) = b.Ω
+getfreq(c::CoherancyEstimate) = c.Ω
+getordinate(p::Periodogram) = p.ordinates
+getordinate(b::BartlettPeriodogram) = b.ordinates
+getordinate(c::CoherancyEstimate) = c.ordinates
+
+
+@recipe function f(ŝ::SpectralEstimate)
+    HermitianPlot(getfreq(ŝ), getordinate(ŝ))
+end
+
+function Base.:+(ŝ₁::T, ŝ₂::T) where {T<:SpectralEstimate}
+    getfreq(ŝ₁) == getfreq(ŝ₂) || error("Frequencies must be the same to add spectral estimates.")
+    T(getfreq(ŝ₁), getordinate(ŝ₁) .+ getordinate(ŝ₂))
+end
+
+function Base.:/(ŝ::T, a::Real) where {T<:SpectralEstimate}
+    T(getfreq(ŝ), getordinate(ŝ)./a)
 end

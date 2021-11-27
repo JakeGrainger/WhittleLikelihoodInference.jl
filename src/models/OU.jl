@@ -4,7 +4,7 @@ struct OU <: TimeSeriesModel{1}
     σ²::Float64
     θ²::Float64
     OU(σ,θ) = new(σ,θ,σ^2,θ^2)
-    function OU(x::Vector{Float64})
+    function OU(x::AbstractVector{Float64})
         length(x) == npars(OU) || error("OU process has $(npars(OU)) parameters, but $(length(x)) were provided.")
         @inbounds OU(x[1], x[2])
     end

@@ -41,7 +41,7 @@ export
     include("properties/coherancy.jl")
 
     include("Whittle/generalwhittle.jl")
-    include("Whittle/whittle.jl")
+    include("Whittle/standardwhittle.jl")
     include("Whittle/debiasedwhittle.jl")
 
     include("models/OU.jl")

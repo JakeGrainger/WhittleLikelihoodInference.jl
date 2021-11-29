@@ -185,6 +185,12 @@ function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, Ω
     return nothing
 end
 
+function grad_sdf(model::TimeSeriesModel{1}, ω)
+    G = zeros(ComplexF64,npars(model))
+    grad_add_sdf!(G, model, ω)
+    return G
+end
+
 ### Additive ###
 
 function grad_add_sdf!(out, model::AdditiveTimeSeriesModel, ω)
@@ -203,6 +209,10 @@ function grad_asdf!(store::AdditiveStorage, model::AdditiveTimeSeriesModel)
     @views grad_asdf!(store.store1, model.model1)
     @views grad_asdf!(store.store2, model.model2)
     return nothing
+end
+
+function grad_sdf(model::AdditiveTimeSeriesModel, ω)
+    return vcat(grad_sdf(model.model1, ω), grad_sdf(model.model2, ω)) # not very efficient implementation but not designed to be used.
 end
 
 ## Hessian of spectral density
@@ -276,10 +286,25 @@ function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, Ω
     return nothing
 end
 
+function hess_sdf(model::TimeSeriesModel{1}, ω)
+    H = zeros(ComplexF64,nlowertriangle_parameter(model))
+    hess_add_sdf!(H, model, ω)
+    return H
+end
+
 ### Additive ###
 
 function hess_asdf!(store::AdditiveStorage, model::AdditiveTimeSeriesModel)
     @views hess_asdf!(store.store1, model.model1)
     @views hess_asdf!(store.store2, model.model2)
     return nothing
+end
+
+function hess_sdf(model::AdditiveTimeSeriesModel, ω)  # not very efficient implementation but not designed to be used.
+    s1 = hess_sdf(model.model1, ω)
+    s2 = hess_sdf(model.model2, ω)
+    out = zeros(size(s1).+size(s2))
+    out[1:size(s1,1),1:size(s1,2)] = s1
+    out[1:size(s2,1),1:size(s2,2)] = s2
+    return out
 end

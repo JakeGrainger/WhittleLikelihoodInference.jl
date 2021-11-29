@@ -34,7 +34,7 @@ function grad_add_sdf!(out, m::CorrelatedOUUknown, ω)
     out[3,2] = θ_part
     # ∂ρ
     # out[1,3] = 0
-    out[2,3] = σ_part * σ
+    out[2,3] = σ_part * σ / 2
     # out[3,3] = 0
     nothing
 end

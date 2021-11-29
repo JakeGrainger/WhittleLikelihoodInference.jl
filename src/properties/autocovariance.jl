@@ -289,7 +289,7 @@ end
 function hess_acv(model::TimeSeriesModel, τ)
     !(model isa UnknownAcvTimeSeriesModel) || error("grad_acv only defined when acv is known.")
     H = zeros(ComplexF64,nlowertriangle_dimension(model),nlowertriangle_parameter(model))
-    hess_add_acv!(H, model, τ)
+    hess_acv!(H, model, τ)
     return H
 end
 
@@ -314,10 +314,10 @@ function hess_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedti
     return nothing
 end
 
-function hess_acv(model::TimeSeriesModel, τ)
+function hess_acv(model::TimeSeriesModel{1}, τ)
     !(model isa UnknownAcvTimeSeriesModel) || error("grad_acv only defined when acv is known.")
     H = zeros(ComplexF64,nlowertriangle_parameter(model))
-    hess_add_acv!(H, model, τ)
+    hess_acv!(H, model, τ)
     return H
 end
 
@@ -329,7 +329,7 @@ function hess_acv!(store::AdditiveStorage, model::AdditiveTimeSeriesModel)
     return nothing
 end
 
-function hess_sdf(model::AdditiveTimeSeriesModel, τ)  # not very efficient implementation but not designed to be used.
+function hess_acv(model::AdditiveTimeSeriesModel, τ)  # not very efficient implementation but not designed to be used.
     a1 = hess_acv(model.model1, τ)
     a2 = hess_acv(model.model2, τ)
     out = zeros(size(a1).+size(a2))

@@ -5,12 +5,12 @@ struct OUUnknown{K} <: UnknownAcvTimeSeriesModel{1}
     θ²::Float64
     OUUnknown{K}(σ,θ) where {K} = new{K}(σ,θ,σ^2,θ^2)
     function OUUnknown{K}(x::Vector{Float64}) where {K}
-        length(x) == npars(OUUnknown) || error("OUUnknown process has $(npars(OUUnknown)) parameters, but $(length(x)) were provided.")
+        length(x) == npars(OUUnknown{K}) || error("OUUnknown process has $(npars(OUUnknown)) parameters, but $(length(x)) were provided.")
         @inbounds OUUnknown{K}(x[1], x[2])
     end
 end
 nalias(::OUUnknown{K}) where {K} = K
-npars(::Type{OUUnknown}) = 2
+npars(::Type{OUUnknown{K}}) where {K} = 2
 
 sdf(m::OUUnknown, ω) = m.σ²/(π*(m.θ²+ω^2))
 

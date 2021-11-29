@@ -6,12 +6,12 @@ struct CorrelatedOUUknown{K} <: UnknownAcvTimeSeriesModel{2}
     θ²::Float64
     CorrelatedOUUknown{K}(σ,θ,ρ) where {K} = new{K}(σ,θ,ρ,σ^2,θ^2)
     function CorrelatedOUUknown{K}(x::Vector{Float64}) where {K}
-        length(x) == npars(CorrelatedOUUknown) || error("CorrelatedOUUknown process has $(npars(CorrelatedOUUknown)) parameters, but $(length(x)) were provided.")
+        length(x) == npars(CorrelatedOUUknown{K}) || error("CorrelatedOUUknown process has $(npars(CorrelatedOUUknown)) parameters, but $(length(x)) were provided.")
         @inbounds CorrelatedOUUknown{K}(x[1], x[2], x[3])
     end
 end
 nalias(::CorrelatedOUUknown{K}) where {K} = K
-npars(::Type{CorrelatedOUUknown}) = 3
+npars(::Type{CorrelatedOUUknown{K}}) where {K} = 3
 
 function add_sdf!(out, m::CorrelatedOUUknown, ω)
     s = m.σ²/(π*(m.θ²+ω^2))

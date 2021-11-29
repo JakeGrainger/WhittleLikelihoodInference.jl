@@ -75,17 +75,15 @@ function acv(model::TimeSeriesModel, n, Δ)
 end
 
 """
-    acv(model::TimeSeriesModel, lags)
+    acv(model::TimeSeriesModel, τ)
 
-Compute acv at the specified lags, provided acv is known.
+Compute acv at τ, provided acv is known.
 """
-function acv(model::TimeSeriesModel, lags::AbstractVector{T}) where {T<:Number}
-    !(model isa UnknownAcvTimeSeriesModel) || error("Custom lag vector only possible if model has known acv.")
-    A = ones(nlowertriangle_dimension(model), 1:length(lags))
-    for i ∈ 1:size(A, 2)
-        @views acv!(A[:, i], model, lags[i])
-    end
-    return [[i >= j ? A[indexLT(i,j,ndims(model)), iτ] : A[indexLT(i,j,ndims(model)), size(A, 2)-iτ+1] for i = 1:ndims(model), j = 1:ndims(model)] for iτ = 1:size(A, 2)]
+function acv(model::TimeSeriesModel, τ::Number)
+    !(model isa UnknownAcvTimeSeriesModel) || error("Custom lag only possible if model has known acv.")
+    out = zeros(ComplexF64, nlowertriangle_dimension(model))
+    acv!(out, model, τ)
+    return SHermitianCompact(SVector{nlowertriangle_dimension(model)}(out))
 end
 
 ### Univariate ###

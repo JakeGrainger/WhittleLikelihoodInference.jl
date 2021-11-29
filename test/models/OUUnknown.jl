@@ -1,7 +1,7 @@
 @testset "OUUnknown" begin
     θ₀ = [2.0,0.4]
     model_known_acv = OU(θ₀)
-    model_unknown_acv = OUUnknown{5}(θ₀)
+    model_unknown_acv = WhittleLikelihoodInference.OUUnknown{5}(θ₀)
     ω = 1.1
     τ = 2.0
     @test sdf(model_known_acv, ω)           = sdf(model_unknown_acv, ω)

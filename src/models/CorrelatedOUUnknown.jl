@@ -1,26 +1,26 @@
-struct CorrelatedOUUknown{K} <: UnknownAcvTimeSeriesModel{2}
+struct CorrelatedOUUnknown{K} <: UnknownAcvTimeSeriesModel{2}
     σ::Float64
     θ::Float64
     ρ::Float64
     σ²::Float64
     θ²::Float64
-    CorrelatedOUUknown{K}(σ,θ,ρ) where {K} = new{K}(σ,θ,ρ,σ^2,θ^2)
-    function CorrelatedOUUknown{K}(x::Vector{Float64}) where {K}
-        length(x) == npars(CorrelatedOUUknown{K}) || error("CorrelatedOUUknown process has $(npars(CorrelatedOUUknown)) parameters, but $(length(x)) were provided.")
-        @inbounds CorrelatedOUUknown{K}(x[1], x[2], x[3])
+    CorrelatedOUUnknown{K}(σ,θ,ρ) where {K} = new{K}(σ,θ,ρ,σ^2,θ^2)
+    function CorrelatedOUUnknown{K}(x::Vector{Float64}) where {K}
+        length(x) == npars(CorrelatedOUUnknown{K}) || error("CorrelatedOUUnknown process has $(npars(CorrelatedOUUnknown)) parameters, but $(length(x)) were provided.")
+        @inbounds CorrelatedOUUnknown{K}(x[1], x[2], x[3])
     end
 end
-nalias(::CorrelatedOUUknown{K}) where {K} = K
-npars(::Type{CorrelatedOUUknown{K}}) where {K} = 3
+nalias(::CorrelatedOUUnknown{K}) where {K} = K
+npars(::Type{CorrelatedOUUnknown{K}}) where {K} = 3
 
-function add_sdf!(out, m::CorrelatedOUUknown, ω)
+function add_sdf!(out, m::CorrelatedOUUnknown, ω)
     s = m.σ²/(π*(m.θ²+ω^2))
     out[1] += s
     out[2] += s*m.ρ
     out[3] += s
 end
 
-function grad_add_sdf!(out, m::CorrelatedOUUknown, ω)
+function grad_add_sdf!(out, m::CorrelatedOUUnknown, ω)
     σ, θ, ρ = m.σ, m.θ, m.ρ
     σ_part = 2σ / (π*(m.θ²+ω^2))
     # ∂σ
@@ -39,7 +39,7 @@ function grad_add_sdf!(out, m::CorrelatedOUUknown, ω)
     nothing
 end
 
-function hess_add_sdf!(out, m::CorrelatedOUUknown, ω)
+function hess_add_sdf!(out, m::CorrelatedOUUnknown, ω)
     σ, θ, ρ = m.σ, m.θ, m.ρ
     σ_part = 2 / (π*(m.θ²+ω^2))
     θσ_part = -π*θ*σ*(σ_part)^2

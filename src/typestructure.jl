@@ -55,8 +55,8 @@ nlowertriangle_dimension(::Type{<:TimeSeriesModel{D}}) where {D} =
     triangularnumber(D)
 
 """
-    parameternames(::TimeSeriesModel) -> Vector{String}
-    parameternames(::Type{<:TimeSeriesModel}) -> Vector{String}
+    parameternames(::TimeSeriesModel)
+    parameternames(::Type{<:TimeSeriesModel})
 
 Return the parameter names for a given timeseries model
 """

@@ -27,12 +27,7 @@ end
 
 npars(::Type{MaternSlow{D,L}}) where {D,L} = 3triangularnumber(D)
 
-function parameternames(::Type{MaternSlow{D,L}}) where {D,L}
-    σ = reduce(vcat,[i==j ? "σ_$i" : "ρ_$i$j" for j in i:D] for i in 1:D)
-    ν = reduce(vcat,["ν_$i$j" for j in i:D] for i in 1:D)
-    a = reduce(vcat,["a_$i$j" for j in i:D] for i in 1:D)
-    return [σ;ν;a]
-end
+parameternames(::Type{MaternSlow{D,L}}) where {D,L} = parameternames(Matern{D,L})
 
 function add_sdf!(out, model::MaternSlow{D,L}, ω) where {D,L}
     ω² = ω^2

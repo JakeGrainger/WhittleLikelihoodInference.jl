@@ -49,7 +49,7 @@ function parameternames(::Type{Matern{D,L}}) where {D,L}
     σ = reduce(vcat,[i==j ? "σ_$i" : "ρ_$i$j" for j in i:D] for i in 1:D)
     ν = reduce(vcat,[i==j ? "ν_$i" : "ν_$i$j" for j in i:D] for i in 1:D)
     a = reduce(vcat,[i==j ? "a_$i" : "a_$i$j" for j in i:D] for i in 1:D)
-    return [σ;ν;a]
+    return Tuple(Symbol.([σ;ν;a]))
 end
 
 function add_sdf!(out, model::Matern{D,L}, ω) where {D,L}

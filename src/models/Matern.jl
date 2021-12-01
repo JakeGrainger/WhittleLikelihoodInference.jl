@@ -1,83 +1,123 @@
-####
-#  NOT UPDATED
-
-####
-struct Matern{D} <: TimeSeriesModel{D}
-    θ
-    function Matern{D}(θ) where {D}
-        @assert length(θ) == npars(Matern{D})
-        new{D}(θ)
+struct Matern{D,L} <: UnknownAcvTimeSeriesModel{D}
+    σ::SHermitianCompact{D,Float64,L}
+    ν::SHermitianCompact{D,Float64,L}
+    a::SHermitianCompact{D,Float64,L}
+    σ²::SHermitianCompact{D,Float64,L}
+    a²::SHermitianCompact{D,Float64,L}
+    νplushalf::SHermitianCompact{D,Float64,L}
+    sdfconst::SHermitianCompact{D,Float64,L}
+    ∂ν_part::SHermitianCompact{D,Float64,L}
+    ∂a_part1::SHermitianCompact{D,Float64,L}
+    ∂a_part2::SHermitianCompact{D,Float64,L}
+    ∂ν²_part::SHermitianCompact{D,Float64,L}
+    ∂ν∂a_part::SHermitianCompact{D,Float64,L}
+    ∂a²_part::SHermitianCompact{D,Float64,L}
+    function Matern{D,L}(θ) where {D,L}
+        length(θ) == npars(Matern{D,L}) || throw(ArgumentError("Matern process has $(npars(Matern{D,L})) parameters, but $(length(θ)) were provided."))
+        L == triangularnumber(D) || error("Matern{D,L} should satisfy L == D*(D+1)÷2")
+        all(x->x>0, θ) || throw(ArgumentError("all parameters of Matern should be > 0."))
+        σ = @views SHermitianCompact(SVector{L,Float64}(θ[1:L]))
+        all(i==j ? true : σ[i,j] < 1 for i in 1:size(σ,1) for j in 1:i) || throw(ArgumentError("ρ parameters must be < 1."))
+        ν = @views SHermitianCompact(SVector{L,Float64}(θ[L+1:2L]))
+        a = @views SHermitianCompact(SVector{L,Float64}(θ[2L+1:end]))
+        σ² = SHermitianCompact((σ.lowertriangle).^2)
+        a² = SHermitianCompact((a.lowertriangle).^2)
+        νplushalf = SHermitianCompact((ν.lowertriangle).+0.5)
+        variance_part = SHermitianCompact(SMatrix{D,D,Float64}(i==j ? σ[i,i]^2 : σ[i,i]*σ[j,j]*σ[i,j] for i in 1:D, j in 1:D))
+        sdfconst = SHermitianCompact(matern_sdf_normalising.(ν.lowertriangle,a.lowertriangle).*variance_part.lowertriangle)
+        ∂ν_part  = SHermitianCompact(digamma.(νplushalf.lowertriangle).-digamma.(ν.lowertriangle).+2.0.*log.(a.lowertriangle))
+        ∂a_part1 = SHermitianCompact(2.0.*ν.lowertriangle./a.lowertriangle)
+        ∂a_part2 = SHermitianCompact(a.lowertriangle.*(2.0.*ν.lowertriangle.+1))
+        ∂ν²_part  = SHermitianCompact(trigamma.(νplushalf.lowertriangle).-trigamma.(ν.lowertriangle))
+        ∂ν∂a_part = SHermitianCompact(1.0./a.lowertriangle)
+        ∂a²_part = SHermitianCompact(ν.lowertriangle./(a².lowertriangle))
+        new{D,L}(σ,ν,a,σ²,a²,νplushalf,sdfconst,∂ν_part,∂a_part1,∂a_part2,∂ν²_part,∂ν∂a_part,∂a²_part)
     end
 end
+matern_sdf_normalising(ν,a) = gamma(ν+0.5)*a^(2ν) / (gamma(ν)*sqrt(π))
+matern_acv_normalising(ν) = 2^(1-ν) / gamma(ν)
 
-npars(::Type{Matern{D}}) where {D} = 3triangularnumber(D)
-nalias(::Type{Matern{D}}) where {D} = 5
-function parameternames(::Type{Matern{D}}) where {D}
+const Matern2D = Matern{2,3}
+const Matern3D = Matern{3,6}
+const Matern4D = Matern{4,10}
+
+npars(::Type{Matern{D,L}}) where {D,L} = 3triangularnumber(D)
+minbins(::Type{Matern{D,L}}) where {D,L} = 4096
+nalias(model::Matern) = 3
+
+function parameternames(::Type{Matern{D,L}}) where {D,L}
     σ = reduce(vcat,[i==j ? "σ_$i" : "ρ_$i$j" for j in i:D] for i in 1:D)
-    ν = reduce(vcat,["ν_$i$j" for j in i:D] for i in 1:D)
-    a = reduce(vcat,["a_$i$j" for j in i:D] for i in 1:D)
+    ν = reduce(vcat,[i==j ? "ν_$i" : "ν_$i$j" for j in i:D] for i in 1:D)
+    a = reduce(vcat,[i==j ? "a_$i" : "a_$i$j" for j in i:D] for i in 1:D)
     return [σ;ν;a]
 end
 
-# """
-#     parameter(model::Matern)
-
-# Return the parameter vector of a Matern model.
-
-# In the D=3 case, θ = [σ₁,ρ₂₁,ρ₃₁,σ₂,ρ₂₃,σ₃,ν₁,ν₂₁,ν₃₁,ν₂,ν₂₃,ν₃,a₁,a₂₁,a₃₁,a₂,a₂₃,a₃].
-# We have 3*D(D+1)/2 parameters.
-# - σᵢ is the standard deviation of the ith process.
-# - ρᵢⱼ is the colocated correlation coefficient between the ith and jth processes.
-# - νᵢⱼ is the smoothness parameter between the ith and jth process.
-# - aᵢⱼ is the scale parameter between the ith and jth process.
-# """
-# parameter(model::Matern) = model.θ
-
-function add_sdf!(::Type{Matern{D}}, out, ω, θ) where {D}
-    ndims_lt = triangularnumber(D)
-    ndims_lt_p1 = 1+ndims_lt
-    twice_ndims_lt = 2ndims_lt
+function add_sdf!(out, model::Matern{D,L}, ω) where {D,L}
+    ω² = ω^2
     count = 1
-    for i ∈ 1:D-1
-        out[count] += θ[count]^2 * matern_corr_ft(ω,θ[count+ndims_lt],θ[count+twice_ndims_lt])
-        ind_i = ndims_lt_p1-triangularnumber(i)
+    for i ∈ 1:D, j ∈ i:D
+        out[count] += model.sdfconst[i,j]/((model.a²[i,j]+ω²)^(model.νplushalf[i,j]))
         count += 1
-        for j ∈ i+1:D
-            ind_j = ndims_lt_p1-triangularnumber(j)
-            out[count] += θ[ind_i] * θ[ind_j] * θ[count] * matern_corr_ft(ω,θ[count+ndims_lt],θ[count+twice_ndims_lt])
-            # i.e. outᵢⱼ = σᵢ     * σⱼ       * ρᵢⱼ      * f     (ω|νᵢⱼ,              aᵢⱼ)
-            count += 1
-        end
     end
-    # final case (i=D)
-    out[count] += θ[count]^2 * matern_corr_ft(ω,θ[count+ndims_lt],θ[count+twice_ndims_lt])
     return nothing
 end
 
-function acv!(::Type{Matern{D}}, out, τ::Number, θ) where {D}
-    ndims_lt = triangularnumber(D)
-    ndims_lt_p1 = 1+ndims_lt
-    twice_ndims_lt = 2ndims_lt
+function grad_add_sdf!(out, model::Matern{D,L}, ω) where {D,L}
+    ω² = ω^2
     count = 1
-    for i ∈ 1:D-1
-        out[count] = θ[count]^2 * matern_corr(τ,θ[count+ndims_lt],θ[count+twice_ndims_lt])
-        ind_i = ndims_lt_p1-triangularnumber(i)
-        count += 1
-        for j ∈ i+1:D
-            ind_j = ndims_lt_p1-triangularnumber(j)
-            out[count] = θ[ind_i] * θ[ind_j] * θ[count] * matern_corr(τ,θ[count+ndims_lt],θ[count+twice_ndims_lt])
-            # i.e. outᵢⱼ = σᵢ     * σⱼ       * ρᵢⱼ      * M     (τ|νᵢⱼ,              aᵢⱼ)
-            count += 1
+    for i ∈ 1:D, j ∈ i:D
+        asq_plus_omsq = model.a²[i,j]+ω²
+        sdf = model.sdfconst[i,j]/((asq_plus_omsq)^(model.νplushalf[i,j]))
+        # σ/ρ
+        if i == j
+            out[count,count] += 2sdf/model.σ[i,i]
+        else
+            out[count,count] += sdf/model.σ[i,j]
+            out[count,indexLT(i,i,D)] += sdf/model.σ[i,i] # derivative with respect to σᵢ
+            out[count,indexLT(j,j,D)] += sdf/model.σ[j,j] # derivative with respect to σⱼ
         end
+        # ν ## digamma(model.νplushalf[i,j])-digamma(model.ν[i,j])+2log(model.a[i,j]) # precomputed as no dependency on ω
+        out[count,L+count] += sdf * (model.∂ν_part[i,j]-log(asq_plus_omsq))
+        # a ## 2model.ν[i,j]/model.a[i,j] - model.a[i,j]*(2model.ν[i,j]+1)/... # precomputed as no dependency on ω
+        out[count,2L+count] += sdf * (model.∂a_part1[i,j] - model.∂a_part2[i,j]/asq_plus_omsq)
+        count += 1
     end
-    out[count] += θ[count]^2 * matern_corr(τ,θ[count+ndims_lt],θ[count+twice_ndims_lt])
     return nothing
 end
 
-##
-function matern_corr(τ,ν,a)
-    amodτ = a*abs(τ)
-    return abs(τ)>1e-10 ? (2^(1-ν) / gamma(ν)) * (amodτ)^ν * besselk(ν,amodτ) : 1
+function hess_add_sdf!(out, model::Matern{D,L}, ω) where {D,L}
+    ω² = ω^2
+    count = 1
+    for i ∈ 1:D, j ∈ i:D
+        asq_plus_omsq = model.a²[i,j]+ω²
+        sdf = model.sdfconst[i,j]/((asq_plus_omsq)^(model.νplushalf[i,j]))
+        sdf∂ν = sdf * (model.∂ν_part[i,j]-log(asq_plus_omsq))
+        sdf∂a = sdf * (model.∂a_part1[i,j] - (model.∂a_part2[i,j])/asq_plus_omsq)
+        # σ/ρ
+        if i == j
+            out[count,indexLT(count,count,   3L)]   += 2sdf/model.σ²[i,i]  # ∂σᵢ²
+            out[count,indexLT(count,count+L, 3L)]   += 2sdf∂ν/model.σ[i,i] # ∂σᵢ∂νᵢⱼ
+            out[count,indexLT(count,count+2L,3L)]   += 2sdf∂a/model.σ[i,i] # ∂σᵢ∂aᵢⱼ
+        else
+            iind = indexLT(i,i,D)
+            jind = indexLT(j,j,D)
+            out[count,indexLT(iind, count,   3L)] += sdf/(model.σ[i,i]*model.σ[i,j]) # ∂σᵢ∂ρᵢⱼ
+            out[count,indexLT(iind, jind,    3L)] += sdf/(model.σ[i,i]*model.σ[j,j]) # ∂σᵢ∂σⱼ
+            out[count,indexLT(jind, count,   3L)] += sdf/(model.σ[i,j]*model.σ[j,j]) # ∂σⱼ∂ρᵢⱼ
+            out[count,indexLT(iind, count+L, 3L)] += sdf∂ν/model.σ[i,i] # ∂σᵢ∂νᵢⱼ
+            out[count,indexLT(iind, count+2L,3L)] += sdf∂a/model.σ[i,i] # ∂σᵢ∂aᵢⱼ
+            out[count,indexLT(count,count+L, 3L)] += sdf∂ν/model.σ[i,j] # ∂ρᵢⱼ∂νᵢⱼ
+            out[count,indexLT(count,count+2L,3L)] += sdf∂a/model.σ[i,j] # ∂ρᵢⱼ∂aᵢⱼ
+            out[count,indexLT(jind, count+L, 3L)] += sdf∂ν/model.σ[j,j] # ∂σⱼ∂νᵢⱼ
+            out[count,indexLT(jind, count+2L,3L)] += sdf∂a/model.σ[j,j] # ∂σⱼ∂aᵢⱼ
+        end
+        # ∂νᵢⱼ²
+        out[count,indexLT(count+L, count+L, 3L)] = sdf∂ν^2/sdf + sdf*model.∂ν²_part[i,j]
+        # ∂νᵢⱼ∂aᵢⱼ
+        out[count,indexLT(count+L, count+2L,3L)] = sdf∂ν*sdf∂a/sdf + 2sdf*(model.∂ν∂a_part[i,j]-model.a[i,j]/asq_plus_omsq)
+        # ∂aᵢⱼ²
+        out[count,indexLT(count+2L,count+2L,3L)] = sdf∂a^2/sdf + 2sdf*(model.νplushalf[i,j]*(2model.a²[i,j]/(asq_plus_omsq^2) - 1/asq_plus_omsq) - model.∂a²_part[i,j])
+        count += 1
+    end
+    return nothing
 end
-
-matern_corr_ft(ω,ν,a) = gamma(ν+0.5)*a^(2ν) / (gamma(ν)*sqrt(π)*(a^2+ω^2)^(ν+0.5))

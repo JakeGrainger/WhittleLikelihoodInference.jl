@@ -126,7 +126,7 @@ struct LagsEI
     Δ::Float64
     lags::Frequencies{Float64}
     function LagsEI(n,Δ)
-        lags = fftfreq(2n, 2n)
+        lags = fftfreq(2n, 2n*Δ)
         new(n,Δ,lags)
     end
 end

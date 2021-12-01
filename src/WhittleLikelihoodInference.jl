@@ -29,6 +29,10 @@ export
     ## models
     OU,
     CorrelatedOU,
+    Matern,
+    Matern2D,
+    Matern3D,
+    Matern4D,
     ## Whittle
     DebiasedWhittleLikelihood,
     WhittleLikelihood
@@ -48,6 +52,8 @@ export
     include("models/CorrelatedOU.jl")
     include("models/OUUnknown.jl")
     include("models/CorrelatedOUUnknown.jl")
+    include("models/Matern.jl")
+    include("models/MaternSlow.jl")
 
     include("simulation.jl")
     include("nonparametric.jl")

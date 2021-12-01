@@ -3,9 +3,13 @@ struct OUUnknown{K} <: UnknownAcvTimeSeriesModel{1}
     θ::Float64
     σ²::Float64
     θ²::Float64
-    OUUnknown{K}(σ,θ) where {K} = new{K}(σ,θ,σ^2,θ^2)
+    function OUUnknown{K}(σ,θ) where {K}
+        σ > 0 || throw(ArgumentError("OU process requires 0 < σ."))
+        θ > 0 || throw(ArgumentError("OU process requires 0 < θ."))
+        new(σ,θ,σ^2,θ^2)
+    end
     function OUUnknown{K}(x::Vector{Float64}) where {K}
-        length(x) == npars(OUUnknown{K}) || error("OUUnknown process has $(npars(OUUnknown)) parameters, but $(length(x)) were provided.")
+        length(x) == npars(OUUnknown{K}) || throw(ArgumentError("OUUnknown process has $(npars(OUUnknown{K})) parameters, but $(length(x)) were provided."))
         @inbounds OUUnknown{K}(x[1], x[2])
     end
 end

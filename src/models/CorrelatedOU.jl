@@ -4,9 +4,14 @@ struct CorrelatedOU <: TimeSeriesModel{2}
     ρ::Float64
     σ²::Float64
     θ²::Float64
-    CorrelatedOU(σ,θ,ρ) = new(σ,θ,ρ,σ^2,θ^2)
-    function CorrelatedOU(x::AbstractVector{Float64})
-        length(x) == npars(CorrelatedOU) || error("CorrelatedOU process has $(npars(CorrelatedOU)) parameters, but $(length(x)) were provided.")
+    function CorrelatedOU(σ,θ,ρ)
+        σ > 0 || throw(ArgumentError("OU process requires 0 < σ."))
+        θ > 0 || throw(ArgumentError("OU process requires 0 < θ."))
+        1>ρ>0 || throw(ArgumentError("OU process requires 0 < ρ < 1."))
+        new(σ,θ,ρ,σ^2,θ^2)
+    end
+function CorrelatedOU(x::AbstractVector{Float64})
+        length(x) == npars(CorrelatedOU) || throw(ArgumentError("CorrelatedOU process has $(npars(CorrelatedOU)) parameters, but $(length(x)) were provided."))
         @inbounds CorrelatedOU(x[1], x[2], x[3])
     end
 end

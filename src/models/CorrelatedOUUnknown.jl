@@ -4,9 +4,14 @@ struct CorrelatedOUUnknown{K} <: UnknownAcvTimeSeriesModel{2}
     ρ::Float64
     σ²::Float64
     θ²::Float64
-    CorrelatedOUUnknown{K}(σ,θ,ρ) where {K} = new{K}(σ,θ,ρ,σ^2,θ^2)
-    function CorrelatedOUUnknown{K}(x::Vector{Float64}) where {K}
-        length(x) == npars(CorrelatedOUUnknown{K}) || error("CorrelatedOUUnknown process has $(npars(CorrelatedOUUnknown)) parameters, but $(length(x)) were provided.")
+    function CorrelatedOUUnknown{K}(σ,θ,ρ) where {K}
+        σ > 0 || throw(ArgumentError("OU process requires 0 < σ."))
+        θ > 0 || throw(ArgumentError("OU process requires 0 < θ."))
+        1>ρ>0 || throw(ArgumentError("OU process requires 0 < ρ < 1."))
+        new{K}(σ,θ,ρ,σ^2,θ^2)
+    end
+function CorrelatedOUUnknown{K}(x::Vector{Float64}) where {K}
+        length(x) == npars(CorrelatedOUUnknown{K}) || throw(ArgumentError("CorrelatedOUUnknown process has $(npars(CorrelatedOUUnknown{K})) parameters, but $(length(x)) were provided."))
         @inbounds CorrelatedOUUnknown{K}(x[1], x[2], x[3])
     end
 end

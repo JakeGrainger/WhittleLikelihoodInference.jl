@@ -1,6 +1,3 @@
-import WhittleLikelihoodInference:  nlowertriangle_dimension, 
-                                    nlowertriangle_parameter,
-                                    indexLT, nalias, minbins
 const OUDouble = OU+OU
 @testset "typestructure" begin
     @testset "AdditiveTimeSeriesModel" begin

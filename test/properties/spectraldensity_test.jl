@@ -57,7 +57,7 @@ WhittleLikelihoodInference.nalias(::TestModelUni3) = 1
         end
         @testset "extract_asdf" begin
             @test_throws MethodError extract_asdf(allocate_memory_EI_F(TestModel2, 1000, 1).funcmemory)
-            @test extract_asdf(allocate_memory_sdf_F(TestModel2, 1000, 1).funcmemory) isa Matrix{Float64}
+            @test extract_asdf(allocate_memory_sdf_F(TestModel2, 1000, 1).funcmemory) isa Matrix{ComplexF64}
         end
     end
     @testset "Gradient" begin

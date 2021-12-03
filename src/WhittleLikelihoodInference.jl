@@ -44,6 +44,7 @@ export
     include("properties/expectedperiodogram.jl")
     include("properties/coherancy.jl")
 
+    include("Whittle/whittledata.jl")
     include("Whittle/generalwhittle.jl")
     include("Whittle/standardwhittle.jl")
     include("Whittle/debiasedwhittle.jl")

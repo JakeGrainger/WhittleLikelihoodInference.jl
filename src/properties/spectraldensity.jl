@@ -110,14 +110,14 @@ end
 function asdf(model::AdditiveTimeSeriesModel{M₁,M₂,1}, ω, Δ) where {M₁<:TimeSeriesModel{1},M₂<:TimeSeriesModel{1}}
     return asdf(model.model1,ω,Δ)+asdf(model.model2,ω,Δ)
 end
-extract_asdf(store) = extract_asdf(extract_S(store))
+
 extract_asdf(store::SdfStorage) = store.allocatedarray
 extract_asdf(store::SdfStorageUni) = store.allocatedarray
 
 function asdf!(store::AdditiveStorage, model::AdditiveTimeSeriesModel)
     @views asdf!(store.store1, model.model1)
     @views asdf!(store.store2, model.model2)
-    extract_asdf(store.store1) .+= extract_asdf(store.store2)
+    extract_asdf(extract_S(store.store1)) .+= extract_asdf(extract_S(store.store2))
     return nothing
 end
 

@@ -55,9 +55,10 @@ WhittleLikelihoodInference.nalias(::TestModelUni3) = 1
             @test_throws ArgumentError WhittleLikelihoodInference.asdf!(store.funcmemory,TestModel2(),Ωbad,1.0)
             @test_throws ArgumentError WhittleLikelihoodInference.asdf!(storeuni.funcmemory,TestModelUni2(),Ωbad,1.0)
         end
-    end
-    @testset "extract_asdf" begin
-        
+        @testset "extract_asdf" begin
+            @test_throws MethodError extract_asdf(allocate_memory_EI_F(TestModel2, 1000, 1).funcmemory)
+            @test extract_asdf(allocate_memory_sdf_F(TestModel2, 1000, 1).funcmemory) isa Matrix{Float64}
+        end
     end
     @testset "Gradient" begin
         @testset "Error handling" begin

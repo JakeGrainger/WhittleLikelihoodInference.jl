@@ -139,11 +139,15 @@ getallderiv(store::TimeSeriesModelStorageGradient) = extract_array(store.gradmem
 """
     extract_array(store::Sdf2EIStorage)
     extract_array(store::Acv2EIStorage)
+    extract_array(store::Sdf2EIStorageUni)
+    extract_array(store::Acv2EIStorageUni)
 
 Extract array from storage.
 """
 extract_array(store::Sdf2EIStorage) = extract_array(store.acv2EI)
 extract_array(store::Acv2EIStorage) = store.hermitianarray
+extract_array(store::Sdf2EIStorageUni) = extract_array(store.acv2EI)
+extract_array(store::Acv2EIStorageUni) = store.allocatedarray
 
 """
     debiasedwhittle_Ehess!(EH, store, data::GenWhittleData)

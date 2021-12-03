@@ -19,6 +19,8 @@ julia = "1"
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 
 [targets]
-test = ["Test", "FiniteDifferences"]
+test = ["Test", "FiniteDifferences", "StaticArrays", "FFTW"]

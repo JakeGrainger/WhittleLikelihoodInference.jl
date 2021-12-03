@@ -34,8 +34,9 @@ end
 Compute the acv at many lags and allocate to storage when acv is known.
 """
 function acv!(store::Acv2EIStorage, model::TimeSeriesModel, encodedtime::LagsEI)
-    for i ∈ 1:size(store.allocatedarray, 2)
-        @views acv!(store.allocatedarray[:, i], model, encodedtime.lags[i])
+    size(store.allocatedarray, 2) == length(encodedtime.lags) || error("size(store.allocatedarray,2) !== length(encodedtime.lags)")
+    @inbounds for (i,τ) ∈ enumerate(encodedtime.lags)
+        @views acv!(store.allocatedarray[:, i], model, τ)
     end
     return nothing
 end
@@ -79,7 +80,7 @@ end
 
 Compute acv at τ, provided acv is known.
 """
-function acv(model::TimeSeriesModel, τ::Number)
+function acv(model::TimeSeriesModel, τ)
     !(model isa UnknownAcvTimeSeriesModel) || error("Custom lag only possible if model has known acv.")
     out = zeros(ComplexF64, nlowertriangle_dimension(model))
     acv!(out, model, τ)
@@ -115,8 +116,9 @@ end
 Compute the acv at many lags and allocate to storage when acv is known in the univariate case.
 """
 function acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
-    for i ∈ 1:length(store.allocatedarray)
-        store.allocatedarray[i] = @views acv(model, encodedtime.lags[i])
+    length(store.allocatedarray) == length(encodedtime.lags) || error("length(store.allocatedarray) !== length(encodedtime.lags)")
+    @inbounds for (i,τ) ∈ enumerate(encodedtime.lags)
+        store.allocatedarray[i] = @views acv(model, τ)
     end
     return nothing
 end
@@ -128,15 +130,6 @@ function acv(model::TimeSeriesModel{1}, n, Δ)
     store = allocate_memory_EI_F(typeof(model), n , Δ)
     acv!(store, model) # lags -n to n-1 in extract_acv(store)
     return real.(fftshift(extract_acv(store))[2:end]) # remove imaginary floating point error
-end
-
-function acv(model::TimeSeriesModel{1}, lags::AbstractVector{T}) where {T}
-    !(model isa UnknownAcvTimeSeriesModel) || error("Custom lag vector only possible if model has known acv.")
-    store = ones(1:length(lags))
-    for i ∈ 1:length(store)
-        @views acv!(store[i], model, lags[i])
-    end
-    return real.(fftshift(store)[2:end]) # remove imaginary floating point error and lag -n
 end
 
 ### Additive ###
@@ -182,9 +175,9 @@ function grad_acv!(out, model::TimeSeriesModel, τ) # default acv returns error
 end
 
 function grad_acv!(store::Acv2EIStorage, model::TimeSeriesModel, encodedtime::LagsEI)
-    
-    for i ∈ 1:size(store.allocatedarray, 3)
-        @views grad_acv!(store.allocatedarray[:, :, i], model, encodedtime.lags[i])
+    size(store.allocatedarray, 3) == length(encodedtime.lags) || error("size(store.allocatedarray, 3) !== length(encodedtime.lags)")
+    @inbounds for (i,τ) ∈ ennumerate(encodedtime.lags)
+        @views grad_acv!(store.allocatedarray[:, :, i], model, τ)
     end
     
     return nothing
@@ -222,8 +215,9 @@ function grad_acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1},
 end
 
 function grad_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
-    for i ∈ 1:size(store.allocatedarray, 2)
-        @views grad_acv!(store.allocatedarray[:, i], model, encodedtime.lags[i])
+    size(store.allocatedarray, 2) == length(encodedtime.lags) || error("size(store.allocatedarray, 2) !== length(encodedtime.lags)")
+    @inbounds for (i,τ) ∈ ennumerate(encodedtime.lags)
+        @views grad_acv!(store.allocatedarray[:, i], model, τ)
     end
     return nothing
 end
@@ -244,7 +238,10 @@ function grad_acv!(store::AdditiveStorage, model::AdditiveTimeSeriesModel)
 end
 
 function grad_acv(model::AdditiveTimeSeriesModel, τ)
-    return vcat(grad_acv(model.model1, τ), grad_acv(model.model2, τ)) # not very efficient implementation but not designed to be used.
+    return hcat(grad_acv(model.model1, τ), grad_acv(model.model2, τ))
+end
+function grad_acv(model::AdditiveTimeSeriesModel{M₁,M₂,1}, τ) where {M₁<:TimeSeriesModel{1},M₂<:TimeSeriesModel{1}}
+    return vcat(grad_acv(model.model1, τ), grad_acv(model.model2, τ))
 end
 
 ## Hessian of autocovariance ##
@@ -273,8 +270,9 @@ function hess_acv!(out, model::TimeSeriesModel, τ) # default acv returns error
 end
 
 function hess_acv!(store::Acv2EIStorage, model::TimeSeriesModel, encodedtime::LagsEI)
-    for i ∈ 1:size(store.allocatedarray, 3)
-        @views hess_acv!(store.allocatedarray[:, :, i], model, encodedtime.lags[i])
+    size(store.allocatedarray, 3) == length(encodedtime.lags) || error("size(store.allocatedarray, 3) !== length(encodedtime.lags)")
+    @inbounds for (i,τ) ∈ ennumerate(encodedtime.lags)
+        @views hess_acv!(store.allocatedarray[:, :, i], model, τ)
     end
     return nothing
 end
@@ -306,8 +304,9 @@ function hess_acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1},
 end
 
 function hess_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
-    for i ∈ 1:size(store.allocatedarray, 2)
-        @views hess_acv!(store.allocatedarray[:, i], model, encodedtime.lags[i])
+    size(store.allocatedarray, 2) == length(encodedtime.lags) || error("size(store.allocatedarray, 2) !== length(encodedtime.lags)")
+    @inbounds for (i,τ) ∈ ennumerate(encodedtime.lags)
+        @views hess_acv!(store.allocatedarray[:, i], model, τ)
     end
     return nothing
 end
@@ -327,11 +326,9 @@ function hess_acv!(store::AdditiveStorage, model::AdditiveTimeSeriesModel)
     return nothing
 end
 
-function hess_acv(model::AdditiveTimeSeriesModel, τ)  # not very efficient implementation but not designed to be used.
-    a1 = hess_acv(model.model1, τ)
-    a2 = hess_acv(model.model2, τ)
-    out = zeros(size(a1).+size(a2))
-    out[1:size(a1,1),1:size(a1,2)] = a1
-    out[1:size(a2,1),1:size(a2,2)] = a2
-    return out
+function hess_acv(model::AdditiveTimeSeriesModel, τ)
+    return hcat(hess_acv(model.model1, τ), hess_acv(model.model2, τ))
+end
+function hess_acv(model::AdditiveTimeSeriesModel{M₁,M₂,1}, τ) where {M₁<:TimeSeriesModel{1},M₂<:TimeSeriesModel{1}}
+    return vcat(hess_acv(model.model1, τ), hess_acv(model.model2, τ))
 end

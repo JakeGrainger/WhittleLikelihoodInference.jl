@@ -37,6 +37,6 @@ const OUDouble = OU+OU
         @test nalias(OU(1,1)) isa Int
     end
     @testset "minbins" begin
-        @test minbins(OU(1,1)) isa Int
+        @test minbins(OU) isa Int
     end
 end

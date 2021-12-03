@@ -1,5 +1,19 @@
 using Test, WhittleLikelihoodInference, FiniteDifferences
-import WhittleLikelihoodInference: grad_sdf, hess_sdf, grad_acv, hess_acv
+import WhittleLikelihoodInference: 
+    nlowertriangle_dimension, nlowertriangle_parameter,
+    indexLT, nalias, minbins,
+    Acv2EIStorage, Sdf2AcvStorage, Sdf2EIStorage, SdfStorage,
+    Acv2EIStorageUni, Sdf2AcvStorageUni, Sdf2EIStorageUni, SdfStorageUni,
+    EIstorage_function, EIstorage_gradient, EIstorage_hessian,
+    sdfstorage_function, sdfstorage_gradient, sdfstorage_hessian,
+    PreallocatedEI, PreallocatedEIGradient, PreallocatedEIHessian,
+    PreallocatedSdf, PreallocatedSdfGradient, PreallocatedSdfHessian,
+    allocate_memory_EI_F, allocate_memory_EI_FG, allocate_memory_EI_FGH,
+    allocate_memory_sdf_F, allocate_memory_sdf_FG, allocate_memory_sdf_FGH,
+    AdditiveStorage,
+    CorrelatedOUUnknown, OUUnknown,
+    FreqAcvEst, LagsEI, encodetimescale,
+    grad_sdf, hess_sdf, grad_acv, hess_acv
 
 ## define useful functions
 # Function for approximating the gradient using finite differences.
@@ -25,8 +39,8 @@ function approx_hessian_uni(grad, x)
 end
 
 ## run tests
-# include("typestructure_test.jl")
-# include("memoryallocation_test.jl")
+include("typestructure_test.jl")
+include("memoryallocation_test.jl")
 # include("properties/spectraldensity_test.jl")
 # include("properties/autocovariance_test.jl")
 # include("properties/expectedperiodogram_test.jl")

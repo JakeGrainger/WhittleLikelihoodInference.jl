@@ -1,4 +1,3 @@
-import WhittleLikelihoodInference: CorrelatedOUUnknown
 @testset "CorrelatedOUUnknown" begin
     θ₀ = [3.0,0.8,0.2]
     model_known_acv = CorrelatedOU(θ₀)

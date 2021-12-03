@@ -1,4 +1,3 @@
-import WhittleLikelihoodInference: OUUnknown
 @testset "OUUnknown" begin
     θ₀ = [2.0,0.4]
     model_known_acv = OU(θ₀)

@@ -40,8 +40,9 @@ end
 Compute the asdf for all frequencies and allocates to appropriate location in storage.
 """
 function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω, Δ)
-    for i ∈ 1:size(store.allocatedarray, 2)
-        @views asdf!(store.allocatedarray[:, i], model, Ω[i], Δ)
+    size(store.allocatedarray,2) == length(Ω) || throw(ArgumentError("size(store.allocatedarray,2) !== length(Ω)."))
+    @inbounds for (i,ω) ∈ enumerate(Ω)
+        @views asdf!(store.allocatedarray[:, i], model, ω, Δ)
     end
     return nothing
 end
@@ -85,8 +86,9 @@ function asdf(model::TimeSeriesModel{1}, ω, Δ) # default method approximates t
 end
 
 function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, Ω, Δ)
-    for i ∈ 1:length(store.allocatedarray)
-        store.allocatedarray[i] = @views asdf(model, Ω[i], Δ)
+    length(store.allocatedarray) == length(Ω) || throw(ArgumentError("length(store.allocatedarray) !== length(Ω)."))
+    @inbounds for (i,ω) ∈ enumerate(Ω)
+        store.allocatedarray[i] = @views asdf(model, ω, Δ)
     end
     return nothing
 end
@@ -157,8 +159,9 @@ end
 Compute the gradient of the asdf for all frequencies and allocate to appropriate location in storage.
 """
 function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω, Δ)
-    for i ∈ 1:size(store.allocatedarray, 3)
-        @views grad_asdf!(store.allocatedarray[:, :, i], model, Ω[i], Δ)
+    size(store.allocatedarray,3) == length(Ω) || throw(ArgumentError("size(store.allocatedarray,3) !== length(Ω)."))
+    @inbounds for (i,ω) ∈ enumerate(Ω)
+        @views grad_asdf!(store.allocatedarray[:, :, i], model, ω, Δ)
     end
     return nothing
 end
@@ -181,8 +184,9 @@ end
 ### Univariate ###
 
 function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, Ω, Δ)
-    for i ∈ 1:size(store.allocatedarray, 2)
-        @views grad_asdf!(store.allocatedarray[:, i], model, Ω[i], Δ)
+    size(store.allocatedarray,2) == length(Ω) || throw(ArgumentError("size(store.allocatedarray,2) !== length(Ω)."))
+    @inbounds for (i,ω) ∈ enumerate(Ω)
+        @views grad_asdf!(store.allocatedarray[:, i], model, ω, Δ)
     end
     return nothing
 end
@@ -258,8 +262,9 @@ end
 Compute the Hessian of the asdf for all frequencies and allocate to appropriate location in storage.
 """
 function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω, Δ)
-    for i ∈ 1:size(store.allocatedarray, 3)
-        @views hess_asdf!(store.allocatedarray[:, :, i], model, Ω[i], Δ)
+    size(store.allocatedarray,3) == length(Ω) || throw(ArgumentError("size(store.allocatedarray,3) !== length(Ω)."))
+    @inbounds for (i,ω) ∈ enumerate(Ω)
+        @views hess_asdf!(store.allocatedarray[:, :, i], model, ω, Δ)
     end
     return nothing
 end
@@ -282,8 +287,9 @@ end
 ### Univariate ###
 
 function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, Ω, Δ)
-    for i ∈ 1:size(store.allocatedarray, 3)
-        @views hess_asdf!(store.allocatedarray[:, i], model, Ω[i], Δ)
+    size(store.allocatedarray,2) == length(Ω) || throw(ArgumentError("size(store.allocatedarray,2) !== length(Ω)."))
+    @inbounds for (i,ω) ∈ enumerate(Ω)
+        @views hess_asdf!(store.allocatedarray[:, i], model, ω, Δ)
     end
     return nothing
 end

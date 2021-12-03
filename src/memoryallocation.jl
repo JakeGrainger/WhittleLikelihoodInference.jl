@@ -185,7 +185,7 @@ struct AdditiveStorage{S₁<:TimeSeriesModelStorage,S₂<:TimeSeriesModelStorage
     npar1::Int
 end
 
-# Helper function for extracting the function value from additive storage (which is only stored in the left most storage).
+# Helper function for extracting the function memory from additive storage (which is only stored in the left most storage).
 extract_S(store::TimeSeriesModelStorageFunction) = store.funcmemory
 extract_S(store::AdditiveStorage) = extract_S(store.store1) # returns the left hand store if additive storage
 
@@ -426,10 +426,6 @@ function sdfstorage_hessian(model::Type{<:TimeSeriesModel{1}}, n)
     return SdfStorageUni(allocatedarray)
 end
 
-# Function to extract array from storage for univariate.
-extract_array(store::Sdf2EIStorageUni) = extract_array(store.acv2EI)
-extract_array(store::Acv2EIStorageUni) = store.allocatedarray
-
 ## Unitily functions for pulling out desired vector from storage for Whittle
 unpack(store::Sdf2EIStorage)    = store.acv2EI.hermitianarray
 unpack(store::Acv2EIStorage)    = store.hermitianarray
@@ -437,67 +433,3 @@ unpack(store::SdfStorage)       = store.hermitianarray
 unpack(store::Sdf2EIStorageUni) = store.acv2EI.allocatedarray
 unpack(store::Acv2EIStorageUni) = store.allocatedarray
 unpack(store::SdfStorageUni)    = store.allocatedarray
-
-## Whittle data ##
-
-# General structure for storing timeseries for Whittle type computation.
-abstract type GenWhittleData end
-
-"""
-    WhittleData(model::Type{<:TimeSeriesModel{D}}, timeseries, Δ; lowerΩcutoff, upperΩcutoff)
-
-Create storage for timeseries data in a format which is useful for Whittle methods.
-"""
-struct WhittleData{T} <: GenWhittleData
-    I::Vector{T}
-    N::Int64
-    Δ::Float64
-    Ω_used_index::Vector{Int64}
-    function WhittleData(::Type{<:TimeSeriesModel{D}}, timeseries::Matrix{S}, Δ; lowerΩcutoff = 0, upperΩcutoff = Inf) where {D,S<:Real}
-        size(timeseries, 2) == D || error("Time series has $(size(timeseries, 2)) dimensions, but model has $D dimension.")
-        N = size(timeseries, 1)
-        Ω = fftfreq(N, 2π/Δ)
-        Ω_used_index = (1:N)[lowerΩcutoff .< abs.(Ω) .< upperΩcutoff]
-        J = fft(timeseries, 1)
-        I = [SMatrix{D,D}(J[ii, :]*J[ii, :]'.*(Δ / (2π * N))) for ii = Ω_used_index]
-        new{eltype(I)}(I, N, Δ, Ω_used_index)
-    end
-    function WhittleData(::Type{<:TimeSeriesModel{1}}, timeseries::Vector{S}, Δ; lowerΩcutoff = 0, upperΩcutoff = Inf) where {S<:Real}
-        N = size(timeseries, 1)
-        Ω = fftfreq(N, 2π/Δ)
-        Ω_used_index = (1:N)[lowerΩcutoff .< abs.(Ω) .< upperΩcutoff]
-        J = fft(timeseries, 1)
-        I = abs.(J).^2 .* (Δ / (2π * N))
-        new{eltype(I)}(I[Ω_used_index], N, Δ, Ω_used_index)
-    end
-end
-
-"""
-    DebiasedWhittleData(model::Type{<:TimeSeriesModel{D}}, timeseries, Δ; lowerΩcutoff, upperΩcutoff)
-
-Create storage for timeseries data in a format which is useful for debiased Whittle methods.
-"""
-struct DebiasedWhittleData{T} <: GenWhittleData
-    I::Vector{T}
-    N::Int64
-    Δ::Float64
-    Ω_used_index::Vector{Int64}
-    function DebiasedWhittleData(::Type{<:TimeSeriesModel{D}}, timeseries::Matrix{S}, Δ; lowerΩcutoff = 0, upperΩcutoff = Inf) where {D,S<:Real}
-        size(timeseries, 2) == D || error("Time series has $(size(timeseries, 2)) dimensions, but model has $D dimension.")
-        N = size(timeseries, 1)
-        Ω = fftfreq(N, 2π/Δ)
-        Ω_used_index = (1:N)[lowerΩcutoff .< abs.(Ω) .< upperΩcutoff]
-        J = fft(timeseries, 1)
-        I = [SMatrix{D,D}(J[ii, :]*J[ii, :]'.*(Δ / (2π * N))) for ii = Ω_used_index]
-        new{eltype(I)}(I, N, Δ, 2 .* Ω_used_index .- 1) # accounts for double resolution in EI computations
-    end
-    function DebiasedWhittleData(::Type{<:TimeSeriesModel{1}}, timeseries::Vector{S}, Δ; lowerΩcutoff = 0, upperΩcutoff = Inf) where {S<:Real}
-        N = size(timeseries, 1)
-        Ω = fftfreq(N, 2π/Δ)
-        Ω_used_index = (1:N)[lowerΩcutoff .< abs.(Ω) .< upperΩcutoff]
-        J = fft(timeseries, 1)
-        I = abs.(J).^2 .* (Δ / (2π * N))
-        new{eltype(I)}(I[Ω_used_index], N, Δ, 2 .* Ω_used_index .- 1) # accounts for double resolution in EI computations
-    end
-end
-Base.show(io::IO, W::GenWhittleData) = print(io, "Precomputed periodogram for $(size(W.I[1],1)) dimensional timeseries of length $(W.N) with a sampling rate of $(W.Δ).")

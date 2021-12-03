@@ -1,4 +1,3 @@
-using StaticArrays, FFTW
 const CorrelatedOUDouble = CorrelatedOU+CorrelatedOU
 n = 10
 Δ = 0.5

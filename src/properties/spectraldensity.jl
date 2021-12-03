@@ -73,7 +73,9 @@ function asdf(model::TimeSeriesModel, ω, Δ)
 end
 
 ### Univariate ###
-
+function sdf(model::TimeSeriesModel{1}, ω) # default sdf returns error
+    error("sdf not yet defined for model of type $(typeof(model)).")
+end
 function asdf(model::TimeSeriesModel{1}, ω, Δ) # default method approximates the asdf (overload if known)
     val = zero(ComplexF64)
     for k ∈ -nalias(model):nalias(model)

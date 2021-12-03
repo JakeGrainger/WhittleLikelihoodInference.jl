@@ -34,7 +34,7 @@ end
 Compute the acv at many lags and allocate to storage when acv is known.
 """
 function acv!(store::Acv2EIStorage, model::TimeSeriesModel, encodedtime::LagsEI)
-    size(store.allocatedarray, 2) == length(encodedtime.lags) || error("size(store.allocatedarray,2) !== length(encodedtime.lags)")
+    size(store.allocatedarray, 2) == length(encodedtime.lags) || throw(ArgumentError("size(store.allocatedarray,2) !== length(encodedtime.lags)"))
     @inbounds for (i,τ) ∈ enumerate(encodedtime.lags)
         @views acv!(store.allocatedarray[:, i], model, τ)
     end
@@ -81,7 +81,7 @@ end
 Compute acv at τ, provided acv is known.
 """
 function acv(model::TimeSeriesModel, τ)
-    !(model isa UnknownAcvTimeSeriesModel) || error("Custom lag only possible if model has known acv.")
+    !(model isa UnknownAcvTimeSeriesModel) || throw(ArgumentError("Custom lag only possible if model has known acv."))
     out = zeros(ComplexF64, nlowertriangle_dimension(model))
     acv!(out, model, τ)
     return SHermitianCompact(SVector{nlowertriangle_dimension(model)}(out))
@@ -116,7 +116,7 @@ end
 Compute the acv at many lags and allocate to storage when acv is known in the univariate case.
 """
 function acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
-    length(store.allocatedarray) == length(encodedtime.lags) || error("length(store.allocatedarray) !== length(encodedtime.lags)")
+    length(store.allocatedarray) == length(encodedtime.lags) || throw(ArgumentError("length(store.allocatedarray) !== length(encodedtime.lags)"))
     @inbounds for (i,τ) ∈ enumerate(encodedtime.lags)
         store.allocatedarray[i] = @views acv(model, τ)
     end
@@ -175,7 +175,7 @@ function grad_acv!(out, model::TimeSeriesModel, τ) # default acv returns error
 end
 
 function grad_acv!(store::Acv2EIStorage, model::TimeSeriesModel, encodedtime::LagsEI)
-    size(store.allocatedarray, 3) == length(encodedtime.lags) || error("size(store.allocatedarray, 3) !== length(encodedtime.lags)")
+    size(store.allocatedarray, 3) == length(encodedtime.lags) || throw(ArgumentError("size(store.allocatedarray, 3) !== length(encodedtime.lags)"))
     @inbounds for (i,τ) ∈ ennumerate(encodedtime.lags)
         @views grad_acv!(store.allocatedarray[:, :, i], model, τ)
     end
@@ -194,7 +194,7 @@ end
 Compute the gradient of the acv at `τ`.
 """
 function grad_acv(model::TimeSeriesModel, τ)
-    !(model isa UnknownAcvTimeSeriesModel) || error("grad_acv only defined when acv is known.")
+    !(model isa UnknownAcvTimeSeriesModel) || throw(ArgumentError("grad_acv only defined when acv is known."))
     G = zeros(ComplexF64,nlowertriangle_dimension(model),npars(model))
     grad_acv!(G, model, τ)
     return G
@@ -215,7 +215,7 @@ function grad_acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1},
 end
 
 function grad_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
-    size(store.allocatedarray, 2) == length(encodedtime.lags) || error("size(store.allocatedarray, 2) !== length(encodedtime.lags)")
+    size(store.allocatedarray, 2) == length(encodedtime.lags) || throw(ArgumentError("size(store.allocatedarray, 2) !== length(encodedtime.lags)"))
     @inbounds for (i,τ) ∈ ennumerate(encodedtime.lags)
         @views grad_acv!(store.allocatedarray[:, i], model, τ)
     end
@@ -223,7 +223,7 @@ function grad_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedti
 end
 
 function grad_acv(model::TimeSeriesModel{1}, τ)
-    !(model isa UnknownAcvTimeSeriesModel) || error("grad_acv only defined when acv is known.")
+    !(model isa UnknownAcvTimeSeriesModel) || throw(ArgumentError("grad_acv only defined when acv is known."))
     G = zeros(ComplexF64,npars(model))
     grad_acv!(G, model, τ)
     return G
@@ -270,7 +270,7 @@ function hess_acv!(out, model::TimeSeriesModel, τ) # default acv returns error
 end
 
 function hess_acv!(store::Acv2EIStorage, model::TimeSeriesModel, encodedtime::LagsEI)
-    size(store.allocatedarray, 3) == length(encodedtime.lags) || error("size(store.allocatedarray, 3) !== length(encodedtime.lags)")
+    size(store.allocatedarray, 3) == length(encodedtime.lags) || throw(ArgumentError("size(store.allocatedarray, 3) !== length(encodedtime.lags)"))
     @inbounds for (i,τ) ∈ ennumerate(encodedtime.lags)
         @views hess_acv!(store.allocatedarray[:, :, i], model, τ)
     end
@@ -283,7 +283,7 @@ function hess_acv!(store::TimeSeriesModelStorageHessian, model::TimeSeriesModel)
 end
 
 function hess_acv(model::TimeSeriesModel, τ)
-    !(model isa UnknownAcvTimeSeriesModel) || error("grad_acv only defined when acv is known.")
+    !(model isa UnknownAcvTimeSeriesModel) || throw(ArgumentError("grad_acv only defined when acv is known."))
     H = zeros(ComplexF64,nlowertriangle_dimension(model),nlowertriangle_parameter(model))
     hess_acv!(H, model, τ)
     return H
@@ -304,7 +304,7 @@ function hess_acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1},
 end
 
 function hess_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
-    size(store.allocatedarray, 2) == length(encodedtime.lags) || error("size(store.allocatedarray, 2) !== length(encodedtime.lags)")
+    size(store.allocatedarray, 2) == length(encodedtime.lags) || throw(ArgumentError("size(store.allocatedarray, 2) !== length(encodedtime.lags)"))
     @inbounds for (i,τ) ∈ ennumerate(encodedtime.lags)
         @views hess_acv!(store.allocatedarray[:, i], model, τ)
     end
@@ -312,7 +312,7 @@ function hess_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedti
 end
 
 function hess_acv(model::TimeSeriesModel{1}, τ)
-    !(model isa UnknownAcvTimeSeriesModel) || error("grad_acv only defined when acv is known.")
+    !(model isa UnknownAcvTimeSeriesModel) || throw(ArgumentError("grad_acv only defined when acv is known."))
     H = zeros(ComplexF64,nlowertriangle_parameter(model))
     hess_acv!(H, model, τ)
     return H

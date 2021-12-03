@@ -39,7 +39,7 @@ end
 
 Compute the asdf for all frequencies and allocates to appropriate location in storage.
 """
-function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω, Δ)
+function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω::AbstractVector{T}, Δ::Number) where {T<:Real}
     size(store.allocatedarray,2) == length(Ω) || throw(ArgumentError("size(store.allocatedarray,2) !== length(Ω)."))
     @inbounds for (i,ω) ∈ enumerate(Ω)
         @views asdf!(store.allocatedarray[:, i], model, ω, Δ)
@@ -85,7 +85,7 @@ function asdf(model::TimeSeriesModel{1}, ω, Δ) # default method approximates t
     return val
 end
 
-function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, Ω, Δ)
+function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, Ω::AbstractVector{T}, Δ::Number) where {T<:Real}
     length(store.allocatedarray) == length(Ω) || throw(ArgumentError("length(store.allocatedarray) !== length(Ω)."))
     @inbounds for (i,ω) ∈ enumerate(Ω)
         store.allocatedarray[i] = @views asdf(model, ω, Δ)
@@ -104,7 +104,12 @@ function add_asdf!(out, model::AdditiveTimeSeriesModel, ω, Δ)
     add_asdf!(out, model.model2, ω, Δ)
     return nothing
 end
-
+function sdf(model::AdditiveTimeSeriesModel{M₁,M₂,1}, ω) where {M₁<:TimeSeriesModel{1},M₂<:TimeSeriesModel{1}}
+    return sdf(model.model1,ω)+sdf(model.model2,ω)
+end
+function asdf(model::AdditiveTimeSeriesModel{M₁,M₂,1}, ω, Δ) where {M₁<:TimeSeriesModel{1},M₂<:TimeSeriesModel{1}}
+    return asdf(model.model1,ω,Δ)+asdf(model.model2,ω,Δ)
+end
 extract_asdf(store) = extract_asdf(extract_S(store))
 extract_asdf(store::SdfStorage) = store.allocatedarray
 extract_asdf(store::SdfStorageUni) = store.allocatedarray
@@ -158,7 +163,7 @@ end
 
 Compute the gradient of the asdf for all frequencies and allocate to appropriate location in storage.
 """
-function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω, Δ)
+function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω::AbstractVector{T}, Δ::Number) where {T<:Real}
     size(store.allocatedarray,3) == length(Ω) || throw(ArgumentError("size(store.allocatedarray,3) !== length(Ω)."))
     @inbounds for (i,ω) ∈ enumerate(Ω)
         @views grad_asdf!(store.allocatedarray[:, :, i], model, ω, Δ)
@@ -183,7 +188,7 @@ end
 
 ### Univariate ###
 
-function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, Ω, Δ)
+function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, Ω::AbstractVector{T}, Δ::Number) where {T<:Real}
     size(store.allocatedarray,2) == length(Ω) || throw(ArgumentError("size(store.allocatedarray,2) !== length(Ω)."))
     @inbounds for (i,ω) ∈ enumerate(Ω)
         @views grad_asdf!(store.allocatedarray[:, i], model, ω, Δ)
@@ -218,6 +223,9 @@ function grad_asdf!(store::AdditiveStorage, model::AdditiveTimeSeriesModel)
 end
 
 function grad_sdf(model::AdditiveTimeSeriesModel, ω)
+    return hcat(grad_sdf(model.model1, ω), grad_sdf(model.model2, ω)) # not very efficient implementation but not designed to be used.
+end
+function grad_sdf(model::AdditiveTimeSeriesModel{M₁,M₂,1}, ω) where {M₁<:TimeSeriesModel{1},M₂<:TimeSeriesModel{1}}
     return vcat(grad_sdf(model.model1, ω), grad_sdf(model.model2, ω)) # not very efficient implementation but not designed to be used.
 end
 
@@ -261,7 +269,7 @@ end
 
 Compute the Hessian of the asdf for all frequencies and allocate to appropriate location in storage.
 """
-function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω, Δ)
+function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω::AbstractVector{T}, Δ::Number) where {T<:Real}
     size(store.allocatedarray,3) == length(Ω) || throw(ArgumentError("size(store.allocatedarray,3) !== length(Ω)."))
     @inbounds for (i,ω) ∈ enumerate(Ω)
         @views hess_asdf!(store.allocatedarray[:, :, i], model, ω, Δ)
@@ -286,7 +294,7 @@ end
 
 ### Univariate ###
 
-function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, Ω, Δ)
+function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, Ω::AbstractVector{T}, Δ::Number) where {T<:Real}
     size(store.allocatedarray,2) == length(Ω) || throw(ArgumentError("size(store.allocatedarray,2) !== length(Ω)."))
     @inbounds for (i,ω) ∈ enumerate(Ω)
         @views hess_asdf!(store.allocatedarray[:, i], model, ω, Δ)
@@ -308,11 +316,9 @@ function hess_asdf!(store::AdditiveStorage, model::AdditiveTimeSeriesModel)
     return nothing
 end
 
-function hess_sdf(model::AdditiveTimeSeriesModel, ω)  # not very efficient implementation but not designed to be used.
-    s1 = hess_sdf(model.model1, ω)
-    s2 = hess_sdf(model.model2, ω)
-    out = zeros(size(s1).+size(s2))
-    out[1:size(s1,1),1:size(s1,2)] = s1
-    out[1:size(s2,1),1:size(s2,2)] = s2
-    return out
+function hess_sdf(model::AdditiveTimeSeriesModel, ω)
+    return hcat(hess_sdf(model.model1, ω), hess_sdf(model.model2, ω)) # not very efficient implementation but not designed to be used.
+end
+function hess_sdf(model::AdditiveTimeSeriesModel{M₁,M₂,1}, ω) where {M₁<:TimeSeriesModel{1},M₂<:TimeSeriesModel{1}}
+    return vcat(hess_sdf(model.model1, ω), hess_sdf(model.model2, ω)) # not very efficient implementation but not designed to be used.
 end

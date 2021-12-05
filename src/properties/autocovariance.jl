@@ -110,6 +110,10 @@ function acv(model::TimeSeriesModel{1}, τ) # default acv returns error
     error("acv not yet defined for model of type $(typeof(model)).")
 end
 
+function acv(model::UnknownAcvTimeSeriesModel{1}, τ) # default acv returns error
+    throw(ArgumentError("Custom lag only possible if model has known acv."))
+end
+
 """
     acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
 

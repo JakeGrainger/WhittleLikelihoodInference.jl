@@ -180,7 +180,7 @@ end
 
 function grad_acv!(store::Acv2EIStorage, model::TimeSeriesModel, encodedtime::LagsEI)
     size(store.allocatedarray, 3) == length(encodedtime.lags) || throw(ArgumentError("size(store.allocatedarray, 3) !== length(encodedtime.lags)"))
-    @inbounds for (i,τ) ∈ ennumerate(encodedtime.lags)
+    @inbounds for (i,τ) ∈ enumerate(encodedtime.lags)
         @views grad_acv!(store.allocatedarray[:, :, i], model, τ)
     end
     
@@ -220,7 +220,7 @@ end
 
 function grad_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
     size(store.allocatedarray, 2) == length(encodedtime.lags) || throw(ArgumentError("size(store.allocatedarray, 2) !== length(encodedtime.lags)"))
-    @inbounds for (i,τ) ∈ ennumerate(encodedtime.lags)
+    @inbounds for (i,τ) ∈ enumerate(encodedtime.lags)
         @views grad_acv!(store.allocatedarray[:, i], model, τ)
     end
     return nothing
@@ -275,7 +275,7 @@ end
 
 function hess_acv!(store::Acv2EIStorage, model::TimeSeriesModel, encodedtime::LagsEI)
     size(store.allocatedarray, 3) == length(encodedtime.lags) || throw(ArgumentError("size(store.allocatedarray, 3) !== length(encodedtime.lags)"))
-    @inbounds for (i,τ) ∈ ennumerate(encodedtime.lags)
+    @inbounds for (i,τ) ∈ enumerate(encodedtime.lags)
         @views hess_acv!(store.allocatedarray[:, :, i], model, τ)
     end
     return nothing
@@ -309,7 +309,7 @@ end
 
 function hess_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
     size(store.allocatedarray, 2) == length(encodedtime.lags) || throw(ArgumentError("size(store.allocatedarray, 2) !== length(encodedtime.lags)"))
-    @inbounds for (i,τ) ∈ ennumerate(encodedtime.lags)
+    @inbounds for (i,τ) ∈ enumerate(encodedtime.lags)
         @views hess_acv!(store.allocatedarray[:, i], model, τ)
     end
     return nothing

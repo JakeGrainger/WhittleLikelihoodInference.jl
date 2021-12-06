@@ -1,4 +1,4 @@
-using Test, WhittleLikelihoodInference, FiniteDifferences
+using Test, WhittleLikelihoodInference, FiniteDifferences, StaticArrays, FFTW
 import WhittleLikelihoodInference: 
     nlowertriangle_dimension, nlowertriangle_parameter,
     indexLT, nalias, minbins,
@@ -10,7 +10,7 @@ import WhittleLikelihoodInference:
     PreallocatedSdf, PreallocatedSdfGradient, PreallocatedSdfHessian,
     allocate_memory_EI_F, allocate_memory_EI_FG, allocate_memory_EI_FGH,
     allocate_memory_sdf_F, allocate_memory_sdf_FG, allocate_memory_sdf_FGH,
-    AdditiveStorage,
+    AdditiveStorage, extract_asdf,
     CorrelatedOUUnknown, OUUnknown,
     FreqAcvEst, LagsEI, encodetimescale,
     grad_sdf, hess_sdf, grad_acv, hess_acv
@@ -41,14 +41,15 @@ end
 ## run tests
 include("typestructure_test.jl")
 include("memoryallocation_test.jl")
-# include("properties/spectraldensity_test.jl")
-# include("properties/autocovariance_test.jl")
-# include("properties/expectedperiodogram_test.jl")
-# include("properties/coherancy_test.jl")
+include("properties/spectraldensity_test.jl")
+include("properties/autocovariance_test.jl")
+include("properties/expectedperiodogram_test.jl")
+include("properties/coherancy_test.jl")
 
-# include("Whittle/generalwhittle_test.jl")
-# include("Whittle/standardwhittle_test.jl")
-# include("Whittle/debiasedwhittle_test.jl")
+include("Whittle/whittledata_test.jl")
+include("Whittle/generalwhittle_test.jl")
+include("Whittle/standardwhittle_test.jl")
+include("Whittle/debiasedwhittle_test.jl")
 
 include("models/OU_test.jl")
 include("models/CorrelatedOU_test.jl")
@@ -56,6 +57,6 @@ include("models/OUUnknown_test.jl")
 include("models/CorrelatedOUUnknown_test.jl")
 include("models/Matern_test.jl")
 
-# include("simulation_test.jl")
-# include("nonparametric_test.jl")
+include("simulation_test.jl")
+include("nonparametric_test.jl")
 # include("plotting_test.jl")

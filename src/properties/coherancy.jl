@@ -8,6 +8,7 @@ function coherancy(model::TimeSeriesModel{D}, ω) where {D}
     return [S[i,j]/sqrt(S[i,i]*S[j,j]) for i = 1:D, j = 1:D]
 end
 coherancy(::TimeSeriesModel{1}, ω) = error("coherancy not applicable for univariate models.")
+
 """
     coherance(model::TimeSeriesModel, ω)
 

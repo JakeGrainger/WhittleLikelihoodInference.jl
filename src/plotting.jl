@@ -45,14 +45,14 @@ end
 @userplot PlotSdf
 @recipe function f(p::PlotSdf)
     if length(p.args) == 1
-        p.args[1] isa TimeSeriesModel || error("If only one argument is provided to plotsdf, it must be a TimeSeriesModel.")
+        p.args[1] isa TimeSeriesModel || throw(ArgumentError("If only one argument is provided to plotsdf, it must be a TimeSeriesModel."))
         Ω = range(-π,π,length=200)
     elseif length(p.args) == 2
-        p.args[1] isa TimeSeriesModel || error("First argument to plotsdf must be a TimeSeriesModel.")
-        p.args[2] isa AbstractVector{T} where {T<:Number} || error("Second argument to plotasdf should be the frequencies, a vector of numbers.")
+        p.args[1] isa TimeSeriesModel || throw(ArgumentError("First argument to plotsdf must be a TimeSeriesModel."))
+        p.args[2] isa AbstractVector{T} where {T<:Number} || throw(ArgumentError("Second argument to plotasdf should be the frequencies, a vector of numbers."))
         Ω = p.args[2]
     else
-        error("A maximum of two numbers should be passed to plotsdf.")
+        throw(ArgumentError("A maximum of two numbers should be passed to plotsdf."))
     end
     model = p.args[1]
     y = sdf.(model, Ω)
@@ -85,17 +85,17 @@ checkposreal(x) = x isa Real && x > 0
 @userplot PlotAsdf
 @recipe function f(p::PlotAsdf)
     if length(p.args) == 1
-        p.args[1] isa TimeSeriesModel || error("If only one argument is provided to plotasdf, it must be a TimeSeriesModel.")
+        p.args[1] isa TimeSeriesModel || throw(ArgumentError("If only one argument is provided to plotasdf, it must be a TimeSeriesModel."))
         Ω = range(-π,π,length=200)
         Δ = 1
     elseif length(p.args) == 3
-        p.args[1] isa TimeSeriesModel || error("First argument to plotasdf must be a TimeSeriesModel.")
-        p.args[2] isa AbstractVector{T} where {T<:Number} || error("Second argument to plotasdf should be the frequencies, a vector of numbers.")
-        checkposreal(p.args[3]) || error("Third argument to plotasdf should be the sampling rate, a positive real number.")
+        p.args[1] isa TimeSeriesModel || throw(ArgumentError("First argument to plotasdf must be a TimeSeriesModel."))
+        p.args[2] isa AbstractVector{T} where {T<:Number} || throw(ArgumentError("Second argument to plotasdf should be the frequencies, a vector of numbers."))
+        checkposreal(p.args[3]) || throw(ArgumentError("Third argument to plotasdf should be the sampling rate, a positive real number."))
         Ω = p.args[2]
         Δ = p.args[3]
     else
-        error("Either only a model should be provided to plotasdf or a model, vector of frequencies and sampling rate Δ.")
+        throw(ArgumentError("Either only a model should be provided to plotasdf or a model, vector of frequencies and sampling rate Δ."))
     end
     model = p.args[1]
     y = asdf.(model, Ω, Δ)
@@ -120,24 +120,24 @@ plotasdf
 @userplot PlotAcv
 @recipe function f(p::PlotAcv)
     if length(p.args) == 1
-        p.args[1] isa TimeSeriesModel || error("If only one argument is provided to plotacv, it must be a TimeSeriesModel.")
+        p.args[1] isa TimeSeriesModel || throw(ArgumentError("If only one argument is provided to plotacv, it must be a TimeSeriesModel."))
         n = 30
         Δ = 1
         τ = (-n+1:n-1).*Δ
     elseif length(p.args) == 2
-        p.args[1] isa TimeSeriesModel || error("First argument to plotsdf must be a TimeSeriesModel.")
-        p.args[2] isa AbstractVector{T} where {T<:Number} || error("If two arguments provided to the second must be a vector of time lags.")
-        !(p.args[1] isa UnknownAcvTimeSeriesModel) || error("Custom lag vector only possible if acv of model is known, pass the number of observations and sampling rate instead.")
+        p.args[1] isa TimeSeriesModel || throw(ArgumentError("First argument to plotsdf must be a TimeSeriesModel."))
+        p.args[2] isa AbstractVector{T} where {T<:Number} || throw(ArgumentError("If two arguments provided to the second must be a vector of time lags."))
+        !(p.args[1] isa UnknownAcvTimeSeriesModel) || throw(ArgumentError("Custom lag vector only possible if acv of model is known, pass the number of observations and sampling rate instead."))
         τ = p.args[2]
     elseif length(p.args) == 3
-        p.args[1] isa TimeSeriesModel || error("First argument to plotsdf must be a TimeSeriesModel.")
-        checkposreal(p.args[2]) || error("Second argument to plotasdf should be the number of lags, a positive real number.")
-        checkposreal(p.args[3]) || error("Third argument to plotasdf should be the sampling rate, a positive real number.")
+        p.args[1] isa TimeSeriesModel || throw(ArgumentError("First argument to plotsdf must be a TimeSeriesModel."))
+        checkposreal(p.args[2]) || throw(ArgumentError("Second argument to plotasdf should be the number of lags, a positive real number."))
+        checkposreal(p.args[3]) || throw(ArgumentError("Third argument to plotasdf should be the sampling rate, a positive real number."))
         n = p.args[2]
         Δ = p.args[3]
         τ = (-n+1:n-1).*Δ
     else
-        error("Either only a model should be provided to plotacv or a model, number of observations and sampling rate Δ (or vector of lags if appropriate).")
+        throw(ArgumentError("Either only a model should be provided to plotacv or a model, number of observations and sampling rate Δ (or vector of lags if appropriate)."))
     end
     model = p.args[1]
     y = length(p.args)==2 ? acv(model, τ) : acv(model, n, Δ)
@@ -167,17 +167,17 @@ plotacv
 @userplot PlotEI
 @recipe function f(p::PlotEI)
     if length(p.args) == 1
-        p.args[1] isa TimeSeriesModel || error("If only one argument is provided to plotei, it must be a TimeSeriesModel.")
+        p.args[1] isa TimeSeriesModel || throw(ArgumentError("If only one argument is provided to plotei, it must be a TimeSeriesModel."))
         n = 1024
         Δ = 1
     elseif length(p.args) == 3
-        p.args[1] isa TimeSeriesModel || error("First argument to plotei must be a TimeSeriesModel.")
-        checkposreal(p.args[2]) || error("Second argument to plotei should be the number of observations, a positive real number.")
-        checkposreal(p.args[3]) || error("Third argument to plotei should be the sampling rate, a positive real number.")
+        p.args[1] isa TimeSeriesModel || throw(ArgumentError("First argument to plotei must be a TimeSeriesModel."))
+        checkposreal(p.args[2]) || throw(ArgumentError("Second argument to plotei should be the number of observations, a positive real number."))
+        checkposreal(p.args[3]) || throw(ArgumentError("Third argument to plotei should be the sampling rate, a positive real number."))
         n = p.args[2]
         Δ = p.args[3]
     else
-        error("Either only a model should be provided to plotei or a model, number of observations and sampling rate Δ.")
+        throw(ArgumentError("Either only a model should be provided to plotei or a model, number of observations and sampling rate Δ."))
     end
     Ω = fftshift(fftfreq(n, 2π/Δ))
     model = p.args[1]

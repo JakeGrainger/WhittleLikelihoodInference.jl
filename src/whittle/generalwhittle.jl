@@ -15,23 +15,25 @@ generalwhittle(store::AdditiveStorage, data::GenWhittleData) = generalwhittle(st
 ## gradient
 "Function to compute the gradient of the Whittle likelihood from the Periodogram and some spectral quantity (sdf or EI)."
 function grad_generalwhittle!(∇ℓ, S, ∇S, I::Vector{T}) where {T<:Number} # univariate case
+    length(S) == length(I) == size(∇S,2) || throw(ArgumentError("S and I should be same length as second dim of ∇S."))
     ∇ℓ .= zero(eltype(∇ℓ))
     @inbounds for iω = 1:length(S)
-        @views Ipart = (1.0/real(S[iω][1]) - I[iω]/(real(S[iω][1])^2))
+        Ipart = (1.0/real(S[iω]) - I[iω]/(real(S[iω])^2))
         for jpar = 1:size(∇S, 1)
-            @views ∇ℓ[jpar] += Ipart * real(∇S[jpar, iω][1])
+            ∇ℓ[jpar] += Ipart * real(∇S[jpar, iω])
         end
     end
     return nothing
 end
 function grad_generalwhittle!(∇ℓ, S, ∇S, I::Vector{SMatrix{D,D,T,n}}) where {D,T,n} # multivariate case
+    length(S) == length(I) == size(∇S,2) || throw(ArgumentError("S and I should be same length as second dim of ∇S."))
     ∇ℓ .= zero(eltype(∇ℓ))
     Id = diagm(@SVector ones(D))
     @inbounds for iω = 1:length(S)
-        @views invS = inv(S[iω])
-        @views Ipart = (Id - I[iω] * invS)
+        invS = inv(S[iω])
+        Ipart = (Id - I[iω] * invS)
         for jpar = 1:size(∇S, 1)
-            @views ∇ℓ[jpar] += real(tr(Ipart * ∇S[jpar, iω] * invS))
+            ∇ℓ[jpar] += real(tr(Ipart * ∇S[jpar, iω] * invS))
         end
     end
     return nothing
@@ -50,8 +52,9 @@ grad_generalwhittle!(∇ℓ, store::AdditiveStorage, data::GenWhittleData) = gra
 ## hessian
 "Function to compute the hessian of the Whittle likelihood from the Periodogram and some spectral quantity (sdf or EI)."
 function hess_generalwhittle!(∇²ℓ, S, ∇S, ∇²S, I::Vector{T}) where {T <: Number} # univariate
+    length(S) == length(I) == size(∇S,2) == size(∇²S,2) || throw(ArgumentError("S and I should be same length as second dim of ∇S and ∇²S."))
     ∇²ℓ .= zero(eltype(∇²ℓ))
-    @views for iω = 1:length(S) # fill lower triangle
+    @inbounds for iω = 1:length(S) # fill lower triangle
         invS = inv(S[iω])
         otherIpart = (I[iω] * invS)
         Ipart = (1 - otherIpart)
@@ -69,9 +72,10 @@ function hess_generalwhittle!(∇²ℓ, S, ∇S, ∇²S, I::Vector{T}) where {T 
     return nothing
 end
 function hess_generalwhittle!(∇²ℓ, S, ∇S, ∇²S, I::Vector{SMatrix{D,D,T,n}}) where {D,T,n}
+    length(S) == length(I) == size(∇S,2) == size(∇²S,2) || throw(ArgumentError("S and I should be same length as second dim of ∇S and ∇²S."))
     ∇²ℓ .= zero(eltype(∇²ℓ))
     Id = diagm(@SVector ones(D))
-    @views for iω = 1:length(S) # fill lower triangle
+    @inbounds for iω = 1:length(S) # fill lower triangle
         invS = inv(S[iω])
         otherIpart = (I[iω] * invS)
         Ipart = (Id - otherIpart)
@@ -83,7 +87,7 @@ function hess_generalwhittle!(∇²ℓ, S, ∇S, ∇²S, I::Vector{SMatrix{D,D,T
             end
         end
     end
-    for jpar = 1:size(∇S, 1)-1, kpar = jpar+1:size(∇S, 1) # fill upper triangle from symmetry
+    @inbounds for jpar = 1:size(∇²ℓ, 1)-1, kpar = jpar+1:size(∇²ℓ, 1) # fill upper triangle from symmetry
         @views ∇²ℓ[jpar, kpar] = ∇²ℓ[kpar, jpar]
     end
     return nothing
@@ -104,8 +108,9 @@ hess_generalwhittle!(∇ℓ, store::AdditiveStorage, data::GenWhittleData) = hes
 
 "Function to compute the offdiagonal parts of the hessian when the model is additive."
 function offdiag_add_hess_generalwhittle!(∇²ℓ, S, ∇S1, ∇S2, I::Vector{T}) where {T<:Number} # univariate
+    length(S) == length(I) == size(∇S1,2) == size(∇S2,2) || throw(ArgumentError("S and I should be same length as second dim of ∇S1 and ∇S2."))
     ∇²ℓ .= zero(eltype(∇²ℓ))
-    @views for iω = 1:length(S) # fill lower triangle
+    @inbounds for iω = 1:length(S) # fill lower triangle
         invS = inv(S[iω])
         otherIpart = (I[iω] * invS)
         Ipart = (1 - otherIpart)
@@ -120,9 +125,10 @@ function offdiag_add_hess_generalwhittle!(∇²ℓ, S, ∇S1, ∇S2, I::Vector{T
     return nothing
 end
 function offdiag_add_hess_generalwhittle!(∇²ℓ, S, ∇S1, ∇S2, I::Vector{SMatrix{D,D,T,n}}) where {D,T,n}
+    length(S) == length(I) == size(∇S1,2) == size(∇S2,2) || throw(ArgumentError("S and I should be same length as second dim of ∇S1 and ∇S2."))
     ∇²ℓ .= zero(eltype(∇²ℓ))
     Id = diagm(@SVector ones(D))
-    @views for iω = 1:length(S) # fill lower triangle
+    for iω = 1:length(S) # fill lower triangle
         invS = inv(S[iω])
         otherIpart = (I[iω] * invS)
         Ipart = (Id - otherIpart)

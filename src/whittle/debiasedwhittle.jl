@@ -57,8 +57,8 @@ struct DebiasedWhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
         model::Type{<:TimeSeriesModel{D}}, ts, Δ;
         lowerΩcutoff = 0, upperΩcutoff = Inf) where {D}
         
-        Δ > 0 || error("Δ should be a positive.")
-        D == size(ts,2) || error("timeseries is $(size(ts,2)) dimensional, but model is $D dimensional.")
+        Δ > 0 || throw(ArgumentError("Δ should be a positive."))
+        D == size(ts,2) || throw(ArgumentError("timeseries is $(size(ts,2)) dimensional, but model is $D dimensional."))
         wdata = DebiasedWhittleData(model, ts, Δ, lowerΩcutoff = lowerΩcutoff, upperΩcutoff = upperΩcutoff)
         mem = allocate_memory_EI_FG(model, size(ts,1), Δ)
         new{eltype(wdata.I),typeof(mem),typeof(model)}(wdata,mem,model)
@@ -158,10 +158,11 @@ function debiasedwhittle_Ehess!(EH, store, data::GenWhittleData)
     EH .= zero(eltype(EH))
     ∇S = getallderiv(store)
     S = extract_array(extract_S(store))
-    for iω = data.Ω_used_index
-        @views invS = inv(S[iω]) # account for double frequency resolution
+    length(S) == size(∇S,2) || error("S should be same length as second dim of ∇S")
+    @inbounds for iω = data.Ω_used_index
+        invS = inv(S[iω]) # account for double frequency resolution
         for jpar = 1:size(EH, 1), kpar = 1:jpar
-            @views EH[jpar,kpar] += real(tr(∇S[jpar, iω] * invS*∇S[kpar, iω] * invS))
+            EH[jpar,kpar] += real(tr(∇S[jpar, iω] * invS*∇S[kpar, iω] * invS))
         end
     end
     for jpar = 1:size(EH, 1)-1, kpar = jpar+1:size(EH, 1) # fill upper triangle from symmetry

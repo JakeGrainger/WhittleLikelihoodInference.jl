@@ -58,8 +58,8 @@ struct WhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
         model::Type{<:TimeSeriesModel{D}}, ts, Δ;
         lowerΩcutoff = 0, upperΩcutoff = Inf) where {D}
         
-        Δ > 0 || error("Δ should be a positive.")
-        D == size(ts,2) || error("timeseries is $(size(ts,2)) dimensional, but model is $D dimensional.")
+        Δ > 0 || throw(ArgumentError("Δ should be a positive."))
+        D == size(ts,2) || throw(ArgumentError("timeseries is $(size(ts,2)) dimensional, but model is $D dimensional."))
         wdata = WhittleData(model, ts, Δ, lowerΩcutoff = lowerΩcutoff, upperΩcutoff = upperΩcutoff)
         mem = allocate_memory_sdf_FGH(model, size(ts,1), Δ)
         new{eltype(wdata.I),typeof(mem),typeof(model)}(wdata,mem,model)

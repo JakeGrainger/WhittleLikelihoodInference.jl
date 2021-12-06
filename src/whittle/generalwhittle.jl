@@ -8,9 +8,6 @@ generalwhittle_summand(S::T, I) where {T<:Number} = real(log(S) + I/S)
 
 "Function to compute the Whittle likelihood from the Periodogram and some spectral quantity (sdf or EI)."
 generalwhittle(S, I::Vector{T}) where {T} = sum(generalwhittle_summand(Sᵢ,Iᵢ) for (Sᵢ,Iᵢ) ∈ zip(S,I))
-# generalwhittle(store::SdfStorage, data::GenWhittleData) = @views generalwhittle(store.hermitianarray[data.Ω_used_index], data.I)
-# generalwhittle(store::Acv2EIStorage, data::GenWhittleData) = @views generalwhittle(store.hermitianarray[data.Ω_used_index], data.I)
-# generalwhittle(store::Sdf2EIStorage, data::GenWhittleData) = generalwhittle(store.acv2EI, data)
 generalwhittle(funcmemory, data::GenWhittleData) = @views generalwhittle(unpack(funcmemory)[data.Ω_used_index], data.I)
 generalwhittle(store::TimeSeriesModelStorageFunction, data::GenWhittleData) = generalwhittle(store.funcmemory, data)
 generalwhittle(store::AdditiveStorage, data::GenWhittleData) = generalwhittle(store.store1, data) # function value will always be stored in leftmost storage.
@@ -39,10 +36,6 @@ function grad_generalwhittle!(∇ℓ, S, ∇S, I::Vector{SMatrix{D,D,T,n}}) wher
     end
     return nothing
 end
-# grad_generalwhittle!(∇ℓ, funcmemory::SdfStorage,    gradmemory::SdfStorage,    data::GenWhittleData) = @views grad_generalwhittle!(∇ℓ, funcmemory.hermitianarray[data.Ω_used_index], gradmemory.hermitianarray[:,data.Ω_used_index], data.I)
-# grad_generalwhittle!(∇ℓ, funcmemory::Acv2EIStorage, gradmemory::Acv2EIStorage, data::GenWhittleData) = @views grad_generalwhittle!(∇ℓ, funcmemory.hermitianarray[data.Ω_used_index], gradmemory.hermitianarray[:,data.Ω_used_index], data.I)
-# grad_generalwhittle!(∇ℓ, funcmemory::Sdf2EIStorage, gradmemory::Acv2EIStorage, data::GenWhittleData) = grad_generalwhittle!(∇ℓ, funcmemory.acv2EI, gradmemory,        data)
-# grad_generalwhittle!(∇ℓ, funcmemory,                gradmemory::Sdf2EIStorage, data::GenWhittleData) = grad_generalwhittle!(∇ℓ, funcmemory,        gradmemory.acv2EI, data)
 grad_generalwhittle!(∇ℓ, funcmemory, gradmemory, data::GenWhittleData) = @views grad_generalwhittle!(∇ℓ, unpack(funcmemory)[data.Ω_used_index], unpack(gradmemory)[:,data.Ω_used_index], data.I)
 grad_generalwhittle!(∇ℓ, store::TimeSeriesModelStorageGradient, data::GenWhittleData) = grad_generalwhittle!(∇ℓ, store.funcmemory, store.gradmemory, data)
 grad_generalwhittle!(∇ℓ, funcmemory, store::TimeSeriesModelStorageGradient, data::GenWhittleData) = grad_generalwhittle!(∇ℓ, funcmemory, store.gradmemory, data)
@@ -95,10 +88,6 @@ function hess_generalwhittle!(∇²ℓ, S, ∇S, ∇²S, I::Vector{SMatrix{D,D,T
     end
     return nothing
 end
-# hess_generalwhittle!(∇²ℓ, funcmemory::SdfStorage,    gradmemory::SdfStorage,    hessmemory::SdfStorage, data::GenWhittleData) = @views hess_generalwhittle!(∇²ℓ, funcmemory.hermitianarray[data.Ω_used_index], gradmemory.hermitianarray[:,data.Ω_used_index], hessmemory.hermitianarray[:,data.Ω_used_index], data.I)
-# hess_generalwhittle!(∇²ℓ, funcmemory::Acv2EIStorage, gradmemory::Acv2EIStorage, hessmemory::Acv2EIStorage, data::GenWhittleData) = @views hess_generalwhittle!(∇²ℓ, funcmemory.hermitianarray[data.Ω_used_index], gradmemory.hermitianarray[:,data.Ω_used_index], hessmemory.hermitianarray[:,data.Ω_used_index], data.I)
-# hess_generalwhittle!(∇²ℓ, funcmemory::Sdf2EIStorage, gradmemory::Acv2EIStorage, hessmemory::Acv2EIStorage, data::GenWhittleData) = hess_generalwhittle!(∇²ℓ, funcmemory.acv2EI, gradmemory, hessmemory, data)
-# hess_generalwhittle!(∇²ℓ, funcmemory               , gradmemory::Sdf2EIStorage, hessmemory::Sdf2EIStorage, data::GenWhittleData) = hess_generalwhittle!(∇²ℓ, funcmemory, gradmemory.acv2EI, hessmemory.acv2EI, data)
 hess_generalwhittle!(∇²ℓ, funcmemory, gradmemory, hessmemory, data::GenWhittleData) = @views hess_generalwhittle!(∇²ℓ, unpack(funcmemory)[data.Ω_used_index], unpack(gradmemory)[:,data.Ω_used_index], unpack(hessmemory)[:,data.Ω_used_index], data.I)
 hess_generalwhittle!(∇²ℓ, store::TimeSeriesModelStorageHessian, data::GenWhittleData) = hess_generalwhittle!(∇²ℓ, store.funcmemory, store.gradmemory, store.hessmemory, data)
 hess_generalwhittle!(∇²ℓ, funcmemory, store::TimeSeriesModelStorageHessian, data::GenWhittleData) = hess_generalwhittle!(∇²ℓ, funcmemory, store.gradmemory, store.hessmemory, data)
@@ -147,11 +136,6 @@ function offdiag_add_hess_generalwhittle!(∇²ℓ, S, ∇S1, ∇S2, I::Vector{S
     end
     return nothing
 end
-# offdiag_add_hess_generalwhittle!(∇²ℓ, funcmemory::SdfStorage, gradmemory1::SdfStorage, gradmemory2::SdfStorage, data::GenWhittleData) = @views offdiag_add_hess_generalwhittle!(∇²ℓ, funcmemory.hermitianarray[data.Ω_used_index], gradmemory1.hermitianarray[:,data.Ω_used_index], gradmemory2.hermitianarray[:,data.Ω_used_index], data.I)
-# offdiag_add_hess_generalwhittle!(∇²ℓ, funcmemory::Acv2EIStorage, gradmemory1::Acv2EIStorage, gradmemory2::Acv2EIStorage, data::GenWhittleData) = @views offdiag_add_hess_generalwhittle!(∇²ℓ, funcmemory.hermitianarray[data.Ω_used_index], gradmemory1.hermitianarray[:,data.Ω_used_index], gradmemory2.hermitianarray[:,data.Ω_used_index], data.I)
-# offdiag_add_hess_generalwhittle!(∇²ℓ, funcmemory::Sdf2EIStorage, gradmemory1::Acv2EIStorage, gradmemory2::Acv2EIStorage, data::GenWhittleData) = offdiag_add_hess_generalwhittle!(∇²ℓ, funcmemory.acv2EI, gradmemory1, gradmemory2, data)
-# offdiag_add_hess_generalwhittle!(∇²ℓ, funcmemory               , gradmemory1::Sdf2EIStorage, gradmemory2::Acv2EIStorage, data::GenWhittleData) = offdiag_add_hess_generalwhittle!(∇²ℓ, funcmemory, gradmemory1.acv2EI, gradmemory2, data)
-# offdiag_add_hess_generalwhittle!(∇²ℓ, funcmemory               , gradmemory1               , gradmemory2::Sdf2EIStorage, data::GenWhittleData) = offdiag_add_hess_generalwhittle!(∇²ℓ, funcmemory, gradmemory1, gradmemory2.acv2EI, data)
 offdiag_add_hess_generalwhittle!(∇²ℓ, funcmemory, gradmemory1, gradmemory2, data::GenWhittleData) = @views offdiag_add_hess_generalwhittle!(∇²ℓ, unpack(funcmemory)[data.Ω_used_index], unpack(gradmemory1)[:,data.Ω_used_index], unpack(gradmemory2)[:,data.Ω_used_index], data.I)
 offdiag_add_hess_generalwhittle!(∇²ℓ, funcmemory, store1::TimeSeriesModelStorageHessian, store2::TimeSeriesModelStorageHessian, data::GenWhittleData) = offdiag_add_hess_generalwhittle!(∇²ℓ, funcmemory, store1.gradmemory, store2.gradmemory, data)
 

@@ -1,19 +1,19 @@
 ## Be careful, some of this functionality depends on the storage type provided. 
 ## Use higher level function calls for Whittle and de-biased Whitle if possible!
 
-"Low level function to compute the Whittle summand given a spectral quantity S (the sdf or EI) and periodogram ordinate I."
+# Low level function to compute the Whittle summand given a spectral quantity S (the sdf or EI) and periodogram ordinate I.
 generalwhittle_summand(S::SHermitianCompact, I) = real(log(det(S)) + tr(I*inv(S)))
 generalwhittle_summand(S::Matrix{T}, I) where {T} = real(log(det(S)) + tr(I/S))
 generalwhittle_summand(S::T, I) where {T<:Number} = real(log(S) + I/S)
 
-"Function to compute the Whittle likelihood from the Periodogram and some spectral quantity (sdf or EI)."
+# Compute the Whittle likelihood from the Periodogram and some spectral quantity (sdf or EI).
 generalwhittle(S, I::Vector{T}) where {T} = sum(generalwhittle_summand(Sᵢ,Iᵢ) for (Sᵢ,Iᵢ) ∈ zip(S,I))
 generalwhittle(funcmemory, data::GenWhittleData) = @views generalwhittle(unpack(funcmemory)[data.Ω_used_index], data.I)
 generalwhittle(store::TimeSeriesModelStorageFunction, data::GenWhittleData) = generalwhittle(store.funcmemory, data)
 generalwhittle(store::AdditiveStorage, data::GenWhittleData) = generalwhittle(store.store1, data) # function value will always be stored in leftmost storage.
 
 ## gradient
-"Function to compute the gradient of the Whittle likelihood from the Periodogram and some spectral quantity (sdf or EI)."
+# Compute the gradient of the Whittle likelihood from the Periodogram and some spectral quantity (sdf or EI).
 function grad_generalwhittle!(∇ℓ, S, ∇S, I::Vector{T}) where {T<:Number} # univariate case
     length(S) == length(I) == size(∇S,2) || throw(ArgumentError("S and I should be same length as second dim of ∇S."))
     ∇ℓ .= zero(eltype(∇ℓ))
@@ -48,9 +48,8 @@ end
 grad_generalwhittle!(∇ℓ, store::AdditiveStorage, data::GenWhittleData) = grad_generalwhittle!(∇ℓ, extract_S(store), store::AdditiveStorage, data::GenWhittleData)
 
 
-
 ## hessian
-"Function to compute the hessian of the Whittle likelihood from the Periodogram and some spectral quantity (sdf or EI)."
+# Compute the hessian of the Whittle likelihood from the Periodogram and some spectral quantity (sdf or EI).
 function hess_generalwhittle!(∇²ℓ, S, ∇S, ∇²S, I::Vector{T}) where {T <: Number} # univariate
     length(S) == length(I) == size(∇S,2) == size(∇²S,2) || throw(ArgumentError("S and I should be same length as second dim of ∇S and ∇²S."))
     ∇²ℓ .= zero(eltype(∇²ℓ))
@@ -106,7 +105,7 @@ function hess_generalwhittle!(∇²ℓ, objS, store::AdditiveStorage, data)
 end
 hess_generalwhittle!(∇ℓ, store::AdditiveStorage, data::GenWhittleData) = hess_generalwhittle!(∇ℓ, extract_S(store), store, data)
 
-"Function to compute the offdiagonal parts of the hessian when the model is additive."
+# Compute the offdiagonal parts of the hessian when the model is additive.
 function offdiag_add_hess_generalwhittle!(∇²ℓ, S, ∇S1, ∇S2, I::Vector{T}) where {T<:Number} # univariate
     length(S) == length(I) == size(∇S1,2) == size(∇S2,2) || throw(ArgumentError("S and I should be same length as second dim of ∇S1 and ∇S2."))
     ∇²ℓ .= zero(eltype(∇²ℓ))

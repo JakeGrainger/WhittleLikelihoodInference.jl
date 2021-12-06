@@ -41,14 +41,6 @@ end
         end
     end
 end
-"""
-    realmatrixfunctionplot(x,y)
-    realmatrixfunctionplot!(x,y)
-
-Plots a matrix valued function by plotting each element of the matrix in a separate panel.
-"""
-@shorthands realmatrixfunctionplot
-
 
 @userplot PlotSdf
 @recipe function f(p::PlotSdf)

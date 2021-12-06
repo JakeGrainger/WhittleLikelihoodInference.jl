@@ -31,11 +31,8 @@ function covmatrix(model::TimeSeriesModel, n, Δ)
         if isposdef(C)
             return C
         else
-            for i ∈ 1:size(C,1)
-                C[i,i] += 1e-10
-            end
+            error("C not positive semi definite.")
         end
-        return C
     end
 end
 

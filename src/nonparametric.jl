@@ -21,7 +21,7 @@ struct Periodogram{D,T,V} <: SpectralEstimate{D,T}
     Ω::V
     ordinates::Vector{T}
     function Periodogram(timeseries::Matrix{T}, Δ::Real) where {T}
-        Δ > 0 || error("Δ should be a positive.")
+        Δ > 0 || throw(ArgumentError("Δ should be a positive."))
         J = fftshift(fft(timeseries, 1),1)
         n = size(J,1)
         D = size(J,2)
@@ -30,7 +30,7 @@ struct Periodogram{D,T,V} <: SpectralEstimate{D,T}
         new{D, eltype(ordinates), typeof(Ω)}(Ω, ordinates)
     end
     function Periodogram(timeseries::Vector{T}, Δ::Real) where {T}
-        Δ > 0 || error("Δ should be a positive.")
+        Δ > 0 || throw(ArgumentError("Δ should be a positive."))
         J = fftshift(fft(timeseries, 1),1)
         n = size(J,1)
         ordinates = abs.(J.^2).*(Δ / (2π * n))

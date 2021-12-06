@@ -24,11 +24,11 @@ function _EI!(store::Sdf2EIStorage, n, Δ) # dispatch to alternate version to pu
     return nothing
 end
 function _EI!(store::Acv2EIStorage, n, Δ)
-    
-    for i ∈ 1:n
+    2n == size(store.allocatedarray,2) || throw(ArgumentError("store.allocatedarray should have second dimension size 2n."))
+    @inbounds for i ∈ 1:n
         @views store.allocatedarray[:, i] .*= (1 - (i - 1) / n)
     end
-    for i ∈ n+1:size(store.allocatedarray, 2)
+    @inbounds for i ∈ n+1:size(store.allocatedarray, 2)
         @views store.allocatedarray[:, i] .*= (1 - (2n - i + 1) / n)
     end
     store.planned_fft * store.allocatedarray # essentially fft!(acv, 2)
@@ -64,16 +64,16 @@ end
 
 ### Univariate ###
 
-function _EI!(store::Sdf2EIStorageUni, n, Δ) # dispatch to alternate version to pull out correct storage
+function _EI!(store::Sdf2EIStorageUni, n::Int, Δ) # dispatch to alternate version to pull out correct storage
     _EI!(store.acv2EI, n, Δ)
     return nothing
 end
-function _EI!(store::Acv2EIStorageUni, n, Δ)
-    
-    for i ∈ 1:n
+function _EI!(store::Acv2EIStorageUni, n::Int, Δ)
+    2n == length(store.allocatedarray) || throw(ArgumentError("store.allocatedarray should have length 2n."))
+    @inbounds for i ∈ 1:n
         @views store.allocatedarray[i] *= (1 - (i - 1) / n)
     end
-    for i ∈ n+1:size(store.allocatedarray, 2)
+    @inbounds for i ∈ n+1:size(store.allocatedarray, 2)
         @views store.allocatedarray[i] *= (1 - (2n - i + 1) / n)
     end
     store.planned_fft * store.allocatedarray # essentially fft!(acv, 1)
@@ -119,11 +119,11 @@ function _grad_EI!(store::Sdf2EIStorage, n, Δ) # dispatch to alternate version 
     return nothing
 end
 function _grad_EI!(store::Acv2EIStorage, n, Δ)
-    
-    for i ∈ 1:n
+    2n == size(store.allocatedarray,3) || throw(ArgumentError("store.allocatedarray should have third dimension size 2n."))
+    @inbounds for i ∈ 1:n
         @views store.allocatedarray[:, :, i] .*= (1 - (i - 1) / n)
     end
-    for i ∈ n+1:size(store.allocatedarray, 3)
+    @inbounds for i ∈ n+1:size(store.allocatedarray, 3)
         @views store.allocatedarray[:, :, i] .*= (1 - (2n - i + 1) / n)
     end
     store.planned_fft * store.allocatedarray # essentially fft!(acv, 2)
@@ -139,11 +139,11 @@ function _grad_EI!(store::Sdf2EIStorageUni, n, Δ) # dispatch to alternate versi
     return nothing
 end
 function _grad_EI!(store::Acv2EIStorageUni, n, Δ)
-    
-    for i ∈ 1:n
+    2n == size(store.allocatedarray,3) || throw(ArgumentError("store.allocatedarray should have second dimension size 2n."))
+    @inbounds for i ∈ 1:n
         @views store.allocatedarray[:, i] .*= (1 - (i - 1) / n)
     end
-    for i ∈ n+1:size(store.allocatedarray, 2)
+    @inbounds for i ∈ n+1:size(store.allocatedarray, 2)
         @views store.allocatedarray[:, i] .*= (1 - (2n - i + 1) / n)
     end
     store.planned_fft * store.allocatedarray # essentially fft!(acv, 2)
@@ -186,11 +186,11 @@ function _hess_EI!(store::Sdf2EIStorage, n, Δ) # dispatch to alternate version 
     return nothing
 end
 function _hess_EI!(store::Acv2EIStorage, n, Δ)
-    
-    for i ∈ 1:n
+    2n == size(store.allocatedarray,3) || throw(ArgumentError("store.allocatedarray should have third dimension size 2n."))
+    @inbounds for i ∈ 1:n
         @views store.allocatedarray[:, :, i] .*= (1 - (i - 1) / n)
     end
-    for i ∈ n+1:size(store.allocatedarray, 3)
+    @inbounds for i ∈ n+1:size(store.allocatedarray, 3)
         @views store.allocatedarray[:, :, i] .*= (1 - (2n - i + 1) / n)
     end
     store.planned_fft * store.allocatedarray # essentially fft!(acv, 2)
@@ -206,11 +206,11 @@ function _hess_EI!(store::Sdf2EIStorageUni, n, Δ) # dispatch to alternate versi
     return nothing
 end
 function _hess_EI!(store::Acv2EIStorageUni, n, Δ)
-    
-    for i ∈ 1:n
+    2n == size(store.allocatedarray,2) || throw(ArgumentError("store.allocatedarray should have second dimension size 2n."))
+    @inbounds for i ∈ 1:n
         @views store.allocatedarray[:, i] .*= (1 - (i - 1) / n)
     end
-    for i ∈ n+1:size(store.allocatedarray, 2)
+    @inbounds for i ∈ n+1:size(store.allocatedarray, 2)
         @views store.allocatedarray[:, i] .*= (1 - (2n - i + 1) / n)
     end
     store.planned_fft * store.allocatedarray # essentially fft!(acv, 2)

@@ -64,11 +64,11 @@ end
 
 ### Univariate ###
 
-function _EI!(store::Sdf2EIStorageUni, n::Int, Δ) # dispatch to alternate version to pull out correct storage
+function _EI!(store::Sdf2EIStorageUni, n, Δ) # dispatch to alternate version to pull out correct storage
     _EI!(store.acv2EI, n, Δ)
     return nothing
 end
-function _EI!(store::Acv2EIStorageUni, n::Int, Δ)
+function _EI!(store::Acv2EIStorageUni, n, Δ)
     2n == length(store.allocatedarray) || throw(ArgumentError("store.allocatedarray should have length 2n."))
     @inbounds for i ∈ 1:n
         @views store.allocatedarray[i] *= (1 - (i - 1) / n)

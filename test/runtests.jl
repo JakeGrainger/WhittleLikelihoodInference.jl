@@ -59,4 +59,4 @@ include("models/Matern_test.jl")
 
 include("simulation_test.jl")
 include("nonparametric_test.jl")
-# include("plotting_test.jl")
+include("plotting_test.jl")

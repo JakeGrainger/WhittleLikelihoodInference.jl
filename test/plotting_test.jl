@@ -17,7 +17,7 @@ using Plots
     @testset "plotacv" begin
         @test_throws ArgumentError plotacv(1.0)
         @test_throws ArgumentError plotacv(OU,1:2)
-        @test_throws ArgumentError plotacv(OUUnknown(1.0,1.0),1:2)
+        @test_throws ArgumentError plotacv(OUUnknown{1}(1.0,1.0),1:2)
         @test_throws ArgumentError plotacv(OU,10,1)
         @test_throws ArgumentError plotacv(OU(1.0,1.0),1:2,1)
         @test_throws ArgumentError plotacv(OU(1.0,1.0),10,-1)

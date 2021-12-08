@@ -1,5 +1,6 @@
 """
     DebiasedWhittleLikelihood(model::Type{<:TimeSeriesModel}, ts, Δ; lowerΩcutoff, upperΩcutoff, taper)
+    DebiasedWhittleLikelihood(model::Type{<:TimeSeriesModel}, timeseries::TimeSeries; lowerΩcutoff, upperΩcutoff, taper)
 
 Generate a function to evaluate the Debiased Whittle likelihood it's gradient and expected Hessian.
 
@@ -18,6 +19,7 @@ If F, G or EH equal nothing, then the function, gradient or expected Hessian are
 - `model`: the model for the process. Should be of type TimeSeriesModel, so `OU` and not `OU(1,1)`.
 - `ts`: the timeseries in the form of an n by d matrix (where d is the dimension of the time series model).
 - `Δ`: the sampling rate of the time series.
+- `timeseries`: can be provided instead of `ts` and `Δ`. Must be of type `TimeSeries`.
 - `lowerΩcutoff`: the lower bound of the frequency range included in the likelihood.
 - `upperΩcutoff`: the upper bound of the frequency range included in the likelihood.
 - `taper`: optional taper which should be a vector of length `size(ts,1)`, or `nothing` in which case no taper will be used.
@@ -54,6 +56,9 @@ struct DebiasedWhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
     data::DebiasedWhittleData{T}
     memory::S
     model::M
+    function DebiasedWhittleLikelihood(model, timeseries::TimeSeries; lowerΩcutoff = 0, upperΩcutoff = Inf, taper = nothing)
+        DebiasedWhittleLikelihood(model, timeseries.ts, timeseries.Δ; lowerΩcutoff = lowerΩcutoff, upperΩcutoff = upperΩcutoff, taper = taper)
+    end
     function DebiasedWhittleLikelihood(
         model::Type{<:TimeSeriesModel{D}}, ts, Δ;
         lowerΩcutoff = 0, upperΩcutoff = Inf, taper = nothing) where {D}

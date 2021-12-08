@@ -1,9 +1,9 @@
 @testset "simulation" begin
     @test WhittleLikelihoodInference.GaussianProcess(OU(1.0,1.0), 10, 1.0).X isa WhittleLikelihoodInference.Distributions.MvNormal
     @test WhittleLikelihoodInference.GaussianProcess(CorrelatedOU(1.0,1.0,0.5), 10, 1.0).X isa WhittleLikelihoodInference.Distributions.MatrixReshaped
-    @test_throws ArgumentError(simulate_gp(OU(1.0,1.0), -10, 1.0, 1))
-    @test_throws ArgumentError(simulate_gp(OU(1.0,1.0), 10, -1.0, 1))
-    @test_throws ArgumentError(simulate_gp(OU(1.0,1.0), 10, 1.0, -1))
+    @test_throws ArgumentError simulate_gp(OU(1.0,1.0), -10, 1.0, 1)
+    @test_throws ArgumentError simulate_gp(OU(1.0,1.0), 10, -1.0, 1)
+    @test_throws ArgumentError simulate_gp(OU(1.0,1.0), 10, 1.0, -1)
     ts1 = simulate_gp(OU(1.0,1.0), 10, 1.0, 1)[1]
     ts2 = simulate_gp(CorrelatedOU(1.0,1.0,0.5), 10, 1.0, 1)[1]
     @test ndims(ts1) == 1

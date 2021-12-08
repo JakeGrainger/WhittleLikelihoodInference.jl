@@ -61,7 +61,7 @@ struct DebiasedWhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
         Δ > 0 || throw(ArgumentError("Δ should be a positive."))
         D == size(ts,2) || throw(ArgumentError("timeseries is $(size(ts,2)) dimensional, but model is $D dimensional."))
         wdata = DebiasedWhittleData(model, ts, Δ, lowerΩcutoff = lowerΩcutoff, upperΩcutoff = upperΩcutoff, taper = taper)
-        mem = allocate_memory_EI_FG(model, size(ts,1), Δ, taper)
+        mem = allocate_memory_EI_FG(model, size(ts,1), Δ, taper = taper)
         new{eltype(wdata.I),typeof(mem),typeof(model)}(wdata,mem,model)
     end
 end

@@ -137,4 +137,7 @@ n = 10
         @test WhittleLikelihoodInference.unpack(sdfstoreuni) === y5
         @test WhittleLikelihoodInference.unpack(sdfonlyuni)  === y6
     end
+    @testset "taper2timedomainkernel" begin
+        @test WhittleLikelihoodInference.taper2timedomainkernel(ones(4)./2,4) == WhittleLikelihoodInference.taper2timedomainkernel(nothing,4)
+    end
 end

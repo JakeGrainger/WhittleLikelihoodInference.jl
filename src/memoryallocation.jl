@@ -16,6 +16,7 @@ struct Acv2EIStorage{N,M,D,L,P} <: TimeSeriesModelStorage
         Array{ComplexF64,N},
     }
     planned_fft::P
+    kernel::Vector{Float64}
     function Acv2EIStorage(
         allocatedarray::Array{ComplexF64,M},
         hermitianarray::Base.ReinterpretArray{
@@ -24,10 +25,11 @@ struct Acv2EIStorage{N,M,D,L,P} <: TimeSeriesModelStorage
             ComplexF64,
             Array{ComplexF64,N},
         },
+        kernel,
         fft_flags,
     ) where {N,M,D,L}
         planned_fft = plan_fft!(allocatedarray, M, flags = fft_flags)
-        new{N,M,D,L,typeof(planned_fft)}(allocatedarray, hermitianarray, planned_fft)
+        new{N,M,D,L,typeof(planned_fft)}(allocatedarray, hermitianarray, planned_fft, kernel)
     end
 end
 
@@ -58,51 +60,52 @@ struct Sdf2EIStorage{N,M,D,L,Q,P} <: TimeSeriesModelStorage
             ComplexF64,
             Array{ComplexF64,N},
         },
+        kernel,
         fft_flags,
     ) where {N,M,D,L}
         sdf2acv = Sdf2AcvStorage(sdf_array, fft_flags)
-        acv2EI = Acv2EIStorage(acv_array, hermitianarray, fft_flags)
+        acv2EI = Acv2EIStorage(acv_array, hermitianarray, kernel, fft_flags)
         new{N,M,D,L,fft_plan_type(sdf2acv),fft_plan_type(acv2EI)}(sdf2acv, acv2EI)
     end
 end
 
 # Generate required storage for computing the EI for a general time series model.
-function EIstorage_function(model::Type{<:TimeSeriesModel{D}}, n, fft_flags = FFTW.MEASURE) where {D}
+function EIstorage_function(model::Type{<:TimeSeriesModel{D}}, n, kernel, fft_flags = FFTW.MEASURE) where {D}
     acv_array = zeros(ComplexF64, nlowertriangle_dimension(model), 2n)
     hermitianarray = reinterpret(SHermitianCompact{D,eltype(acv_array),nlowertriangle_dimension(model)}, vec(acv_array))
-    return Acv2EIStorage(acv_array, hermitianarray, fft_flags)
+    return Acv2EIStorage(acv_array, hermitianarray, kernel, fft_flags)
 end
-function EIstorage_function(model::Type{<:UnknownAcvTimeSeriesModel{D}}, n, fft_flags = FFTW.MEASURE) where {D}
+function EIstorage_function(model::Type{<:UnknownAcvTimeSeriesModel{D}}, n, kernel, fft_flags = FFTW.MEASURE) where {D}
     sdf_array = zeros(ComplexF64, nlowertriangle_dimension(model), max(2n, minbins(model)))
     acv_array = zeros(ComplexF64, nlowertriangle_dimension(model), 2n)
     hermitianarray = reinterpret(SHermitianCompact{D,eltype(acv_array),nlowertriangle_dimension(model)}, vec(acv_array))
-    return Sdf2EIStorage(sdf_array, acv_array, hermitianarray, fft_flags)
+    return Sdf2EIStorage(sdf_array, acv_array, hermitianarray, kernel, fft_flags)
 end
 
 # Generate required storage for computing the gradient of EI for a general time series model.
-function EIstorage_gradient(model::Type{<:TimeSeriesModel{D}}, n, fft_flags = FFTW.MEASURE) where {D}
+function EIstorage_gradient(model::Type{<:TimeSeriesModel{D}}, n, kernel, fft_flags = FFTW.MEASURE) where {D}
     acv_array = zeros(ComplexF64, nlowertriangle_dimension(model), npars(model), 2n)
     hermitianarray = reinterpret(SHermitianCompact{D,eltype(acv_array),nlowertriangle_dimension(model)}, reshape(acv_array, (:, 2n)))
-    return Acv2EIStorage(acv_array, hermitianarray, fft_flags)
+    return Acv2EIStorage(acv_array, hermitianarray, kernel, fft_flags)
 end
-function EIstorage_gradient(model::Type{<:UnknownAcvTimeSeriesModel{D}}, n, fft_flags = FFTW.MEASURE) where {D}
+function EIstorage_gradient(model::Type{<:UnknownAcvTimeSeriesModel{D}}, n, kernel, fft_flags = FFTW.MEASURE) where {D}
     sdf_array = zeros(ComplexF64, nlowertriangle_dimension(model), npars(model), max(2n, minbins(model)))
     acv_array = zeros(ComplexF64, nlowertriangle_dimension(model), npars(model), 2n)
     hermitianarray = reinterpret(SHermitianCompact{D,eltype(acv_array),nlowertriangle_dimension(model)}, reshape(acv_array, (:, 2n)))
-    return Sdf2EIStorage(sdf_array, acv_array, hermitianarray, fft_flags)
+    return Sdf2EIStorage(sdf_array, acv_array, hermitianarray, kernel, fft_flags)
 end
 
 # Generate required storage for computing the hessian of EI for a general time series model.
-function EIstorage_hessian(model::Type{<:TimeSeriesModel{D}}, n, fft_flags = FFTW.MEASURE) where {D}
+function EIstorage_hessian(model::Type{<:TimeSeriesModel{D}}, n, kernel, fft_flags = FFTW.MEASURE) where {D}
     acv_array = zeros(ComplexF64, nlowertriangle_dimension(model), nlowertriangle_parameter(model), 2n)
     hermitianarray = reinterpret(SHermitianCompact{D,eltype(acv_array),nlowertriangle_dimension(model)}, reshape(acv_array, (:, 2n)))
-    return Acv2EIStorage(acv_array, hermitianarray, fft_flags)
+    return Acv2EIStorage(acv_array, hermitianarray, kernel, fft_flags)
 end
-function EIstorage_hessian(model::Type{<:UnknownAcvTimeSeriesModel{D}}, n, fft_flags = FFTW.MEASURE) where {D}
+function EIstorage_hessian(model::Type{<:UnknownAcvTimeSeriesModel{D}}, n, kernel, fft_flags = FFTW.MEASURE) where {D}
     sdf_array = zeros(ComplexF64, nlowertriangle_dimension(model), nlowertriangle_parameter(model), max(2n, minbins(model)))
     acv_array = zeros(ComplexF64, nlowertriangle_dimension(model), nlowertriangle_parameter(model), 2n)
     hermitianarray = reinterpret(SHermitianCompact{D,eltype(acv_array),nlowertriangle_dimension(model)}, reshape(acv_array, (:, 2n)))
-    return Sdf2EIStorage(sdf_array, acv_array, hermitianarray, fft_flags)
+    return Sdf2EIStorage(sdf_array, acv_array, hermitianarray, kernel, fft_flags)
 end
 
 #  Storage for useful quanties associated with the EI memory when estimating the acv, namely n, Δ and Ωₘ.
@@ -143,9 +146,9 @@ abstract type TimeSeriesModelStorageHessian  <: TimeSeriesModelStorageGradient e
 struct PreallocatedEI{T,F} <: TimeSeriesModelStorageFunction
     encodedtime::T
     funcmemory::F
-    function PreallocatedEI(model::Type{<:TimeSeriesModel}, n, Δ; fft_flags = FFTW.MEASURE)
+    function PreallocatedEI(model::Type{<:TimeSeriesModel}, n, Δ, kernel; fft_flags = FFTW.MEASURE)
         time = encodetimescale(model, n, Δ)
-        func = EIstorage_function(model, n, fft_flags)
+        func = EIstorage_function(model, n, kernel, fft_flags)
         new{typeof(time),typeof(func)}(time,func)
     end
 end
@@ -155,10 +158,10 @@ struct PreallocatedEIGradient{T,F,G} <: TimeSeriesModelStorageGradient
     encodedtime::T
     funcmemory::F
     gradmemory::G
-    function PreallocatedEIGradient(model::Type{<:TimeSeriesModel}, n, Δ; fft_flags = FFTW.MEASURE)
+    function PreallocatedEIGradient(model::Type{<:TimeSeriesModel}, n, Δ, kernel; fft_flags = FFTW.MEASURE)
         time = encodetimescale(model, n, Δ)
-        func = EIstorage_function(model, n, fft_flags)
-        grad = EIstorage_gradient(model, n, fft_flags)
+        func = EIstorage_function(model, n, kernel, fft_flags)
+        grad = EIstorage_gradient(model, n, kernel, fft_flags)
         new{typeof(time),typeof(func),typeof(grad)}(time, func, grad)
     end
 end
@@ -169,11 +172,11 @@ struct PreallocatedEIHessian{T,F,G,H} <: TimeSeriesModelStorageHessian
     funcmemory::F
     gradmemory::G
     hessmemory::H
-    function PreallocatedEIHessian(model::Type{<:TimeSeriesModel}, n, Δ; fft_flags = FFTW.MEASURE)
+    function PreallocatedEIHessian(model::Type{<:TimeSeriesModel}, n, Δ, kernel; fft_flags = FFTW.MEASURE)
         time = encodetimescale(model, n, Δ)
-        func = EIstorage_function(model, n, fft_flags)
-        grad = EIstorage_gradient(model, n, fft_flags)
-        hess = EIstorage_hessian(model, n, fft_flags)
+        func = EIstorage_function(model, n, kernel, fft_flags)
+        grad = EIstorage_gradient(model, n, kernel, fft_flags)
+        hess = EIstorage_hessian(model, n, kernel, fft_flags)
         new{typeof(time),typeof(func),typeof(grad),typeof(hess)}(time, func, grad, hess)
     end
 end
@@ -189,33 +192,69 @@ end
 extract_S(store::TimeSeriesModelStorageFunction) = store.funcmemory
 extract_S(store::AdditiveStorage) = extract_S(store.store1) # returns the left hand store if additive storage
 
-# Interface level function for allocating the memory for EI computation.
-function allocate_memory_EI_F(model::Type{<:TimeSeriesModel}, n, Δ; fft_flags = FFTW.MEASURE)
-    return PreallocatedEI(model, n, Δ; fft_flags = fft_flags)
+# tapering kernel computation
+function taper2timedomainkernel(taper::AbstractVector{Float64},n)
+    length(taper) == n || throw(ArgumentError("Taper is not of length n."))
+    kernel = Vector{Float64}(undef,2n)
+    for (i,τ) ∈ enumerate(0:n-1)
+        kernel[i] = sum(taper[t]*taper[t+τ] for t ∈ 1:length(taper)-τ)
+    end
+    kernel[n+1] = 0
+    for i in n+2:2n
+        kernel[i] = kernel[2n-i+2]
+    end
+    return kernel
 end
-function allocate_memory_EI_F(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, n, Δ; fft_flags = FFTW.MEASURE) where {M₁,M₂,D}
-    return AdditiveStorage( allocate_memory_EI_F(M₁, n, Δ; fft_flags = fft_flags),
-                            allocate_memory_EI_F(M₂, n, Δ; fft_flags = fft_flags),
+function taper2timedomainkernel(taper::Nothing,n)
+    kernel = Vector{Float64}(undef,2n)
+    for i ∈ 1:n
+        kernel[i] = (1 - (i - 1) / n)
+    end
+    for i ∈ n+1:2n
+        kernel[i] = (1 - (2n - i + 1) / n)
+    end
+    return kernel
+end
+
+# Interface level function for allocating the memory for EI computation.
+function allocate_memory_EI_F(model::Type{<:TimeSeriesModel}, n, Δ; taper = nothing, fft_flags = FFTW.MEASURE)
+    kernel = taper2timedomainkernel(taper,n)
+    return _allocate_memory_EI_F(model::Type{<:TimeSeriesModel}, n, Δ, kernel; fft_flags = fft_flags)
+end
+function _allocate_memory_EI_F(model::Type{<:TimeSeriesModel}, n, Δ, kernel; fft_flags)
+    return PreallocatedEI(model, n, Δ, kernel; fft_flags = fft_flags)
+end
+function _allocate_memory_EI_F(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, n, Δ, kernel; fft_flags) where {M₁,M₂,D}
+    return AdditiveStorage( allocate_memory_EI_F(M₁, n, Δ, kernel; fft_flags = fft_flags),
+                            allocate_memory_EI_F(M₂, n, Δ, kernel; fft_flags = fft_flags),
                             npars(M₁))
 end
 
 # Interface level function for allocating the memory for EI computation with gradient.
-function allocate_memory_EI_FG(model::Type{<:TimeSeriesModel}, n, Δ; fft_flags = FFTW.MEASURE)
-    return PreallocatedEIGradient(model, n, Δ; fft_flags = fft_flags)
+function allocate_memory_EI_FG(model::Type{<:TimeSeriesModel}, n, Δ; taper = nothing, fft_flags = FFTW.MEASURE)
+    kernel = taper2timedomainkernel(taper,n)
+    return _allocate_memory_EI_FG(model::Type{<:TimeSeriesModel}, n, Δ, kernel; fft_flags = fft_flags)
 end
-function allocate_memory_EI_FG(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, n, Δ; fft_flags = FFTW.MEASURE) where {M₁,M₂,D}
-    return AdditiveStorage( allocate_memory_EI_FG(M₁, n, Δ; fft_flags = fft_flags),
-                            allocate_memory_EI_FG(M₂, n, Δ; fft_flags = fft_flags),
+function _allocate_memory_EI_FG(model::Type{<:TimeSeriesModel}, n, Δ, kernel; fft_flags)
+    return PreallocatedEIGradient(model, n, Δ, kernel; fft_flags = fft_flags)
+end
+function _allocate_memory_EI_FG(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, n, Δ, kernel; fft_flags) where {M₁,M₂,D}
+    return AdditiveStorage( allocate_memory_EI_FG(M₁, n, Δ, kernel; fft_flags = fft_flags),
+                            allocate_memory_EI_FG(M₂, n, Δ, kernel; fft_flags = fft_flags),
                             npars(M₁))
 end
 
 # Interface level function for allocating the memory for EI computation with gradient and hessian.
-function allocate_memory_EI_FGH(model::Type{<:TimeSeriesModel}, n, Δ; fft_flags = FFTW.MEASURE)
-    return PreallocatedEIHessian(model, n, Δ; fft_flags = fft_flags)
+function allocate_memory_EI_FGH(model::Type{<:TimeSeriesModel}, n, Δ; taper = nothing, fft_flags = FFTW.MEASURE)
+    kernel = taper2timedomainkernel(taper,n)
+    return _allocate_memory_EI_FGH(model::Type{<:TimeSeriesModel}, n, Δ, kernel; fft_flags = fft_flags)
 end
-function allocate_memory_EI_FGH(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, n, Δ; fft_flags = FFTW.MEASURE) where {M₁,M₂,D}
-    return AdditiveStorage( allocate_memory_EI_FGH(M₁, n, Δ; fft_flags = fft_flags),
-                            allocate_memory_EI_FGH(M₂, n, Δ; fft_flags = fft_flags),
+function _allocate_memory_EI_FGH(model::Type{<:TimeSeriesModel}, n, Δ, kernel; fft_flags)
+    return PreallocatedEIHessian(model, n, Δ, kernel; fft_flags = fft_flags)
+end
+function _allocate_memory_EI_FGH(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, n, Δ, kernel; fft_flags) where {M₁,M₂,D}
+    return AdditiveStorage( allocate_memory_EI_FGH(M₁, n, Δ, kernel; fft_flags = fft_flags),
+                            allocate_memory_EI_FGH(M₂, n, Δ, kernel; fft_flags = fft_flags),
                             npars(M₁))
 end
 
@@ -332,12 +371,14 @@ end
 struct Acv2EIStorageUni{M,P} <: TimeSeriesModelStorage
     allocatedarray::Array{ComplexF64,M}
     planned_fft::P
+    kernel::Vector{Float64}
     function Acv2EIStorageUni(
         allocatedarray::Array{ComplexF64,M},
+        kernel, 
         fft_flags,
     ) where {M}
         planned_fft = plan_fft!(allocatedarray, M, flags = fft_flags)
-        new{M,typeof(planned_fft)}(allocatedarray, planned_fft)
+        new{M,typeof(planned_fft)}(allocatedarray, planned_fft, kernel)
     end
 end
 
@@ -361,45 +402,46 @@ struct Sdf2EIStorageUni{M,Q,P} <: TimeSeriesModelStorage
     function Sdf2EIStorageUni(
         sdf_array::Array{ComplexF64,M},
         acv_array::Array{ComplexF64,M},
+        kernel,
         fft_flags,
     ) where {M}
         sdf2acv = Sdf2AcvStorageUni(sdf_array, fft_flags)
-        acv2EI = Acv2EIStorageUni(acv_array, fft_flags)
+        acv2EI = Acv2EIStorageUni(acv_array, kernel, fft_flags)
         new{M,fft_plan_type(sdf2acv),fft_plan_type(acv2EI)}(sdf2acv, acv2EI)
     end
 end
 
 # Generate required storage for computing the EI for a univariate time series model.
-function EIstorage_function(model::Type{<:TimeSeriesModel{1}}, n, fft_flags = FFTW.MEASURE)
+function EIstorage_function(model::Type{<:TimeSeriesModel{1}}, n, kernel, fft_flags = FFTW.MEASURE)
     acv_array = zeros(ComplexF64, 2n)
-    return Acv2EIStorageUni(acv_array, fft_flags)
+    return Acv2EIStorageUni(acv_array, kernel, fft_flags)
 end
-function EIstorage_function(model::Type{<:UnknownAcvTimeSeriesModel{1}}, n, fft_flags = FFTW.MEASURE)
+function EIstorage_function(model::Type{<:UnknownAcvTimeSeriesModel{1}}, n, kernel, fft_flags = FFTW.MEASURE)
     sdf_array = zeros(ComplexF64, max(2n, minbins(model)))
     acv_array = zeros(ComplexF64, 2n)
-    return Sdf2EIStorageUni(sdf_array, acv_array, fft_flags)
+    return Sdf2EIStorageUni(sdf_array, acv_array, kernel, fft_flags)
 end
 
 # Generate required storage for computing the gradient of EI for a univariate time series model.
-function EIstorage_gradient(model::Type{<:TimeSeriesModel{1}}, n, fft_flags = FFTW.MEASURE)
+function EIstorage_gradient(model::Type{<:TimeSeriesModel{1}}, n, kernel, fft_flags = FFTW.MEASURE)
     acv_array = zeros(ComplexF64, npars(model), 2n)
-    return Acv2EIStorageUni(acv_array, fft_flags)
+    return Acv2EIStorageUni(acv_array, kernel, fft_flags)
 end
-function EIstorage_gradient(model::Type{<:UnknownAcvTimeSeriesModel{1}}, n, fft_flags = FFTW.MEASURE)
+function EIstorage_gradient(model::Type{<:UnknownAcvTimeSeriesModel{1}}, n, kernel, fft_flags = FFTW.MEASURE)
     sdf_array = zeros(ComplexF64, npars(model), max(2n, minbins(model)))
     acv_array = zeros(ComplexF64, npars(model), 2n)
-    return Sdf2EIStorageUni(sdf_array, acv_array, fft_flags)
+    return Sdf2EIStorageUni(sdf_array, acv_array, kernel, fft_flags)
 end
 
 # Generate required storage for computing the hessian of EI for a univariate time series model.
-function EIstorage_hessian(model::Type{<:TimeSeriesModel{1}}, n, fft_flags = FFTW.MEASURE)
+function EIstorage_hessian(model::Type{<:TimeSeriesModel{1}}, n, kernel, fft_flags = FFTW.MEASURE)
     acv_array = zeros(ComplexF64, nlowertriangle_parameter(model), 2n)
-    return Acv2EIStorageUni(acv_array, fft_flags)
+    return Acv2EIStorageUni(acv_array, kernel, fft_flags)
 end
-function EIstorage_hessian(model::Type{<:UnknownAcvTimeSeriesModel{1}}, n, fft_flags = FFTW.MEASURE)
+function EIstorage_hessian(model::Type{<:UnknownAcvTimeSeriesModel{1}}, n, kernel, fft_flags = FFTW.MEASURE)
     sdf_array = zeros(ComplexF64, nlowertriangle_parameter(model), max(2n, minbins(model)))
     acv_array = zeros(ComplexF64, nlowertriangle_parameter(model), 2n)
-    return Sdf2EIStorageUni(sdf_array, acv_array, fft_flags)
+    return Sdf2EIStorageUni(sdf_array, acv_array, kernel, fft_flags)
 end
 
 ## sdf only store

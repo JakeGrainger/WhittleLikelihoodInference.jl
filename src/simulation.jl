@@ -24,7 +24,7 @@ function covmatrix(model::TimeSeriesModel, n, Δ)
     if isposdef(C)
         return C
     else
-        @warn "Covariance matrix not positive definite, adding a small number to diagonals to fix."
+        @warn "Covariance matrix not positive definite, adding a small number to diagonals to try and fix."
         for i ∈ 1:size(C,1)
             C[i,i] += 1e-10
         end

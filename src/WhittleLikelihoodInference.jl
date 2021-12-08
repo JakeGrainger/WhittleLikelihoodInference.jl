@@ -20,7 +20,7 @@ export
     coherancy,
     coherance,
     groupdelay,
-    FiniteNormal,
+    simulate_gp,
     ## non-parametrics
     Periodogram,
     BartlettPeriodogram,

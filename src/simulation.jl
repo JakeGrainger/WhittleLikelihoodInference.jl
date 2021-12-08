@@ -42,13 +42,30 @@ function covmatrix(model::TimeSeriesModel{1}, n, Δ)
     Areal = real.(extract_acv(store))
     return Matrix(Toeplitz(Areal[1:n], Areal[1:n]))
 end
-function FiniteNormal(model::TimeSeriesModel{1}, n, Δ)
-    C = covmatrix(model, n, Δ)
-    X = MvNormal(C)
-    return X
+struct GaussianProcess{T}
+    X::T
+    Δ::Float64
+    function GaussianProcess(model::TimeSeriesModel{1}, n, Δ)
+        C = covmatrix(model, n, Δ)
+        X = MvNormal(C)
+        new{typeof(X)}(X,Δ)
+    end
+    function GaussianProcess(model::TimeSeriesModel{D}, n, Δ) where {D}
+        C = covmatrix(model, n, Δ)
+        X = MatrixReshaped(MvNormal(C), n, D)
+        new{typeof(X)}(X,Δ)
+    end
 end
-function FiniteNormal(model::TimeSeriesModel{D}, n, Δ) where {D}
-    C = covmatrix(model, n, Δ)
-    X = MatrixReshaped(MvNormal(C), n, D)
-    return X
+Distributions.rand(gp::GaussianProcess) = TimeSeries(rand(gp.X),gp.Δ)
+
+struct TimeSeries{T,N}
+    ts::Array{T,N}
+    Δ::Float64
+end
+Base.ndims(ts::TimeSeries) = size(ts.ts, 2)
+Base.length(ts::TimeSeries) = size(ts.ts, 1)
+
+function simulate_gp(model::TimeSeriesModel, n, Δ, nreps)
+    GP = GaussianProcess(model, n , Δ)
+    return [rand(GP) for _ in 1:nreps]
 end

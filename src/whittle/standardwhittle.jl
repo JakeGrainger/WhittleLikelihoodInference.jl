@@ -1,5 +1,5 @@
 """
-    WhittleLikelihood(model::Type{<:TimeSeriesModel}, ts, Δ; lowerΩcutoff, upperΩcutoff)
+    WhittleLikelihood(model::Type{<:TimeSeriesModel}, ts, Δ; lowerΩcutoff, upperΩcutoff, taper)
 
 Generate a function to evaluate the Whittle likelihood it's gradient and Hessian.
 
@@ -20,6 +20,7 @@ If F, G or H equal nothing, then the function, gradient or Hessian are not evalu
 - `Δ`: the sampling rate of the time series.
 - `lowerΩcutoff`: the lower bound of the frequency range included in the likelihood.
 - `upperΩcutoff`: the upper bound of the frequency range included in the likelihood.
+- `taper`: optional taper which should be a vector of length `size(ts,1)`, or `nothing` in which case no taper will be used.
 
 Note that to use the gradient the model must have `grad_add_sdf!` specified.
 Similarly, to use the Hessian, the model must have `hess_add_sdf!` specified.

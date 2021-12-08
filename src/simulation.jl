@@ -49,8 +49,7 @@ struct GaussianProcess{T}
         Δ > 0 || throw(ArgumentError("Δ should be positive."))
         n > 0 || throw(ArgumentError("n should be positive."))
         C = covmatrix(model, n, Δ)
-        X = normaldist(model,MvNormal(C))
-        X = MvNormal(C)
+        X = normaldist(model,C)
         new{typeof(X)}(X,Δ)
     end
 end

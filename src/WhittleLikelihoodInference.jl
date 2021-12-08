@@ -44,6 +44,10 @@ export
     include("properties/expectedperiodogram.jl")
     include("properties/coherancy.jl")
 
+    include("simulation.jl")
+    include("nonparametric.jl")
+    include("plotting.jl")
+
     include("Whittle/whittledata.jl")
     include("Whittle/generalwhittle.jl")
     include("Whittle/standardwhittle.jl")
@@ -55,9 +59,5 @@ export
     include("models/CorrelatedOUUnknown.jl")
     include("models/Matern.jl")
     include("models/MaternSlow.jl")
-
-    include("simulation.jl")
-    include("nonparametric.jl")
-    include("plotting.jl")
 
 end

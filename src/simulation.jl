@@ -45,17 +45,17 @@ end
 struct GaussianProcess{T}
     X::T
     Δ::Float64
-    function GaussianProcess(model::TimeSeriesModel{1}, n, Δ)
+    function GaussianProcess(model::TimeSeriesModel, n::Int, Δ::Float64)
+        Δ > 0 || throw(ArgumentError("Δ should be positive."))
+        n > 0 || throw(ArgumentError("n should be positive."))
         C = covmatrix(model, n, Δ)
+        X = normaldist(model,MvNormal(C))
         X = MvNormal(C)
         new{typeof(X)}(X,Δ)
     end
-    function GaussianProcess(model::TimeSeriesModel{D}, n, Δ) where {D}
-        C = covmatrix(model, n, Δ)
-        X = MatrixReshaped(MvNormal(C), n, D)
-        new{typeof(X)}(X,Δ)
-    end
 end
+normaldist(::TimeSeriesModel{D}, C) where {D} = MatrixReshaped(MvNormal(C), size(C,1), D)
+normaldist(::TimeSeriesModel{1}, C) = MvNormal(C)
 
 struct TimeSeries{T,N}
     ts::Array{T,N}
@@ -66,7 +66,8 @@ Base.length(ts::TimeSeries) = size(ts.ts, 1)
 
 Distributions.rand(gp::GaussianProcess) = TimeSeries(rand(gp.X),gp.Δ)
 
-function simulate_gp(model::TimeSeriesModel, n, Δ, nreps)
+function simulate_gp(model::TimeSeriesModel, n::Int, Δ::Number, nreps::Int)
+    nreps > 0 || throw(ArgumentError("nreps should be positive."))
     GP = GaussianProcess(model, n , Δ)
     return [rand(GP) for _ in 1:nreps]
 end

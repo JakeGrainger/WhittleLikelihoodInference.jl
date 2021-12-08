@@ -83,7 +83,7 @@ function debiasedwhittle!(store::TimeSeriesModelStorage, model::TimeSeriesModel,
 end
 
 """
-    debiasedwhittle_FG!(F, G, store, model::TimeSeriesModel ,data::GenWhittleData)
+    debiasedwhittle_FG!(F, G, store, model::TimeSeriesModel, data::GenWhittleData)
 
 Compute the debiased Whittle likelihood and its gradient using a preallocated store.
 """

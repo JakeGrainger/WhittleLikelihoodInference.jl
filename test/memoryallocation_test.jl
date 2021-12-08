@@ -4,7 +4,7 @@ n = 10
 @testset "memoryallocation" begin
     @testset "Acv2EIStorage" begin
         x = randn(ComplexF64,3,n); y = copy(x)
-        acvstore = Acv2EIStorage(y,reinterpret(SHermitianCompact{2,eltype(y),3}, vec(y)),FFTW.ESTIMATE)
+        acvstore = Acv2EIStorage(y,reinterpret(SHermitianCompact{2,eltype(y),3}, vec(y)),ones(length(x)),FFTW.ESTIMATE)
         @test fft(x,2) == acvstore.planned_fft*acvstore.allocatedarray
     end
     @testset "Sdf2AcvStorage" begin
@@ -14,7 +14,7 @@ n = 10
     end
     @testset "Acv2EIStorageUni" begin
         x = randn(ComplexF64,n); y = copy(x)
-        acvstore = Acv2EIStorageUni(y,FFTW.ESTIMATE)
+        acvstore = Acv2EIStorageUni(y,ones(length(x)),FFTW.ESTIMATE)
         @test fft(x,1) == acvstore.planned_fft*acvstore.allocatedarray
     end
     @testset "Sdf2AcvStorageUni" begin
@@ -23,22 +23,22 @@ n = 10
         @test ifft(x,1) == sdfstore.planned_ifft*sdfstore.allocatedarray
     end
     @testset "EIstorage_function" begin
-        @test EIstorage_function(CorrelatedOU,n) isa Acv2EIStorage
-        @test EIstorage_function(OU,n)           isa Acv2EIStorageUni
-        @test EIstorage_function(Matern2D,n)     isa Sdf2EIStorage
-        @test EIstorage_function(OUUnknown{1},n)  isa Sdf2EIStorageUni
+        @test EIstorage_function(CorrelatedOU,n,ones(2n)) isa Acv2EIStorage
+        @test EIstorage_function(OU,n,ones(2n))           isa Acv2EIStorageUni
+        @test EIstorage_function(Matern2D,n,ones(2n))     isa Sdf2EIStorage
+        @test EIstorage_function(OUUnknown{1},n,ones(2n))  isa Sdf2EIStorageUni
     end
     @testset "EIstorage_gradient" begin
-        @test EIstorage_gradient(CorrelatedOU,n) isa Acv2EIStorage
-        @test EIstorage_gradient(OU,n)           isa Acv2EIStorageUni
-        @test EIstorage_gradient(Matern2D,n)     isa Sdf2EIStorage
-        @test EIstorage_gradient(OUUnknown{1},n) isa Sdf2EIStorageUni
+        @test EIstorage_gradient(CorrelatedOU,n,ones(2n)) isa Acv2EIStorage
+        @test EIstorage_gradient(OU,n,ones(2n))           isa Acv2EIStorageUni
+        @test EIstorage_gradient(Matern2D,n,ones(2n))     isa Sdf2EIStorage
+        @test EIstorage_gradient(OUUnknown{1},n,ones(2n)) isa Sdf2EIStorageUni
     end
     @testset "EIstorage_hessian" begin
-        @test EIstorage_hessian(CorrelatedOU,n) isa Acv2EIStorage
-        @test EIstorage_hessian(OU,n)           isa Acv2EIStorageUni
-        @test EIstorage_hessian(Matern2D,n)     isa Sdf2EIStorage
-        @test EIstorage_hessian(OUUnknown{1},n) isa Sdf2EIStorageUni
+        @test EIstorage_hessian(CorrelatedOU,n,ones(2n)) isa Acv2EIStorage
+        @test EIstorage_hessian(OU,n,ones(2n))           isa Acv2EIStorageUni
+        @test EIstorage_hessian(Matern2D,n,ones(2n))     isa Sdf2EIStorage
+        @test EIstorage_hessian(OUUnknown{1},n,ones(2n)) isa Sdf2EIStorageUni
     end
     @testset "FreqAcvEst" begin
         freq = FreqAcvEst(3,Δ)
@@ -55,28 +55,28 @@ n = 10
         @test encodetimescale(Matern2D,n,Δ) isa FreqAcvEst
     end
     @testset "extract_S" begin
-        @test WhittleLikelihoodInference.extract_S(allocate_memory_EI_F(CorrelatedOUDouble,n,Δ)) isa Acv2EIStorage
-        @test WhittleLikelihoodInference.extract_S(allocate_memory_EI_F(CorrelatedOUUnknown{1},n,Δ)) isa Sdf2EIStorage
+        @test WhittleLikelihoodInference.extract_S(allocate_memory_EI_F(CorrelatedOUDouble,n,Δ,taper=nothing)) isa Acv2EIStorage
+        @test WhittleLikelihoodInference.extract_S(allocate_memory_EI_F(CorrelatedOUUnknown{1},n,Δ,taper=nothing)) isa Sdf2EIStorage
     end
     @testset "allocate_memory_EI_F" begin
-        @test allocate_memory_EI_F(CorrelatedOU,n,Δ) isa PreallocatedEI
-        add_alloc_func = allocate_memory_EI_F(CorrelatedOUDouble,n,Δ)
+        @test allocate_memory_EI_F(CorrelatedOU,n,Δ,taper=nothing) isa PreallocatedEI
+        add_alloc_func = allocate_memory_EI_F(CorrelatedOUDouble,n,Δ,taper=nothing)
         @test add_alloc_func isa AdditiveStorage
         @test add_alloc_func.store1 isa PreallocatedEI
         @test add_alloc_func.store2 isa PreallocatedEI
         @test add_alloc_func.npar1 == 3
     end
     @testset "allocate_memory_EI_FG" begin
-        @test allocate_memory_EI_FG(CorrelatedOU,n,Δ) isa PreallocatedEIGradient
-        add_alloc_grad = allocate_memory_EI_FG(CorrelatedOUDouble,n,Δ)
+        @test allocate_memory_EI_FG(CorrelatedOU,n,Δ,taper=nothing) isa PreallocatedEIGradient
+        add_alloc_grad = allocate_memory_EI_FG(CorrelatedOUDouble,n,Δ,taper=nothing)
         @test add_alloc_grad isa AdditiveStorage
         @test add_alloc_grad.store1 isa PreallocatedEIGradient
         @test add_alloc_grad.store2 isa PreallocatedEIGradient
         @test add_alloc_grad.npar1 == 3
     end
     @testset "allocate_memory_EI_FGH" begin
-        @test allocate_memory_EI_FGH(CorrelatedOU,n,Δ) isa PreallocatedEIHessian
-        add_alloc_hess = allocate_memory_EI_FGH(CorrelatedOUDouble,n,Δ)
+        @test allocate_memory_EI_FGH(CorrelatedOU,n,Δ,taper=nothing) isa PreallocatedEIHessian
+        add_alloc_hess = allocate_memory_EI_FGH(CorrelatedOUDouble,n,Δ,taper=nothing)
         @test add_alloc_hess isa AdditiveStorage
         @test add_alloc_hess.store1 isa PreallocatedEIHessian
         @test add_alloc_hess.store2 isa PreallocatedEIHessian
@@ -95,16 +95,16 @@ n = 10
         @test sdfstorage_hessian(CorrelatedOU,n) isa SdfStorage
     end
     @testset "allocate_memory_sdf_F" begin
-        @test allocate_memory_sdf_F(CorrelatedOU,n,Δ) isa PreallocatedSdf
-        add_alloc_func = allocate_memory_sdf_F(CorrelatedOUDouble,n,Δ)
+        @test allocate_memory_sdf_F(CorrelatedOU,n,3Δ) isa PreallocatedSdf
+        add_alloc_func = allocate_memory_sdf_F(CorrelatedOUDouble,n,3Δ)
         @test add_alloc_func isa AdditiveStorage
         @test add_alloc_func.store1 isa PreallocatedSdf
         @test add_alloc_func.store2 isa PreallocatedSdf
         @test add_alloc_func.npar1 == 3
     end
     @testset "allocate_memory_sdf_FG" begin
-        @test allocate_memory_sdf_FG(CorrelatedOU,n,Δ) isa PreallocatedSdfGradient
-        add_alloc_grad = allocate_memory_sdf_FG(CorrelatedOUDouble,n,Δ)
+        @test allocate_memory_sdf_FG(CorrelatedOU,n,3Δ) isa PreallocatedSdfGradient
+        add_alloc_grad = allocate_memory_sdf_FG(CorrelatedOUDouble,n,3Δ)
         @test add_alloc_grad isa AdditiveStorage
         @test add_alloc_grad.store1 isa PreallocatedSdfGradient
         @test add_alloc_grad.store2 isa PreallocatedSdfGradient
@@ -124,11 +124,11 @@ n = 10
         h1 = reinterpret(SHermitianCompact{2,eltype(y1),3}, vec(y1))
         h2 = reinterpret(SHermitianCompact{2,eltype(y2),3}, vec(y2))
         h3 = reinterpret(SHermitianCompact{2,eltype(y3),3}, vec(y3))
-        acvstore    = Acv2EIStorage(y1,h1,FFTW.ESTIMATE)
-        sdfstore    = Sdf2EIStorage(y2,y2,h2,FFTW.ESTIMATE)
+        acvstore    = Acv2EIStorage(y1,h1,ones(length(x)),FFTW.ESTIMATE)
+        sdfstore    = Sdf2EIStorage(y2,y2,h2,ones(length(x)),FFTW.ESTIMATE)
         sdfonly     = SdfStorage(y3,h3)
-        acvstoreuni = Acv2EIStorageUni(y4,FFTW.ESTIMATE)
-        sdfstoreuni = Sdf2EIStorageUni(y5,y5,FFTW.ESTIMATE)
+        acvstoreuni = Acv2EIStorageUni(y4,ones(length(x)),FFTW.ESTIMATE)
+        sdfstoreuni = Sdf2EIStorageUni(y5,y5,ones(length(x)),FFTW.ESTIMATE)
         sdfonlyuni  = SdfStorageUni(y6)
         @test WhittleLikelihoodInference.unpack(acvstore)    === h1
         @test WhittleLikelihoodInference.unpack(sdfstore)    === h2

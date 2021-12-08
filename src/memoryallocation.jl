@@ -225,8 +225,8 @@ function _allocate_memory_EI_F(model::Type{<:TimeSeriesModel}, n, Δ, kernel; ff
     return PreallocatedEI(model, n, Δ, kernel; fft_flags = fft_flags)
 end
 function _allocate_memory_EI_F(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, n, Δ, kernel; fft_flags) where {M₁,M₂,D}
-    return AdditiveStorage( allocate_memory_EI_F(M₁, n, Δ, kernel; fft_flags = fft_flags),
-                            allocate_memory_EI_F(M₂, n, Δ, kernel; fft_flags = fft_flags),
+    return AdditiveStorage( _allocate_memory_EI_F(M₁, n, Δ, kernel; fft_flags = fft_flags),
+                            _allocate_memory_EI_F(M₂, n, Δ, kernel; fft_flags = fft_flags),
                             npars(M₁))
 end
 
@@ -239,8 +239,8 @@ function _allocate_memory_EI_FG(model::Type{<:TimeSeriesModel}, n, Δ, kernel; f
     return PreallocatedEIGradient(model, n, Δ, kernel; fft_flags = fft_flags)
 end
 function _allocate_memory_EI_FG(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, n, Δ, kernel; fft_flags) where {M₁,M₂,D}
-    return AdditiveStorage( allocate_memory_EI_FG(M₁, n, Δ, kernel; fft_flags = fft_flags),
-                            allocate_memory_EI_FG(M₂, n, Δ, kernel; fft_flags = fft_flags),
+    return AdditiveStorage( _allocate_memory_EI_FG(M₁, n, Δ, kernel; fft_flags = fft_flags),
+                            _allocate_memory_EI_FG(M₂, n, Δ, kernel; fft_flags = fft_flags),
                             npars(M₁))
 end
 
@@ -253,8 +253,8 @@ function _allocate_memory_EI_FGH(model::Type{<:TimeSeriesModel}, n, Δ, kernel; 
     return PreallocatedEIHessian(model, n, Δ, kernel; fft_flags = fft_flags)
 end
 function _allocate_memory_EI_FGH(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, n, Δ, kernel; fft_flags) where {M₁,M₂,D}
-    return AdditiveStorage( allocate_memory_EI_FGH(M₁, n, Δ, kernel; fft_flags = fft_flags),
-                            allocate_memory_EI_FGH(M₂, n, Δ, kernel; fft_flags = fft_flags),
+    return AdditiveStorage( _allocate_memory_EI_FGH(M₁, n, Δ, kernel; fft_flags = fft_flags),
+                            _allocate_memory_EI_FGH(M₂, n, Δ, kernel; fft_flags = fft_flags),
                             npars(M₁))
 end
 

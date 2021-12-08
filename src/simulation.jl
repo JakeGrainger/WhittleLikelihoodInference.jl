@@ -62,7 +62,7 @@ struct TimeSeries{T,N}
     ts::Array{T,N}
     Δ::Float64
 end
-Base.ndims(ts::TimeSeries) = size(ts.ts, 2)
+Base.ndims( ts::TimeSeries) = size(ts.ts, 2)
 Base.length(ts::TimeSeries) = size(ts.ts, 1)
 
 function simulate_gp(model::TimeSeriesModel, n, Δ, nreps)

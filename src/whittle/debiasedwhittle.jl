@@ -1,5 +1,5 @@
 """
-    DebiasedWhittleLikelihood(model::Type{<:TimeSeriesModel}, ts, Δ; lowerΩcutoff, upperΩcutoff)
+    DebiasedWhittleLikelihood(model::Type{<:TimeSeriesModel}, ts, Δ; lowerΩcutoff, upperΩcutoff, taper)
 
 Generate a function to evaluate the Debiased Whittle likelihood it's gradient and expected Hessian.
 
@@ -20,6 +20,7 @@ If F, G or EH equal nothing, then the function, gradient or expected Hessian are
 - `Δ`: the sampling rate of the time series.
 - `lowerΩcutoff`: the lower bound of the frequency range included in the likelihood.
 - `upperΩcutoff`: the upper bound of the frequency range included in the likelihood.
+- `taper`: optional taper which should be a vector of length `size(ts,1)`, or `nothing` in which case no taper will be used.
 
 Note that to use the gradient the model must have `grad_add_sdf!` or `grad_acv!` specified.
 Similarly, to use the Hessian, the model must have `hess_add_sdf!` or `hess_acv!` specified.
@@ -55,12 +56,12 @@ struct DebiasedWhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
     model::M
     function DebiasedWhittleLikelihood(
         model::Type{<:TimeSeriesModel{D}}, ts, Δ;
-        lowerΩcutoff = 0, upperΩcutoff = Inf) where {D}
+        lowerΩcutoff = 0, upperΩcutoff = Inf, taper = nothing) where {D}
         
         Δ > 0 || throw(ArgumentError("Δ should be a positive."))
         D == size(ts,2) || throw(ArgumentError("timeseries is $(size(ts,2)) dimensional, but model is $D dimensional."))
-        wdata = DebiasedWhittleData(model, ts, Δ, lowerΩcutoff = lowerΩcutoff, upperΩcutoff = upperΩcutoff)
-        mem = allocate_memory_EI_FG(model, size(ts,1), Δ)
+        wdata = DebiasedWhittleData(model, ts, Δ, lowerΩcutoff = lowerΩcutoff, upperΩcutoff = upperΩcutoff, taper = taper)
+        mem = allocate_memory_EI_FG(model, size(ts,1), Δ, taper)
         new{eltype(wdata.I),typeof(mem),typeof(model)}(wdata,mem,model)
     end
 end

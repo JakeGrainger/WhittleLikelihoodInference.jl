@@ -31,7 +31,7 @@ struct DebiasedWhittleData{T} <: GenWhittleData
     function DebiasedWhittleData(model::Type{<:TimeSeriesModel{D}}, timeseries::Array{T,N}, Δ; lowerΩcutoff = 0, upperΩcutoff = Inf, taper = nothing) where {T<:Real,D,N}
         checkwhittledatainputs(model,timeseries,taper)
         ordinates,n,Ω_used_index = makewhittledata(model, timeseries, Δ, lowerΩcutoff, upperΩcutoff, taper)
-        new{eltype(I)}(ordinates, n, Δ, 2 .* Ω_used_index .- 1) # accounts for double resolution in EI computations
+        new{eltype(ordinates)}(ordinates, n, Δ, 2 .* Ω_used_index .- 1) # accounts for double resolution in EI computations
     end
 end
 Base.show(io::IO, W::GenWhittleData) = print(io, "Precomputed periodogram for $(size(W.I[1],1)) dimensional timeseries of length $(W.n) with a sampling rate of $(W.Δ).")
@@ -55,7 +55,8 @@ function makewhittledata(model, timeseries, Δ, lowerΩcutoff, upperΩcutoff, ta
     else
         tapered_timeseries = timeseries .* taper .* sqrt(n) # * √n because we divide by n in what follows, but shouldn't for tapering
     end
-    return makeI(model, tapered_timeseries, n, Δ)[Ω_used_index], n, Ω_used_index
+    oridinates = makeI(model, tapered_timeseries, n, Δ)
+    return oridinates[Ω_used_index], n, Ω_used_index
 end
 function makeI(::Type{<:TimeSeriesModel{D}},timeseries::Matrix{T}, n, Δ) where {T,D}
     J = fft(timeseries, 1)

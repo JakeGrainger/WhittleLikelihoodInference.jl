@@ -56,7 +56,6 @@ struct GaussianProcess{T}
         new{typeof(X)}(X,Δ)
     end
 end
-Distributions.rand(gp::GaussianProcess) = TimeSeries(rand(gp.X),gp.Δ)
 
 struct TimeSeries{T,N}
     ts::Array{T,N}
@@ -64,6 +63,8 @@ struct TimeSeries{T,N}
 end
 Base.ndims( ts::TimeSeries) = size(ts.ts, 2)
 Base.length(ts::TimeSeries) = size(ts.ts, 1)
+
+Distributions.rand(gp::GaussianProcess) = TimeSeries(rand(gp.X),gp.Δ)
 
 function simulate_gp(model::TimeSeriesModel, n, Δ, nreps)
     GP = GaussianProcess(model, n , Δ)

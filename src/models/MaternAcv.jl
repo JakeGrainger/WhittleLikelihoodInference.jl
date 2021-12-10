@@ -58,7 +58,6 @@ struct MaternAcv1D <: TimeSeriesModel{1}
     σ²::Float64
     a²::Float64
     νplushalf::Float64
-    variance_part::Float64
     sdfconst::Float64
     acvconst::Float64
     function MaternAcv1D(σ,ν,a)

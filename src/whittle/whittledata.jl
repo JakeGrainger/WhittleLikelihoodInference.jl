@@ -49,7 +49,7 @@ end
 function makewhittledata(model, timeseries, Δ, lowerΩcutoff, upperΩcutoff, taper)
     n = size(timeseries, 1)
     Ω = fftfreq(n, 2π/Δ)
-    Ω_used_index = (1:n)[lowerΩcutoff .< abs.(Ω) .< upperΩcutoff]
+    Ω_used_index = (1:n)[lowerΩcutoff .<= abs.(Ω) .<= upperΩcutoff]
     if taper === nothing
         tapered_timeseries = timeseries
     else

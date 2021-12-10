@@ -51,7 +51,7 @@ function acv!(out, model::MaternSlow{D,L}, τ::Number) where {D,L}
     return nothing
 end
 
-struct MaternSlow1D <: TimeSeriesModel
+struct MaternSlow1D <: TimeSeriesModel{1}
     σ::Float64
     ν::Float64
     a::Float64

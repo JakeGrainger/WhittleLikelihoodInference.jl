@@ -123,7 +123,7 @@ end
 
 ## Univariate
 
-struct Matern1D
+struct Matern1D <: UnknownAcvTimeSeriesModel{1}
     σ::Float64
     ν::Float64
     a::Float64

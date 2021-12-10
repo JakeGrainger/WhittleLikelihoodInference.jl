@@ -142,12 +142,12 @@ struct Matern1D
         ν > 0 || throw(ArgumentError("Matern1D process requires 0 < ν."))
         a > 0 || throw(ArgumentError("Matern1D process requires 0 < a."))
         sdfconst = matern_sdf_normalising(ν,a)*σ^2
-        ∂ν_part  = digamma(νplushalf)-digamma(ν)+2.0*log(a)
+        ∂ν_part  = digamma(ν+0.5)-digamma(ν)+2.0*log(a)
         ∂a_part1 = 2.0ν/a
         ∂a_part2 = a*(2.0*ν+1)
-        ∂ν²_part  = trigamma(νplushalf)-trigamma(ν)
+        ∂ν²_part  = trigamma(ν+0.5)-trigamma(ν)
         ∂ν∂a_part = 1.0/a
-        ∂a²_part = ν/(a²)
+        ∂a²_part = ν/(a^2)
         new(σ, ν, a, σ^2, a^2, ν+0.5, sdfconst, ∂ν_part, ∂a_part1, ∂a_part2, ∂ν²_part, ∂ν∂a_part, ∂a²_part)
     end
     function Matern1D(x::AbstractVector{Float64})

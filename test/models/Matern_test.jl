@@ -4,10 +4,10 @@
         ω₁ = 0.7
         @testset "sdf" begin
             @testset "Gradient" begin
-                @test approx_gradient_uni(θ -> sdf(Matern1D(θ), ω₁), θ₁)      ≈ grad_sdf(OU(θ₁), ω₁)
+                @test approx_gradient_uni(θ -> sdf(Matern1D(θ), ω₁), θ₁)      ≈ grad_sdf(Matern1D(θ₁), ω₁)
             end
             @testset "Hessian" begin
-                @test approx_hessian_uni( θ -> grad_sdf(OU(θ), ω₁), θ₁) ≈ hess_sdf(OU(θ₁), ω₁)
+                @test approx_hessian_uni( θ -> grad_sdf(Matern1D(θ), ω₁), θ₁) ≈ hess_sdf(Matern1D(θ₁), ω₁)
             end
         end
     end
@@ -48,6 +48,12 @@
         end
     end
     @testset "Error handling" begin
+        @test_throws ArgumentError Matern1D(-1.0,1.0,1.0)
+        @test_throws ArgumentError Matern1D(1.0,-1.0,1.0)
+        @test_throws ArgumentError Matern1D(1.0,1.0,-1.0)
+        @test_throws ArgumentError Matern1D(ones(2))
+        @test_throws ArgumentError Matern1D(ones(4))
+        
         @test_throws ArgumentError Matern2D([[1.0,1.2]; fill(0.5,7)])
         @test_throws ArgumentError Matern2D([-1; fill(0.5,8)])
         @test_throws ArgumentError Matern2D(fill(0.5,8))

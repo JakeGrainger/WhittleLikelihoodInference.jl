@@ -35,7 +35,6 @@ struct Matern{D,L} <: UnknownAcvTimeSeriesModel{D}
     end
 end
 matern_sdf_normalising(ν,a) = gamma(ν+0.5)*a^(2ν) / (gamma(ν)*sqrt(π))
-matern_acv_normalising(ν) = 2^(1-ν) / gamma(ν)
 
 const Matern2D = Matern{2,3}
 const Matern3D = Matern{3,6}
@@ -119,5 +118,81 @@ function hess_add_sdf!(out, model::Matern{D,L}, ω) where {D,L}
         out[count,indexLT(count+2L,count+2L,3L)] = sdf∂a^2/sdf + 2sdf*(model.νplushalf[i,j]*(2model.a²[i,j]/(asq_plus_omsq^2) - 1/asq_plus_omsq) - model.∂a²_part[i,j])
         count += 1
     end
+    return nothing
+end
+
+## Univariate
+
+struct Matern1D
+    σ::Float64
+    ν::Float64
+    a::Float64
+    σ²::Float64
+    a²::Float64
+    νplushalf::Float64
+    sdfconst::Float64
+    ∂ν_part::Float64
+    ∂a_part1::Float64
+    ∂a_part2::Float64
+    ∂ν²_part::Float64
+    ∂ν∂a_part::Float64
+    ∂a²_part::Float64
+    function Matern1D(σ,ν,a)
+        σ > 0 || throw(ArgumentError("Matern1D process requires 0 < σ."))
+        ν > 0 || throw(ArgumentError("Matern1D process requires 0 < ν."))
+        a > 0 || throw(ArgumentError("Matern1D process requires 0 < a."))
+        sdfconst = matern_sdf_normalising(ν,a)*σ^2
+        ∂ν_part  = digamma(νplushalf)-digamma(ν)+2.0*log(a)
+        ∂a_part1 = 2.0ν/a
+        ∂a_part2 = a*(2.0*ν+1)
+        ∂ν²_part  = trigamma(νplushalf)-trigamma(ν)
+        ∂ν∂a_part = 1.0/a
+        ∂a²_part = ν/(a²)
+        new(σ, ν, a, σ^2, a^2, ν+0.5, sdfconst, ∂ν_part, ∂a_part1, ∂a_part2, ∂ν²_part, ∂ν∂a_part, ∂a²_part)
+    end
+    function Matern1D(x::AbstractVector{Float64})
+        length(x) == npars(Matern1D) || throw(ArgumentError("Matern1D process has $(npars(Matern1D)) parameters, but $(length(x)) were provided."))
+        @inbounds Matern1D(x[1], x[2], x[3])
+    end
+end
+
+npars(::Type{Matern1D}) = 3
+minbins(::Type{Matern1D}) = 4096
+nalias(model::Matern1D) = 3
+
+sdf(model::Matern1D, ω) = model.sdfconst/((model.a²+ω^2)^(model.νplushalf))
+
+function grad_add_sdf!(out, model::Matern1D, ω)
+    ω² = ω^2
+    asq_plus_omsq = model.a²+ω²
+    sdf = model.sdfconst/((asq_plus_omsq)^(model.νplushalf))
+    # σ
+    out[1] += 2sdf/model.σ
+    # ν
+    out[2] += sdf * (model.∂ν_part-log(asq_plus_omsq))
+    # a
+    out[3] += sdf * (model.∂a_part1 - model.∂a_part2/asq_plus_omsq)
+end
+
+function hess_add_sdf!(out, model::Matern1D, ω)
+    ω² = ω^2
+    asq_plus_omsq = model.a²+ω²
+    sdf = model.sdfconst/((asq_plus_omsq)^(model.νplushalf))
+    sdf∂ν = sdf * (model.∂ν_part-log(asq_plus_omsq))
+    sdf∂a = sdf * (model.∂a_part1 - (model.∂a_part2)/asq_plus_omsq)
+    
+    # ∂σ²
+    out[1]   += 2sdf/model.σ²
+    # ∂σ∂ν
+    out[2]   += 2sdf∂ν/model.σ 
+    # ∂σ∂a
+    out[3]   += 2sdf∂a/model.σ 
+    # ∂ν²
+    out[4] = sdf∂ν^2/sdf + sdf*model.∂ν²_part
+    # ∂ν∂a
+    out[5] = sdf∂ν*sdf∂a/sdf + 2sdf*(model.∂ν∂a_part-model.a/asq_plus_omsq)
+    # ∂a²
+    out[6] = sdf∂a^2/sdf + 2sdf*(model.νplushalf*(2model.a²/(asq_plus_omsq^2) - 1/asq_plus_omsq) - model.∂a²_part)
+    
     return nothing
 end

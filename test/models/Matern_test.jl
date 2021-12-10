@@ -1,4 +1,16 @@
 @testset "Matern" begin
+    @testset "Matern1D" begin
+        θ₁ = [2.0, 3/2, 0.5]
+        ω₁ = 0.7
+        @testset "sdf" begin
+            @testset "Gradient" begin
+                @test approx_gradient_uni(θ -> sdf(Matern1D(θ), ω₁), θ₁)      ≈ grad_sdf(OU(θ₁), ω₁)
+            end
+            @testset "Hessian" begin
+                @test approx_hessian_uni( θ -> grad_sdf(OU(θ), ω₁), θ₁) ≈ hess_sdf(OU(θ₁), ω₁)
+            end
+        end
+    end
     @testset "Matern2D" begin
         θ₂=[2.0,0.5,0.7,
             3/2,6.3,4.7,

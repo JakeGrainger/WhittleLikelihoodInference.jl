@@ -56,6 +56,7 @@ include("models/CorrelatedOU_test.jl")
 include("models/OUUnknown_test.jl")
 include("models/CorrelatedOUUnknown_test.jl")
 include("models/Matern_test.jl")
+include("models/MaternAcv_test.jl")
 
 include("simulation_test.jl")
 include("nonparametric_test.jl")

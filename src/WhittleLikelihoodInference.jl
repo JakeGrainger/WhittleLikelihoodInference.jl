@@ -30,6 +30,7 @@ export
     OU,
     CorrelatedOU,
     Matern,
+    Matern1D,
     Matern2D,
     Matern3D,
     Matern4D,

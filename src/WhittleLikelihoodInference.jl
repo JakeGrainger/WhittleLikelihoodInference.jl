@@ -59,6 +59,6 @@ export
     include("models/OUUnknown.jl")
     include("models/CorrelatedOUUnknown.jl")
     include("models/Matern.jl")
-    include("models/MaternSlow.jl")
+    include("models/MaternAcv.jl")
 
 end

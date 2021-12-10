@@ -11,12 +11,10 @@ import WhittleLikelihoodInference: MaternAcv, MaternAcv1D
         @test sdf(MaternAcv{2,3}(θ₂), ω₂)      == sdf(Matern2D(θ₂), ω₂)
     end
     @testset "Gradient sdf" begin
-        @test grad_sdf(MaternAcv1D(θ₁), ω₁)         == grad_sdf(Matern1D(θ₁), ω₁)
-        @test grad_sdf(MaternAcv{2,3}(θ₂), ω₂)      == grad_sdf(Matern2D(θ₂), ω₂)
+        @test_throws ErrorException grad_sdf(MaternAcv1D(θ₁), ω₁)
     end
     @testset "Hessian sdf" begin
-        @test hess_sdf(MaternAcv1D(θ₁), ω₁)         == hess_sdf(Matern1D(θ₁), ω₁)
-        @test hess_sdf(MaternAcv{2,3}(θ₂), ω₂)      == hess_sdf(Matern2D(θ₂), ω₂)
+        @test_throws ErrorException hess_sdf(MaternAcv1D(θ₁), ω₁)
     end
     @testset "Error handling" begin
         @test_throws ArgumentError MaternAcv1D(-1.0,1.0,1.0)

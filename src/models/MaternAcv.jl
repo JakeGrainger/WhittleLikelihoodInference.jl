@@ -71,7 +71,7 @@ struct MaternAcv1D <: TimeSeriesModel{1}
     end
     function MaternAcv1D(x::AbstractVector{Float64})
         length(x) == npars(MaternAcv1D) || throw(ArgumentError("MaternAcv1D process has $(npars(Matern1D)) parameters, but $(length(x)) were provided."))
-        @inbounds Matern1D(x[1], x[2], x[3])
+        @inbounds MaternAcv1D(x[1], x[2], x[3])
     end
 end
 

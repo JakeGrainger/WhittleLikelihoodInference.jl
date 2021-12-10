@@ -172,6 +172,8 @@ function grad_add_sdf!(out, model::Matern1D, ω)
     out[2] += sdf * (model.∂ν_part-log(asq_plus_omsq))
     # a
     out[3] += sdf * (model.∂a_part1 - model.∂a_part2/asq_plus_omsq)
+
+    return nothing
 end
 
 function hess_add_sdf!(out, model::Matern1D, ω)

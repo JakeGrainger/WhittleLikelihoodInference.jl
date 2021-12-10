@@ -24,6 +24,7 @@ struct MaternSlow{D,L} <: TimeSeriesModel{D}
         new{D,L}(σ,ν,a,a²,νplushalf,variance_part,sdfconst,acvconst)
     end
 end
+matern_acv_normalising(ν) = 2^(1-ν) / gamma(ν)
 
 npars(::Type{MaternSlow{D,L}}) where {D,L} = 3triangularnumber(D)
 
@@ -49,3 +50,33 @@ function acv!(out, model::MaternSlow{D,L}, τ::Number) where {D,L}
     end
     return nothing
 end
+
+struct MaternSlow1D
+    σ::Float64
+    ν::Float64
+    a::Float64
+    σ²::Float64
+    a²::Float64
+    νplushalf::Float64
+    variance_part::Float64
+    sdfconst::Float64
+    acvconst::Float64
+    function MaternSlow1D(σ,ν,a)
+        σ > 0 || throw(ArgumentError("MaternSlow1D process requires 0 < σ."))
+        ν > 0 || throw(ArgumentError("MaternSlow1D process requires 0 < ν."))
+        a > 0 || throw(ArgumentError("MaternSlow1D process requires 0 < a."))
+        sdfconst = matern_sdf_normalising(ν,a)*σ^2
+        acvconst = matern_acv_normalising(ν)*σ^2
+        new(σ, ν, a, σ^2, a^2, ν+0.5, sdfconst, acvconst)
+    end
+    function MaternSlow1D(x::AbstractVector{Float64})
+        length(x) == npars(MaternSlow1D) || throw(ArgumentError("MaternSlow1D process has $(npars(Matern1D)) parameters, but $(length(x)) were provided."))
+        @inbounds Matern1D(x[1], x[2], x[3])
+    end
+end
+
+npars(::Type{MaternSlow1D}) = 3
+
+sdf(model::MaternSlow1D, ω) = model.sdfconst/((model.a²+ω^2)^(model.νplushalf))
+
+acv(model::MaternSlow1D, τ) = abs(τ)>1e-10 ? model.acvconst * (amodτ)^model.ν * besselk(model.ν,a*abs(τ)) : model.σ²

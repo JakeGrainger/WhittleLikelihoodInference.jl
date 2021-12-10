@@ -8,7 +8,7 @@ struct OU <: TimeSeriesModel{1}
         θ > 0 || throw(ArgumentError("OU process requires 0 < θ."))
         new(σ,θ,σ^2,θ^2)
     end
-function OU(x::AbstractVector{Float64})
+    function OU(x::AbstractVector{Float64})
         length(x) == npars(OU) || throw(ArgumentError("OU process has $(npars(OU)) parameters, but $(length(x)) were provided."))
         @inbounds OU(x[1], x[2])
     end

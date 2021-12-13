@@ -14,6 +14,13 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 ToeplitzMatrices = "c751599d-da0a-543b-9d20-d0a503d91d24"
 
 [compat]
+Distributions = "0.25"
+FFTW = "1"
+LazyArrays = "0.22"
+RecipesBase = "1"
+SpecialFunctions = "2"
+StaticArrays = "1"
+ToeplitzMatrices = "0.7"
 julia = "1"
 
 [extras]

@@ -53,7 +53,7 @@ struct GaussianProcess{T}
         new{typeof(X)}(X,Δ)
     end
 end
-normaldist(::TimeSeriesModel{D}, C) where {D} = MatrixReshaped(MvNormal(C), size(C,1)÷D, D)
+normaldist(::TimeSeriesModel{D}, C) where {D} = reshape(MvNormal(C), size(C,1)÷D, D)
 normaldist(::TimeSeriesModel{1}, C) = MvNormal(C)
 
 struct TimeSeries{T,N}

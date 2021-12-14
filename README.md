@@ -1,7 +1,7 @@
 # WhittleLikelihoodInference
 
 [![CI](https://github.com/JakeGrainger/WhittleLikelihoodInference.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/JakeGrainger/WhittleLikelihoodInference.jl/actions/workflows/CI.yml)
-[![Documenter](https://github.com/JakeGrainger/WhittleLikelihoodInference.jl/actions/workflows/Documenter.yml/badge.svg)](https://github.com/JakeGrainger/WhittleLikelihoodInference.jl/actions/workflows/Documenter.yml)
+[![Documentation](https://github.com/JakeGrainger/WhittleLikelihoodInference.jl/actions/workflows/documentation.yml/badge.svg)](https://github.com/JakeGrainger/WhittleLikelihoodInference.jl/actions/workflows/documentation.yml)
 
 A julia package for Whittle and debiased Whittle likelihood inference. Provides the following functionality:
 
@@ -15,7 +15,7 @@ A julia package for Whittle and debiased Whittle likelihood inference. Provides 
 
 ## References
 
-Sykulski, A.M., Olhede, S.C., Guillaumin, A.P., Lilly, J.M., Early, J.J., 2019. The debiased Whittle likelihood. *Biometrika* 106 (2), 251–266.
+Sykulski, A.M., Olhede, S.C., Guillaumin, A.P., Lilly, J.M., Early, J.J. (2019). The debiased Whittle likelihood. *Biometrika* 106 (2), 251–266.
 
 Grainger, J. P., Sykulski, A. M., Jonathan, P., and Ewans, K. (2021). Estimating the parameters of ocean wave
 spectra. *Ocean Engineering*, 229:108934.

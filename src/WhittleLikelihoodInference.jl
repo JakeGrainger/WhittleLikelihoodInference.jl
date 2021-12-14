@@ -49,10 +49,10 @@ export
     include("nonparametric.jl")
     include("plotting.jl")
 
-    include("Whittle/whittledata.jl")
-    include("Whittle/generalwhittle.jl")
-    include("Whittle/standardwhittle.jl")
-    include("Whittle/debiasedwhittle.jl")
+    include("whittle/whittledata.jl")
+    include("whittle/generalwhittle.jl")
+    include("whittle/standardwhittle.jl")
+    include("whittle/debiasedwhittle.jl")
 
     include("models/OU.jl")
     include("models/CorrelatedOU.jl")

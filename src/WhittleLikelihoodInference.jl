@@ -8,6 +8,7 @@ import StaticArrays: triangularnumber
 
 export
     TimeSeriesModel,
+    UnknownAcvTimeSeriesModel,
     AdditiveTimeSeriesModel,
     npars,
     ndims,

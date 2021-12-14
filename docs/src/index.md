@@ -1,6 +1,6 @@
 # WhittleLikelihoodInference Package
 
-The [*WhittleLikelihoodInference*] package provides an efficient implementation of the Whittle likelihood and debiased Whittle likelihood for univariate and multivariate time series.
+The [*WhittleLikelihoodInference*](https://github.com/JakeGrainger/WhittleLikelihoodInference.jl.git)  package provides an efficient implementation of the Whittle likelihood and debiased Whittle likelihood for univariate and multivariate time series.
 Features include:
 
 - Simulating Gaussian processes with a given autocovariance.

@@ -1,0 +1,4 @@
+# Whittle likelihood
+```@docs
+WhittleLikelihood
+```

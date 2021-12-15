@@ -65,6 +65,10 @@ Base.length(ts::TimeSeries) = size(ts.ts, 1)
 
 Distributions.rand(gp::GaussianProcess) = TimeSeries(rand(gp.X),gp.Δ)
 
+@recipe function f(ts::TimeSeries)
+    0:ts.Δ:ts.Δ*length(ts)-1, ts.ts
+end
+
 function simulate_gp(model::TimeSeriesModel, n::Int, Δ::Number, nreps::Int)
     nreps > 0 || throw(ArgumentError("nreps should be positive."))
     GP = GaussianProcess(model, n , Δ)

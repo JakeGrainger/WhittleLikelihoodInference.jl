@@ -3,7 +3,7 @@ using Documenter, WhittleLikelihoodInference
 makedocs(sitename="WhittleLikelihoodInference.jl",
     modules = [WhittleLikelihoodInference],
     pages = [
-        "index.md",
+        "Home" => "index.md",
         "background.md",
         "starting.md",
         "models.md",

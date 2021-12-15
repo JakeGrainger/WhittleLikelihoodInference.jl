@@ -1,7 +1,7 @@
 # WhittleLikelihoodInference
 
-[![CI](https://github.com/JakeGrainger/WhittleLikelihoodInference.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/JakeGrainger/WhittleLikelihoodInference.jl/actions/workflows/CI.yml)
-[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://jakegrainger.github.io/WhittleLikelihoodInference.jl/stable/)
+[![Build Status](https://github.com/JakeGrainger/WhittleLikelihoodInference.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/JakeGrainger/WhittleLikelihoodInference.jl/actions/workflows/CI.yml)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://jakegrainger.github.io/WhittleLikelihoodInference.jl/stable/)
 
 A julia package for Whittle and debiased Whittle likelihood inference. Provides the following functionality:
 

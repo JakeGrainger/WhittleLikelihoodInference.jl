@@ -111,16 +111,18 @@ end
 
 ndims(::SpectralEstimate{D,T}) where {D,T} = D
 size(ŝ::SpectralEstimate) = (length(getfreq(ŝ)),)
-getindex(ŝ::T, inds) where {T<:SpectralEstimate} = T(getfreq(ŝ)[inds], getordinate(ŝ)[inds])
+getindex(ŝ::T, inds) where {T<:SpectralEstimate} = getconstructor(T)(getfreq(ŝ)[inds], getordinate(ŝ)[inds])
 getindex(ŝ::SpectralEstimate, ind::Int) = (getfreq(ŝ)[ind],getordinate(ŝ)[ind])
-log10(ŝ::T) where {T<:SpectralEstimate} = T(getfreq(ŝ), log10.(getordinate(ŝ)))
+log10(ŝ::T) where {T<:SpectralEstimate} = getconstructor(T)(getfreq(ŝ), log10.(getordinate(ŝ)))
 getfreq(p::Periodogram) = p.Ω
 getfreq(b::BartlettPeriodogram) = b.Ω
 getfreq(c::CoherancyEstimate) = c.Ω
 getordinate(p::Periodogram) = p.ordinates
 getordinate(b::BartlettPeriodogram) = b.ordinates
 getordinate(c::CoherancyEstimate) = c.ordinates
-
+getconstructor(::Type{<:Periodogram}) = Periodogram
+getconstructor(::Type{<:BartlettPeriodogram}) = BartlettPeriodogram
+getconstructor(::Type{<:CoherancyEstimate}) = CoherancyEstimate
 
 @recipe function f(ŝ::SpectralEstimate)
     HermitianPlot(getfreq(ŝ), getordinate(ŝ))
@@ -128,9 +130,9 @@ end
 
 function Base.:+(ŝ₁::T, ŝ₂::T) where {T<:SpectralEstimate}
     getfreq(ŝ₁) == getfreq(ŝ₂) || error("Frequencies must be the same to add spectral estimates.")
-    T(getfreq(ŝ₁), getordinate(ŝ₁) .+ getordinate(ŝ₂))
+    getconstructor(T)(getfreq(ŝ₁), getordinate(ŝ₁) .+ getordinate(ŝ₂))
 end
 
 function Base.:/(ŝ::T, a::Real) where {T<:SpectralEstimate}
-    T(getfreq(ŝ), getordinate(ŝ)./a)
+    getconstructor(T)(getfreq(ŝ), getordinate(ŝ)./a)
 end

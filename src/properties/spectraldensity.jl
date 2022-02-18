@@ -203,7 +203,7 @@ end
 function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, freq::FreqAcvEst)
     size(store.allocatedarray,2) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,2) != length(freq.Ωₘ)."))
     @inbounds for i ∈ 1:length(freq.Ωₘ)
-        @views grad_asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], Δ)
+        @views grad_asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], freq.Δ)
     end
     return nothing
 end
@@ -276,7 +276,7 @@ function hess_asdf!(out, model::TimeSeriesModel, ω, Δ)
 end
 
 """
-    hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω, Δ)
+    hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, freq::FreqAcvEst)
     hess_asdf!(store::TimeSeriesModelStorageHessian, model::TimeSeriesModel)
 
 Compute the Hessian of the asdf for all frequencies and allocate to appropriate location in storage.
@@ -284,7 +284,7 @@ Compute the Hessian of the asdf for all frequencies and allocate to appropriate 
 function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, freq::FreqAcvEst)
     size(store.allocatedarray,3) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,3) != length(freq.Ωₘ)."))
     @inbounds for i ∈ 1:length(freq.Ωₘ)
-        @views hess_asdf!(store.allocatedarray[:, :, i], model, freq.Ωₘ[i], Δ)
+        @views hess_asdf!(store.allocatedarray[:, :, i], model, freq.Ωₘ[i], freq.Δ)
     end
     return nothing
 end
@@ -309,7 +309,7 @@ end
 function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, freq::FreqAcvEst)
     size(store.allocatedarray,2) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,2) != length(freq.Ωₘ)."))
     @inbounds for i ∈ 1:length(freq.Ωₘ)
-        @views hess_asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], Δ)
+        @views hess_asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], freq.Δ)
     end
     return nothing
 end

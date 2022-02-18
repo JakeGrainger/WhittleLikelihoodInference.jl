@@ -51,18 +51,18 @@ WhittleLikelihoodInference.nalias(::TestModelUni3) = 1
             @test asdf(TestDoubleUni(zeros(8)),1.0,1.0) == 3.1 # two lots of aliasing of 0.5 plus one lot of 0.2 (but has floating point error)
         end
         @testset "Bounds check" begin
-            store = allocate_memory_EI_F(TestModel2, 1000, 1)
-            storeuni = allocate_memory_EI_F(TestModelUni2, 1000, 1)
+            store = allocate_memory_sdf_F(TestModel2, 1000, 1)
+            storeuni = allocate_memory_sdf_F(TestModelUni2, 1000, 1)
             freqbad = FreqAcvEst(10,1)
             @test_throws ArgumentError WhittleLikelihoodInference.asdf!(store.funcmemory,TestModel2(),freqbad)
             @test_throws ArgumentError WhittleLikelihoodInference.asdf!(storeuni.funcmemory,TestModelUni2(),freqbad)
         end
         @testset "Complex vs real" begin
             for n in [100, 101]
-                store = allocate_memory_EI_F(TestModel2, n, 1.2)
-                store_c = allocate_memory_EI_F(TestModel2C, n, 1.2)
-                storeuni = allocate_memory_EI_F(TestModelUni2, n, 1.2)
-                storeuni_c = allocate_memory_EI_F(TestModelUni2C, n, 1.2)
+                store = allocate_memory_sdf_F(TestModel2, n, 1.2)
+                store_c = allocate_memory_sdf_F(TestModel2C, n, 1.2)
+                storeuni = allocate_memory_sdf_F(TestModelUni2, n, 1.2)
+                storeuni_c = allocate_memory_sdf_F(TestModelUni2C, n, 1.2)
                 WhittleLikelihoodInference.asdf!(store,TestModel2())
                 WhittleLikelihoodInference.asdf!(store_c,TestModel2C())
                 WhittleLikelihoodInference.asdf!(storeuni,TestModelUni2())
@@ -88,18 +88,18 @@ WhittleLikelihoodInference.nalias(::TestModelUni3) = 1
             @test grad_sdf(TestDoubleUni(zeros(8)),1.0) == [fill(complex(0.5),4);fill(complex(0.2),4)]
         end
         @testset "Bounds check" begin
-            store = allocate_memory_EI_FG(TestModel2, 1000, 1)
-            storeuni = allocate_memory_EI_FG(TestModelUni2, 1000, 1)
+            store = allocate_memory_sdf_FG(TestModel2, 1000, 1)
+            storeuni = allocate_memory_sdf_FG(TestModelUni2, 1000, 1)
             freqbad = FreqAcvEst(10,1)
             @test_throws ArgumentError WhittleLikelihoodInference.grad_asdf!(store.gradmemory,TestModel2(),freqbad)
             @test_throws ArgumentError WhittleLikelihoodInference.grad_asdf!(storeuni.gradmemory,TestModelUni2(),freqbad)
         end
         @testset "Complex vs real" begin
             for n in [100, 101]
-                store = allocate_memory_EI_FG(TestModel2, n, 1.2)
-                store_c = allocate_memory_EI_FG(TestModel2C, n, 1.2)
-                storeuni = allocate_memory_EI_FG(TestModelUni2, n, 1.2)
-                storeuni_c = allocate_memory_EI_FG(TestModelUni2C, n, 1.2)
+                store = allocate_memory_sdf_FG(TestModel2, n, 1.2)
+                store_c = allocate_memory_sdf_FG(TestModel2C, n, 1.2)
+                storeuni = allocate_memory_sdf_FG(TestModelUni2, n, 1.2)
+                storeuni_c = allocate_memory_sdf_FG(TestModelUni2C, n, 1.2)
                 WhittleLikelihoodInference.grad_asdf!(store,TestModel2())
                 WhittleLikelihoodInference.grad_asdf!(store_c,TestModel2C())
                 WhittleLikelihoodInference.grad_asdf!(storeuni,TestModelUni2())
@@ -121,18 +121,18 @@ WhittleLikelihoodInference.nalias(::TestModelUni3) = 1
             @test hess_sdf(TestDoubleUni(zeros(8)),1.0) == [fill(complex(0.5),10);fill(complex(0.2),10)]
         end
         @testset "Bounds check" begin
-            store = allocate_memory_EI_FGH(TestModel2, 1000, 1)
-            storeuni = allocate_memory_EI_FGH(TestModelUni2, 1000, 1)
+            store = allocate_memory_sdf_FGH(TestModel2, 1000, 1)
+            storeuni = allocate_memory_sdf_FGH(TestModelUni2, 1000, 1)
             freqbad = FreqAcvEst(10,1)
             @test_throws ArgumentError WhittleLikelihoodInference.hess_asdf!(store.hessmemory,TestModel2(),freqbad)
             @test_throws ArgumentError WhittleLikelihoodInference.hess_asdf!(storeuni.hessmemory,TestModelUni2(),freqbad)
         end
         @testset "Complex vs real" begin
             for n in [100, 101]
-                store = allocate_memory_EI_FGH(TestModel2, n, 1.2)
-                store_c = allocate_memory_EI_FGH(TestModel2C, n, 1.2)
-                storeuni = allocate_memory_EI_FGH(TestModelUni2, n, 1.2)
-                storeuni_c = allocate_memory_EI_FGH(TestModelUni2C, n, 1.2)
+                store = allocate_memory_sdf_FGH(TestModel2, n, 1.2)
+                store_c = allocate_memory_sdf_FGH(TestModel2C, n, 1.2)
+                storeuni = allocate_memory_sdf_FGH(TestModelUni2, n, 1.2)
+                storeuni_c = allocate_memory_sdf_FGH(TestModelUni2C, n, 1.2)
                 WhittleLikelihoodInference.hess_asdf!(store,TestModel2())
                 WhittleLikelihoodInference.hess_asdf!(store_c,TestModel2C())
                 WhittleLikelihoodInference.hess_asdf!(storeuni,TestModelUni2())

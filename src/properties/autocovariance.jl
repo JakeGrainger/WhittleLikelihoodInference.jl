@@ -90,11 +90,11 @@ end
 ### Univariate ###
 
 """
-    acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1}, encodedtime::FreqAcvEst)
+    acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1,T}, encodedtime::FreqAcvEst)
 
 Approximate the acv and allocate to storage when acv is known in the univariate case.
 """
-function acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1}, encodedtime::FreqAcvEst)
+function acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1,T}, encodedtime::FreqAcvEst) where {T}
     asdf!(store.sdf2acv, model, encodedtime.Ωₘ, encodedtime.Δ)
     
     store.sdf2acv.planned_ifft * store.sdf2acv.allocatedarray # essentially ifft!(asdf, 2)
@@ -106,20 +106,20 @@ function acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1}, enco
     return nothing
 end
 
-function acv(model::TimeSeriesModel{1}, τ) # default acv returns error
+function acv(model::TimeSeriesModel{1,T}, τ) where {T} # default acv returns error
     error("acv not yet defined for model of type $(typeof(model)).")
 end
 
-function acv(model::UnknownAcvTimeSeriesModel{1}, τ) # default acv returns error
+function acv(model::UnknownAcvTimeSeriesModel{1,T}, τ) where {T} # default acv returns error
     throw(ArgumentError("Custom lag only possible if model has known acv."))
 end
 
 """
-    acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
+    acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1,T}, encodedtime::LagsEI)
 
 Compute the acv at many lags and allocate to storage when acv is known in the univariate case.
 """
-function acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
+function acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1,T}, encodedtime::LagsEI) where {T}
     length(store.allocatedarray) == length(encodedtime.lags) || throw(ArgumentError("length(store.allocatedarray) !== length(encodedtime.lags)"))
     @inbounds for (i,τ) ∈ enumerate(encodedtime.lags)
         store.allocatedarray[i] = @views acv(model, τ)
@@ -130,7 +130,7 @@ end
 extract_acv(store::Sdf2EIStorageUni) = extract_acv(store.acv2EI)
 extract_acv(store::Acv2EIStorageUni) = store.allocatedarray
 
-function acv(model::TimeSeriesModel{1}, n, Δ)
+function acv(model::TimeSeriesModel{1,T}, n, Δ) where {T}
     store = allocate_memory_EI_F(typeof(model), n , Δ)
     acv!(store, model) # lags -n to n-1 in extract_acv(store)
     return real.(fftshift(extract_acv(store))[2:end]) # remove imaginary floating point error
@@ -206,7 +206,7 @@ end
 
 ### Univariate ###
 
-function grad_acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1}, encodedtime::FreqAcvEst)
+function grad_acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1,T}, encodedtime::FreqAcvEst) where {T}
     grad_asdf!(store.sdf2acv, model, encodedtime.Ωₘ, encodedtime.Δ)
     
     store.sdf2acv.planned_ifft * store.sdf2acv.allocatedarray # essentially ifft!(asdf, 2)
@@ -218,7 +218,7 @@ function grad_acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1},
     return nothing
 end
 
-function grad_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
+function grad_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1,T}, encodedtime::LagsEI) where {T}
     size(store.allocatedarray, 2) == length(encodedtime.lags) || throw(ArgumentError("size(store.allocatedarray, 2) !== length(encodedtime.lags)"))
     @inbounds for (i,τ) ∈ enumerate(encodedtime.lags)
         @views grad_acv!(store.allocatedarray[:, i], model, τ)
@@ -226,7 +226,7 @@ function grad_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedti
     return nothing
 end
 
-function grad_acv(model::TimeSeriesModel{1}, τ)
+function grad_acv(model::TimeSeriesModel{1,T}, τ)
     !(model isa UnknownAcvTimeSeriesModel) || throw(ArgumentError("grad_acv only defined when acv is known."))
     G = zeros(ComplexF64,npars(model))
     grad_acv!(G, model, τ)
@@ -244,7 +244,7 @@ end
 function grad_acv(model::AdditiveTimeSeriesModel, τ)
     return hcat(grad_acv(model.model1, τ), grad_acv(model.model2, τ))
 end
-function grad_acv(model::AdditiveTimeSeriesModel{M₁,M₂,1}, τ) where {M₁<:TimeSeriesModel{1},M₂<:TimeSeriesModel{1}}
+function grad_acv(model::AdditiveTimeSeriesModel{M₁,M₂,1}, τ) where {M₁<:TimeSeriesModel{1,T},M₂<:TimeSeriesModel{1,T}} where {T}
     return vcat(grad_acv(model.model1, τ), grad_acv(model.model2, τ))
 end
 
@@ -295,7 +295,7 @@ end
 
 ### Univariate ###
 
-function hess_acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1}, encodedtime::FreqAcvEst)
+function hess_acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1,T}, encodedtime::FreqAcvEst) where {T}
     hess_asdf!(store.sdf2acv, model, encodedtime.Ωₘ, encodedtime.Δ)
     
     store.sdf2acv.planned_ifft * store.sdf2acv.allocatedarray # essentially ifft!(asdf, 2)
@@ -307,7 +307,7 @@ function hess_acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1},
     return nothing
 end
 
-function hess_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedtime::LagsEI)
+function hess_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1,T}, encodedtime::LagsEI) where {T}
     size(store.allocatedarray, 2) == length(encodedtime.lags) || throw(ArgumentError("size(store.allocatedarray, 2) !== length(encodedtime.lags)"))
     @inbounds for (i,τ) ∈ enumerate(encodedtime.lags)
         @views hess_acv!(store.allocatedarray[:, i], model, τ)
@@ -315,7 +315,7 @@ function hess_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1}, encodedti
     return nothing
 end
 
-function hess_acv(model::TimeSeriesModel{1}, τ)
+function hess_acv(model::TimeSeriesModel{1,T}, τ) where {T}
     !(model isa UnknownAcvTimeSeriesModel) || throw(ArgumentError("grad_acv only defined when acv is known."))
     H = zeros(ComplexF64,nlowertriangle_parameter(model))
     hess_acv!(H, model, τ)
@@ -333,6 +333,6 @@ end
 function hess_acv(model::AdditiveTimeSeriesModel, τ)
     return hcat(hess_acv(model.model1, τ), hess_acv(model.model2, τ))
 end
-function hess_acv(model::AdditiveTimeSeriesModel{M₁,M₂,1}, τ) where {M₁<:TimeSeriesModel{1},M₂<:TimeSeriesModel{1}}
+function hess_acv(model::AdditiveTimeSeriesModel{M₁,M₂,1}, τ) where {M₁<:TimeSeriesModel{1,T},M₂<:TimeSeriesModel{1,T}} where {T}
     return vcat(hess_acv(model.model1, τ), hess_acv(model.model2, τ))
 end

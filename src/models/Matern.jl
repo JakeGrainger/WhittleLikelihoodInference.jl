@@ -1,4 +1,4 @@
-struct Matern{D,L} <: UnknownAcvTimeSeriesModel{D}
+struct Matern{D,L} <: UnknownAcvTimeSeriesModel{D,Float64}
     σ::SHermitianCompact{D,Float64,L}
     ν::SHermitianCompact{D,Float64,L}
     a::SHermitianCompact{D,Float64,L}
@@ -123,7 +123,7 @@ end
 
 ## Univariate
 
-struct Matern1D <: UnknownAcvTimeSeriesModel{1}
+struct Matern1D <: UnknownAcvTimeSeriesModel{1,Float64}
     σ::Float64
     ν::Float64
     a::Float64

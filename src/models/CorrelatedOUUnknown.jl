@@ -1,4 +1,4 @@
-struct CorrelatedOUUnknown{K} <: UnknownAcvTimeSeriesModel{2}
+struct CorrelatedOUUnknown{K} <: UnknownAcvTimeSeriesModel{2,Float64}
     σ::Float64
     θ::Float64
     ρ::Float64

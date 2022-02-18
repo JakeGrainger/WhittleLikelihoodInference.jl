@@ -1,4 +1,4 @@
-struct CorrelatedOU <: TimeSeriesModel{2}
+struct CorrelatedOU <: TimeSeriesModel{2,Float64}
     σ::Float64
     θ::Float64
     ρ::Float64

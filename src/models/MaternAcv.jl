@@ -1,4 +1,4 @@
-struct MaternAcv{D,L} <: TimeSeriesModel{D}
+struct MaternAcv{D,L} <: TimeSeriesModel{D,Float64}
     σ::SHermitianCompact{D,Float64,L}
     ν::SHermitianCompact{D,Float64,L}
     a::SHermitianCompact{D,Float64,L}
@@ -51,7 +51,7 @@ function acv!(out, model::MaternAcv{D,L}, τ::Number) where {D,L}
     return nothing
 end
 
-struct MaternAcv1D <: TimeSeriesModel{1}
+struct MaternAcv1D <: TimeSeriesModel{1,Float64}
     σ::Float64
     ν::Float64
     a::Float64

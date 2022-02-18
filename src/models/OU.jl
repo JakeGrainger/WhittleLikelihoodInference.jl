@@ -1,4 +1,4 @@
-struct OU <: TimeSeriesModel{1}
+struct OU <: TimeSeriesModel{1,Float64}
     σ::Float64
     θ::Float64
     σ²::Float64

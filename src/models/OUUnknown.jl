@@ -1,4 +1,4 @@
-struct OUUnknown{K} <: UnknownAcvTimeSeriesModel{1}
+struct OUUnknown{K} <: UnknownAcvTimeSeriesModel{1,Float64}
     σ::Float64
     θ::Float64
     σ²::Float64

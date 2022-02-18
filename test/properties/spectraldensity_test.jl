@@ -67,8 +67,8 @@ WhittleLikelihoodInference.nalias(::TestModelUni3) = 1
                 WhittleLikelihoodInference.asdf!(store_c,TestModel2C())
                 WhittleLikelihoodInference.asdf!(storeuni,TestModelUni2())
                 WhittleLikelihoodInference.asdf!(storeuni_c,TestModelUni2C())
-                @test store.allocatedarray == store_c.funcmemory.allocatedarray
-                @test storeuni.allocatedarray == storeuni_c.funcmemory.allocatedarray
+                @test store.funcmemory.allocatedarray == store_c.funcmemory.allocatedarray
+                @test storeuni.funcmemory.allocatedarray == storeuni_c.funcmemory.allocatedarray
             end
         end
         @testset "extract_asdf" begin
@@ -104,8 +104,8 @@ WhittleLikelihoodInference.nalias(::TestModelUni3) = 1
                 WhittleLikelihoodInference.grad_asdf!(store_c,TestModel2C())
                 WhittleLikelihoodInference.grad_asdf!(storeuni,TestModelUni2())
                 WhittleLikelihoodInference.grad_asdf!(storeuni_c,TestModelUni2C())
-                @test store.allocatedarray == store_c.gradmemory.allocatedarray
-                @test storeuni.allocatedarray == storeuni_c.gradmemory.allocatedarray
+                @test store.gradmemory.allocatedarray == store_c.gradmemory.allocatedarray
+                @test storeuni.gradmemory.allocatedarray == storeuni_c.gradmemory.allocatedarray
             end
         end
     end
@@ -137,8 +137,8 @@ WhittleLikelihoodInference.nalias(::TestModelUni3) = 1
                 WhittleLikelihoodInference.hess_asdf!(store_c,TestModel2C())
                 WhittleLikelihoodInference.hess_asdf!(storeuni,TestModelUni2())
                 WhittleLikelihoodInference.hess_asdf!(storeuni_c,TestModelUni2C())
-                @test store.allocatedarray == store_c.hessmemory.allocatedarray
-                @test storeuni.allocatedarray == storeuni_c.hessmemory.allocatedarray
+                @test store.hessmemory.allocatedarray == store_c.hessmemory.allocatedarray
+                @test storeuni.hessmemory.allocatedarray == storeuni_c.hessmemory.allocatedarray
             end
         end
     end

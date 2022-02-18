@@ -97,3 +97,12 @@ nalias(::TimeSeriesModel) = 5 # default aliasing method
 
 Returns the minimum number of bins required for a good approximation of the sdf from the acv for a given model."
 minbins(::Type{<:TimeSeriesModel}) = 8192 # default min bins method
+
+"""
+    checkparameterlength(x,model::Type{<:TimeSeriesModel})
+
+checks if the parameter vector is the correct length for the given model.
+"""
+@inline function checkparameterlength(x,model::Type{<:TimeSeriesModel})
+    length(x) == npars(model) || throw(ArgumentError("$model model has $(npars(model)) parameters, but $(length(x)) were provided."))
+end

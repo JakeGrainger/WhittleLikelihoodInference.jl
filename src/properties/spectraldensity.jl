@@ -35,19 +35,26 @@ function asdf!(out, model::TimeSeriesModel, ω, Δ)
 end
 
 """
-    asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω, Δ)
+    asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, freq::FreqAcvEst)
 
 Compute the asdf for all frequencies and allocates to appropriate location in storage.
 """
-function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω::AbstractVector{T}, Δ::Number) where {T<:Real}
-    size(store.allocatedarray,2) == length(Ω) || throw(ArgumentError("size(store.allocatedarray,2) !== length(Ω)."))
-    @inbounds for (i,ω) ∈ enumerate(Ω)
-        @views asdf!(store.allocatedarray[:, i], model, ω, Δ)
+function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, freq::FreqAcvEst)
+    size(store.allocatedarray,2) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,2) != length(Ω)."))
+    @inbounds for i ∈ 1:length(freq.Ωₘ)
+        @views asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], freq.Δ)
+    end
+    return nothing
+end
+function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{D,T}, freq::FreqAcvEst) where {D,T<:Real} ## real values
+    size(store.allocatedarray,2) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,2) != length(Ω)."))
+    @inbounds for i ∈ 1:length(freq.Ωₘ)
+        @views asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], freq.Δ)
     end
     return nothing
 end
 function asdf!(store::TimeSeriesModelStorageFunction, model::TimeSeriesModel)
-    asdf!(store.funcmemory, model, store.encodedtime.Ωₘ, store.encodedtime.Δ)
+    asdf!(store.funcmemory, model, store.encodedtime)
     return nothing
 end
 
@@ -85,10 +92,10 @@ function asdf(model::TimeSeriesModel{1}, ω, Δ) # default method approximates t
     return val
 end
 
-function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, Ω::AbstractVector{T}, Δ::Number) where {T<:Real}
-    length(store.allocatedarray) == length(Ω) || throw(ArgumentError("length(store.allocatedarray) !== length(Ω)."))
-    @inbounds for (i,ω) ∈ enumerate(Ω)
-        store.allocatedarray[i] = @views asdf(model, ω, Δ)
+function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, freq::FreqAcvEst)
+    length(store.allocatedarray) == length(freq.Ωₘ) || throw(ArgumentError("length(store.allocatedarray) != length(Ω)."))
+    @inbounds for i ∈ 1:length(freq.Ωₘ)
+        store.allocatedarray[i] = @views asdf(model, freq.Ωₘ[i], freq.Δ)
     end
     return nothing
 end
@@ -158,20 +165,20 @@ function grad_asdf!(out, model::TimeSeriesModel, ω, Δ)
 end
 
 """
-    grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω, Δ)
+    grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, freq::FreqAcvEst)
     grad_asdf!(store::TimeSeriesModelStorageGradient, model::TimeSeriesModel)
 
 Compute the gradient of the asdf for all frequencies and allocate to appropriate location in storage.
 """
-function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω::AbstractVector{T}, Δ::Number) where {T<:Real}
-    size(store.allocatedarray,3) == length(Ω) || throw(ArgumentError("size(store.allocatedarray,3) !== length(Ω)."))
-    @inbounds for (i,ω) ∈ enumerate(Ω)
-        @views grad_asdf!(store.allocatedarray[:, :, i], model, ω, Δ)
+function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, freq::FreqAcvEst)
+    size(store.allocatedarray,3) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,3) != length(freq.Ωₘ)."))
+    @inbounds for i ∈ 1:length(freq.Ωₘ)
+        @views grad_asdf!(store.allocatedarray[:, :, i], model, freq.Ωₘ[i], freq.Δ)
     end
     return nothing
 end
 function grad_asdf!(store::TimeSeriesModelStorageGradient, model::TimeSeriesModel)
-    grad_asdf!(store.gradmemory, model, store.encodedtime.Ωₘ, store.encodedtime.Δ)
+    grad_asdf!(store.gradmemory, model, store.encodedtime)
     return nothing
 end
 
@@ -188,10 +195,10 @@ end
 
 ### Univariate ###
 
-function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, Ω::AbstractVector{T}, Δ::Number) where {T<:Real}
-    size(store.allocatedarray,2) == length(Ω) || throw(ArgumentError("size(store.allocatedarray,2) !== length(Ω)."))
-    @inbounds for (i,ω) ∈ enumerate(Ω)
-        @views grad_asdf!(store.allocatedarray[:, i], model, ω, Δ)
+function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, freq::FreqAcvEst)
+    size(store.allocatedarray,2) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,2) != length(freq.Ωₘ)."))
+    @inbounds for i ∈ 1:length(freq.Ωₘ)
+        @views grad_asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], Δ)
     end
     return nothing
 end
@@ -269,15 +276,15 @@ end
 
 Compute the Hessian of the asdf for all frequencies and allocate to appropriate location in storage.
 """
-function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, Ω::AbstractVector{T}, Δ::Number) where {T<:Real}
-    size(store.allocatedarray,3) == length(Ω) || throw(ArgumentError("size(store.allocatedarray,3) !== length(Ω)."))
-    @inbounds for (i,ω) ∈ enumerate(Ω)
-        @views hess_asdf!(store.allocatedarray[:, :, i], model, ω, Δ)
+function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, freq::FreqAcvEst)
+    size(store.allocatedarray,3) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,3) != length(freq.Ωₘ)."))
+    @inbounds for i ∈ 1:length(freq.Ωₘ)
+        @views hess_asdf!(store.allocatedarray[:, :, i], model, freq.Ωₘ[i], Δ)
     end
     return nothing
 end
 function hess_asdf!(store::TimeSeriesModelStorageHessian, model::TimeSeriesModel)
-    hess_asdf!(store.hessmemory, model, store.encodedtime.Ωₘ, store.encodedtime.Δ)
+    hess_asdf!(store.hessmemory, model, store.encodedtime)
     return nothing
 end
 
@@ -294,10 +301,10 @@ end
 
 ### Univariate ###
 
-function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, Ω::AbstractVector{T}, Δ::Number) where {T<:Real}
-    size(store.allocatedarray,2) == length(Ω) || throw(ArgumentError("size(store.allocatedarray,2) !== length(Ω)."))
-    @inbounds for (i,ω) ∈ enumerate(Ω)
-        @views hess_asdf!(store.allocatedarray[:, i], model, ω, Δ)
+function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, freq::FreqAcvEst)
+    size(store.allocatedarray,2) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,2) != length(freq.Ωₘ)."))
+    @inbounds for i ∈ 1:length(freq.Ωₘ)
+        @views hess_asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], Δ)
     end
     return nothing
 end

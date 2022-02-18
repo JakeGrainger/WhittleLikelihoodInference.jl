@@ -51,9 +51,9 @@ WhittleLikelihoodInference.nalias(::TestModelUni3) = 1
         @testset "Bounds check" begin
             store = allocate_memory_EI_F(TestModel2, 1000, 1)
             storeuni = allocate_memory_EI_F(TestModelUni2, 1000, 1)
-            Ωbad = ones(10)
-            @test_throws ArgumentError WhittleLikelihoodInference.asdf!(store.funcmemory,TestModel2(),Ωbad,1.0)
-            @test_throws ArgumentError WhittleLikelihoodInference.asdf!(storeuni.funcmemory,TestModelUni2(),Ωbad,1.0)
+            freqbad = FreqAcvEst(10,1)
+            @test_throws ArgumentError WhittleLikelihoodInference.asdf!(store.funcmemory,TestModel2(),freqbad)
+            @test_throws ArgumentError WhittleLikelihoodInference.asdf!(storeuni.funcmemory,TestModelUni2(),freqbad)
         end
         @testset "extract_asdf" begin
             @test_throws MethodError extract_asdf(allocate_memory_EI_F(TestModel2, 1000, 1).funcmemory)
@@ -74,9 +74,9 @@ WhittleLikelihoodInference.nalias(::TestModelUni3) = 1
         @testset "Bounds check" begin
             store = allocate_memory_EI_FG(TestModel2, 1000, 1)
             storeuni = allocate_memory_EI_FG(TestModelUni2, 1000, 1)
-            Ωbad = ones(10)
-            @test_throws ArgumentError WhittleLikelihoodInference.grad_asdf!(store.gradmemory,TestModel2(),Ωbad,1.0)
-            @test_throws ArgumentError WhittleLikelihoodInference.grad_asdf!(storeuni.gradmemory,TestModelUni2(),Ωbad,1.0)
+            freqbad = FreqAcvEst(10,1)
+            @test_throws ArgumentError WhittleLikelihoodInference.grad_asdf!(store.gradmemory,TestModel2(),freqbad)
+            @test_throws ArgumentError WhittleLikelihoodInference.grad_asdf!(storeuni.gradmemory,TestModelUni2(),freqbad)
         end
     end
     @testset "Hessian" begin
@@ -93,9 +93,9 @@ WhittleLikelihoodInference.nalias(::TestModelUni3) = 1
         @testset "Bounds check" begin
             store = allocate_memory_EI_FGH(TestModel2, 1000, 1)
             storeuni = allocate_memory_EI_FGH(TestModelUni2, 1000, 1)
-            Ωbad = ones(10)
-            @test_throws ArgumentError WhittleLikelihoodInference.hess_asdf!(store.hessmemory,TestModel2(),Ωbad,1.0)
-            @test_throws ArgumentError WhittleLikelihoodInference.hess_asdf!(storeuni.hessmemory,TestModelUni2(),Ωbad,1.0)
+            freqbad = FreqAcvEst(10,1)
+            @test_throws ArgumentError WhittleLikelihoodInference.hess_asdf!(store.hessmemory,TestModel2(),freqbad)
+            @test_throws ArgumentError WhittleLikelihoodInference.hess_asdf!(storeuni.hessmemory,TestModelUni2(),freqbad)
         end
     end
 end

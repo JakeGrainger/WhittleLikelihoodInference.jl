@@ -21,7 +21,7 @@ struct AdditiveTimeSeriesModel{M₁,M₂,D,T} <: TimeSeriesModel{D,T}
     ) where {M₁<:TimeSeriesModel{D,T},M₂<:TimeSeriesModel{D,T}} where {D,T}
         new{M₁,M₂,D,T}(model1, model2)
     end
-    function AdditiveTimeSeriesModel{M₁,M₂,D}(θ) where {M₁<:TimeSeriesModel{D,T},M₂<:TimeSeriesModel{D,T}} where {D,T}
+    function AdditiveTimeSeriesModel{M₁,M₂,D,T}(θ) where {M₁<:TimeSeriesModel{D,T},M₂<:TimeSeriesModel{D,T}} where {D,T}
         @views new{M₁,M₂,D,T}(M₁(θ[1:npars(M₁)]), M₂(θ[npars(M₁)+1:end]))
     end
 end

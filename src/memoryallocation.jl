@@ -224,7 +224,7 @@ end
 function _allocate_memory_EI_F(model::Type{<:TimeSeriesModel}, n, Δ, kernel; fft_flags)
     return PreallocatedEI(model, n, Δ, kernel; fft_flags = fft_flags)
 end
-function _allocate_memory_EI_F(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, n, Δ, kernel; fft_flags) where {M₁,M₂,D}
+function _allocate_memory_EI_F(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D,T}}, n, Δ, kernel; fft_flags) where {M₁,M₂,D,T}
     return AdditiveStorage( _allocate_memory_EI_F(M₁, n, Δ, kernel; fft_flags = fft_flags),
                             _allocate_memory_EI_F(M₂, n, Δ, kernel; fft_flags = fft_flags),
                             npars(M₁))
@@ -238,7 +238,7 @@ end
 function _allocate_memory_EI_FG(model::Type{<:TimeSeriesModel}, n, Δ, kernel; fft_flags)
     return PreallocatedEIGradient(model, n, Δ, kernel; fft_flags = fft_flags)
 end
-function _allocate_memory_EI_FG(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, n, Δ, kernel; fft_flags) where {M₁,M₂,D}
+function _allocate_memory_EI_FG(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D,T}}, n, Δ, kernel; fft_flags) where {M₁,M₂,D,T}
     return AdditiveStorage( _allocate_memory_EI_FG(M₁, n, Δ, kernel; fft_flags = fft_flags),
                             _allocate_memory_EI_FG(M₂, n, Δ, kernel; fft_flags = fft_flags),
                             npars(M₁))
@@ -252,7 +252,7 @@ end
 function _allocate_memory_EI_FGH(model::Type{<:TimeSeriesModel}, n, Δ, kernel; fft_flags)
     return PreallocatedEIHessian(model, n, Δ, kernel; fft_flags = fft_flags)
 end
-function _allocate_memory_EI_FGH(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, n, Δ, kernel; fft_flags) where {M₁,M₂,D}
+function _allocate_memory_EI_FGH(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D,T}}, n, Δ, kernel; fft_flags) where {M₁,M₂,D,T}
     return AdditiveStorage( _allocate_memory_EI_FGH(M₁, n, Δ, kernel; fft_flags = fft_flags),
                             _allocate_memory_EI_FGH(M₂, n, Δ, kernel; fft_flags = fft_flags),
                             npars(M₁))
@@ -339,7 +339,7 @@ end
 function allocate_memory_sdf_F(model::Type{<:TimeSeriesModel}, n, Δ)
     return PreallocatedSdf(model, n, Δ)
 end
-function allocate_memory_sdf_F(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, n, Δ) where {M₁,M₂,D}
+function allocate_memory_sdf_F(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D,T}}, n, Δ) where {M₁,M₂,D,T}
     return AdditiveStorage( allocate_memory_sdf_F(M₁, n, Δ),
                             allocate_memory_sdf_F(M₂, n, Δ),
                             npars(M₁))
@@ -349,7 +349,7 @@ end
 function allocate_memory_sdf_FG(model::Type{<:TimeSeriesModel}, n, Δ)
     return PreallocatedSdfGradient(model, n, Δ)
 end
-function allocate_memory_sdf_FG(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, n, Δ) where {M₁,M₂,D}
+function allocate_memory_sdf_FG(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D,T}}, n, Δ) where {M₁,M₂,D,T}
     return AdditiveStorage( allocate_memory_sdf_FG(M₁, n, Δ),
                             allocate_memory_sdf_FG(M₂, n, Δ),
                             npars(M₁))
@@ -359,7 +359,7 @@ end
 function allocate_memory_sdf_FGH(model::Type{<:TimeSeriesModel}, n, Δ)
     return PreallocatedSdfHessian(model, n, Δ)
 end
-function allocate_memory_sdf_FGH(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D}}, n, Δ) where {M₁,M₂,D}
+function allocate_memory_sdf_FGH(model::Type{AdditiveTimeSeriesModel{M₁,M₂,D,T}}, n, Δ) where {M₁,M₂,D,T}
     return AdditiveStorage( allocate_memory_sdf_FGH(M₁, n, Δ),
                             allocate_memory_sdf_FGH(M₂, n, Δ),
                             npars(M₁))

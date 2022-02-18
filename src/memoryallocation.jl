@@ -113,16 +113,13 @@ struct FreqAcvEst
     n::Int
     Δ::Float64
     Ωₘ::Frequencies{Float64}
-    firstnegfreqind::Int # index of first negative frequency
     function FreqAcvEst(model::Type{<:UnknownAcvTimeSeriesModel},n,Δ)
         Ωₘ = fftfreq(max(2n, minbins(model)), 2π/Δ)
-        firstnegfreqind = findfirst(Ωₘ<0.0)
-        new(n,Δ,Ωₘ,firstnegfreqind)
+        new(n,Δ,Ωₘ)
     end
     function FreqAcvEst(n,Δ)
         Ωₘ = fftfreq(n, 2π/Δ)
-        firstnegfreqind = findfirst(Ωₘ<0.0)
-        new(n,Δ,Ωₘ,firstnegfreqind)
+        new(n,Δ,Ωₘ)
     end
 end
 

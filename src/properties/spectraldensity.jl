@@ -48,8 +48,13 @@ function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, freq::Freq
 end
 function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{D,T}, freq::FreqAcvEst) where {D,T<:Real} ## real values
     size(store.allocatedarray,2) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,2) != length(Ω)."))
-    @inbounds for i ∈ 1:length(freq.Ωₘ)
+    m = length(freq.Ωₘ)
+    startcopyind = m÷2+2
+    for i ∈ 1:startcopyind-1
         @views asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], freq.Δ)
+    end
+    for i in startcopyind:length(freq.Ωₘ) 
+        @views store.allocatedarray[:, i] = store.allocatedarray[:, m-i+2]
     end
     return nothing
 end

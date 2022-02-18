@@ -86,10 +86,10 @@ function asdf(model::TimeSeriesModel, ω, Δ)
 end
 
 ### Univariate ###
-function sdf(model::TimeSeriesModel{1}, ω) # default sdf returns error
+function sdf(model::TimeSeriesModel{1,T}, ω) where {T} # default sdf returns error
     error("sdf not yet defined for model of type $(typeof(model)).")
 end
-function asdf(model::TimeSeriesModel{1}, ω, Δ) # default method approximates the asdf (overload if known)
+function asdf(model::TimeSeriesModel{1,T}, ω, Δ) where {T} # default method approximates the asdf (overload if known)
     val = zero(ComplexF64)
     for k ∈ -nalias(model):nalias(model)
         val += sdf(model, ω + k * 2π / Δ)
@@ -97,10 +97,22 @@ function asdf(model::TimeSeriesModel{1}, ω, Δ) # default method approximates t
     return val
 end
 
-function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, freq::FreqAcvEst)
+function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1,T}, freq::FreqAcvEst) where {T}
     length(store.allocatedarray) == length(freq.Ωₘ) || throw(ArgumentError("length(store.allocatedarray) != length(Ω)."))
     @inbounds for i ∈ 1:length(freq.Ωₘ)
-        store.allocatedarray[i] = @views asdf(model, freq.Ωₘ[i], freq.Δ)
+        store.allocatedarray[i] = asdf(model, freq.Ωₘ[i], freq.Δ)
+    end
+    return nothing
+end
+function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1,T}, freq::FreqAcvEst) where {T<:Real} ## real values
+    length(store.allocatedarray) == length(freq.Ωₘ) || throw(ArgumentError("length(store.allocatedarray) != length(Ω)."))
+    m = length(freq.Ωₘ)
+    startcopyind = m÷2+2
+    for i ∈ 1:startcopyind-1
+        store.allocatedarray[i] = asdf(model, freq.Ωₘ[i], freq.Δ)
+    end
+    for i in startcopyind:length(freq.Ωₘ) 
+        store.allocatedarray[i] = store.allocatedarray[m-i+2]
     end
     return nothing
 end
@@ -116,10 +128,10 @@ function add_asdf!(out, model::AdditiveTimeSeriesModel, ω, Δ)
     add_asdf!(out, model.model2, ω, Δ)
     return nothing
 end
-function sdf(model::AdditiveTimeSeriesModel{M₁,M₂,1}, ω) where {M₁<:TimeSeriesModel{1},M₂<:TimeSeriesModel{1}}
+function sdf(model::AdditiveTimeSeriesModel{M₁,M₂,1,T}, ω) where {M₁<:TimeSeriesModel{1,T},M₂<:TimeSeriesModel{1,T}} where {T}
     return sdf(model.model1,ω)+sdf(model.model2,ω)
 end
-function asdf(model::AdditiveTimeSeriesModel{M₁,M₂,1}, ω, Δ) where {M₁<:TimeSeriesModel{1},M₂<:TimeSeriesModel{1}}
+function asdf(model::AdditiveTimeSeriesModel{M₁,M₂,1,T}, ω, Δ) where {M₁<:TimeSeriesModel{1,T},M₂<:TimeSeriesModel{1,T}} where {T}
     return asdf(model.model1,ω,Δ)+asdf(model.model2,ω,Δ)
 end
 
@@ -182,6 +194,18 @@ function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, freq:
     end
     return nothing
 end
+function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{D,T}, freq::FreqAcvEst) where {D,T<:Real} # real case
+    size(store.allocatedarray,3) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,3) != length(freq.Ωₘ)."))
+    m = length(freq.Ωₘ)
+    startcopyind = m÷2+2
+    for i ∈ 1:startcopyind-1
+        @views grad_asdf!(store.allocatedarray[:, :, i], model, freq.Ωₘ[i], freq.Δ)
+    end
+    for i in startcopyind:length(freq.Ωₘ) 
+        @views store.allocatedarray[:, :, i] = store.allocatedarray[:, :, m-i+2]
+    end
+    return nothing
+end
 function grad_asdf!(store::TimeSeriesModelStorageGradient, model::TimeSeriesModel)
     grad_asdf!(store.gradmemory, model, store.encodedtime)
     return nothing
@@ -200,15 +224,26 @@ end
 
 ### Univariate ###
 
-function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, freq::FreqAcvEst)
+function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1,T}, freq::FreqAcvEst) where {T}
     size(store.allocatedarray,2) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,2) != length(freq.Ωₘ)."))
     @inbounds for i ∈ 1:length(freq.Ωₘ)
         @views grad_asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], freq.Δ)
     end
     return nothing
 end
-
-function grad_sdf(model::TimeSeriesModel{1}, ω)
+function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1,T}, freq::FreqAcvEst) where {T<:Real} # real case
+    size(store.allocatedarray,2) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,2) != length(freq.Ωₘ)."))
+    m = length(freq.Ωₘ)
+    startcopyind = m÷2+2
+    for i ∈ 1:startcopyind-1
+        @views grad_asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], freq.Δ)
+    end
+    for i in startcopyind:length(freq.Ωₘ) 
+        @views store.allocatedarray[:, i] = store.allocatedarray[:, m-i+2]
+    end
+    return nothing
+end
+function grad_sdf(model::TimeSeriesModel{1,T}, ω) where {T}
     G = zeros(ComplexF64,npars(model))
     grad_add_sdf!(G, model, ω)
     return G
@@ -237,7 +272,7 @@ end
 function grad_sdf(model::AdditiveTimeSeriesModel, ω)
     return hcat(grad_sdf(model.model1, ω), grad_sdf(model.model2, ω)) # not very efficient implementation but not designed to be used.
 end
-function grad_sdf(model::AdditiveTimeSeriesModel{M₁,M₂,1}, ω) where {M₁<:TimeSeriesModel{1},M₂<:TimeSeriesModel{1}}
+function grad_sdf(model::AdditiveTimeSeriesModel{M₁,M₂,1,T}, ω) where {M₁<:TimeSeriesModel{1,T},M₂<:TimeSeriesModel{1,T}} where {T}
     return vcat(grad_sdf(model.model1, ω), grad_sdf(model.model2, ω)) # not very efficient implementation but not designed to be used.
 end
 
@@ -288,6 +323,18 @@ function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel, freq:
     end
     return nothing
 end
+function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{D,T}, freq::FreqAcvEst) where {D,T<:Real} # real case
+    size(store.allocatedarray,3) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,3) != length(freq.Ωₘ)."))
+    m = length(freq.Ωₘ)
+    startcopyind = m÷2+2
+    for i ∈ 1:startcopyind-1
+        @views grad_asdf!(store.allocatedarray[:, :, i], model, freq.Ωₘ[i], freq.Δ)
+    end
+    for i in startcopyind:length(freq.Ωₘ) 
+        @views store.allocatedarray[:, :, i] = store.allocatedarray[:, :, m-i+2]
+    end
+    return nothing
+end
 function hess_asdf!(store::TimeSeriesModelStorageHessian, model::TimeSeriesModel)
     hess_asdf!(store.hessmemory, model, store.encodedtime)
     return nothing
@@ -306,15 +353,26 @@ end
 
 ### Univariate ###
 
-function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1}, freq::FreqAcvEst)
+function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1,T}, freq::FreqAcvEst) where {T}
     size(store.allocatedarray,2) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,2) != length(freq.Ωₘ)."))
     @inbounds for i ∈ 1:length(freq.Ωₘ)
         @views hess_asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], freq.Δ)
     end
     return nothing
 end
-
-function hess_sdf(model::TimeSeriesModel{1}, ω)
+function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1,T}, freq::FreqAcvEst) where {T<:Real} # real case
+    size(store.allocatedarray,2) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,2) != length(freq.Ωₘ)."))
+    m = length(freq.Ωₘ)
+    startcopyind = m÷2+2
+    for i ∈ 1:startcopyind-1
+        @views grad_asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], freq.Δ)
+    end
+    for i in startcopyind:length(freq.Ωₘ) 
+        @views store.allocatedarray[:, i] = store.allocatedarray[:, m-i+2]
+    end
+    return nothing
+end
+function hess_sdf(model::TimeSeriesModel{1,T}, ω) where {T}
     H = zeros(ComplexF64,nlowertriangle_parameter(model))
     hess_add_sdf!(H, model, ω)
     return H
@@ -331,6 +389,6 @@ end
 function hess_sdf(model::AdditiveTimeSeriesModel, ω)
     return hcat(hess_sdf(model.model1, ω), hess_sdf(model.model2, ω)) # not very efficient implementation but not designed to be used.
 end
-function hess_sdf(model::AdditiveTimeSeriesModel{M₁,M₂,1}, ω) where {M₁<:TimeSeriesModel{1},M₂<:TimeSeriesModel{1}}
+function hess_sdf(model::AdditiveTimeSeriesModel{M₁,M₂,1,T}, ω) where {M₁<:TimeSeriesModel{1,T},M₂<:TimeSeriesModel{1,T}} where {T}
     return vcat(hess_sdf(model.model1, ω), hess_sdf(model.model2, ω)) # not very efficient implementation but not designed to be used.
 end

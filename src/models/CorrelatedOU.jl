@@ -11,7 +11,7 @@ struct CorrelatedOU <: TimeSeriesModel{2}
         new(σ,θ,ρ,σ^2,θ^2)
     end
 function CorrelatedOU(x::AbstractVector{Float64})
-        length(x) == npars(CorrelatedOU) || throw(ArgumentError("CorrelatedOU process has $(npars(CorrelatedOU)) parameters, but $(length(x)) were provided."))
+        @boundscheck checkparameterlength(x,CorrelatedOU)
         @inbounds CorrelatedOU(x[1], x[2], x[3])
     end
 end

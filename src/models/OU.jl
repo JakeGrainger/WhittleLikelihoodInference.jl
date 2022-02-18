@@ -9,7 +9,7 @@ struct OU <: TimeSeriesModel{1}
         new(σ,θ,σ^2,θ^2)
     end
     function OU(x::AbstractVector{Float64})
-        length(x) == npars(OU) || throw(ArgumentError("OU process has $(npars(OU)) parameters, but $(length(x)) were provided."))
+        @boundscheck checkparameterlength(x,OU)
         @inbounds OU(x[1], x[2])
     end
 end

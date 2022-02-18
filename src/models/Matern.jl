@@ -13,7 +13,7 @@ struct Matern{D,L} <: UnknownAcvTimeSeriesModel{D}
     ∂ν∂a_part::SHermitianCompact{D,Float64,L}
     ∂a²_part::SHermitianCompact{D,Float64,L}
     function Matern{D,L}(θ) where {D,L}
-        length(θ) == npars(Matern{D,L}) || throw(ArgumentError("Matern process has $(npars(Matern{D,L})) parameters, but $(length(θ)) were provided."))
+        @boundscheck checkparameterlength(θ, MaternAcv{D,L})
         L == triangularnumber(D) || error("Matern{D,L} should satisfy L == D*(D+1)÷2")
         all(x->x>0, θ) || throw(ArgumentError("all parameters of Matern should be > 0."))
         σ = @views SHermitianCompact(SVector{L,Float64}(θ[1:L]))

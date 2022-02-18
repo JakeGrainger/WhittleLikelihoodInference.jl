@@ -8,7 +8,7 @@ struct MaternAcv{D,L} <: TimeSeriesModel{D}
     sdfconst::SHermitianCompact{D,Float64,L}
     acvconst::SHermitianCompact{D,Float64,L}
     function MaternAcv{D,L}(θ) where {D,L}
-        length(θ) == npars(Matern{D,L}) || throw(ArgumentError("MaternAcv process has $(npars(MaternAcv{D,L})) parameters, but $(length(θ)) were provided."))
+        @boundscheck checkparameterlength(θ, MaternAcv{D,L})
         L == triangularnumber(D) || error("MaternAcv{D,L} should satisfy L == D*(D+1)÷2")
         all(x->x>0, θ) || throw(ArgumentError("all parameters of MaternAcv should be > 0."))
         σ = @views SHermitianCompact(SVector{L,Float64}(θ[1:L]))

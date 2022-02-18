@@ -11,7 +11,7 @@ struct CorrelatedOUUnknown{K} <: UnknownAcvTimeSeriesModel{2}
         new{K}(σ,θ,ρ,σ^2,θ^2)
     end
 function CorrelatedOUUnknown{K}(x::Vector{Float64}) where {K}
-        length(x) == npars(CorrelatedOUUnknown{K}) || throw(ArgumentError("CorrelatedOUUnknown process has $(npars(CorrelatedOUUnknown{K})) parameters, but $(length(x)) were provided."))
+        @boundscheck checkparameterlength(x,CorrelatedOUUnknown)
         @inbounds CorrelatedOUUnknown{K}(x[1], x[2], x[3])
     end
 end

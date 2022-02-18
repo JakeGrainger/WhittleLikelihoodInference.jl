@@ -9,7 +9,7 @@ struct OUUnknown{K} <: UnknownAcvTimeSeriesModel{1}
         new(σ,θ,σ^2,θ^2)
     end
     function OUUnknown{K}(x::Vector{Float64}) where {K}
-        length(x) == npars(OUUnknown{K}) || throw(ArgumentError("OUUnknown process has $(npars(OUUnknown{K})) parameters, but $(length(x)) were provided."))
+        @boundscheck checkparameterlength(x,OUUnknown)
         @inbounds OUUnknown{K}(x[1], x[2])
     end
 end

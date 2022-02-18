@@ -226,7 +226,7 @@ function grad_acv!(store::Acv2EIStorageUni, model::TimeSeriesModel{1,T}, encoded
     return nothing
 end
 
-function grad_acv(model::TimeSeriesModel{1,T}, τ)
+function grad_acv(model::TimeSeriesModel{1,T}, τ) where {T}
     !(model isa UnknownAcvTimeSeriesModel) || throw(ArgumentError("grad_acv only defined when acv is known."))
     G = zeros(ComplexF64,npars(model))
     grad_acv!(G, model, τ)
@@ -244,7 +244,7 @@ end
 function grad_acv(model::AdditiveTimeSeriesModel, τ)
     return hcat(grad_acv(model.model1, τ), grad_acv(model.model2, τ))
 end
-function grad_acv(model::AdditiveTimeSeriesModel{M₁,M₂,1}, τ) where {M₁<:TimeSeriesModel{1,T},M₂<:TimeSeriesModel{1,T}} where {T}
+function grad_acv(model::AdditiveTimeSeriesModel{M₁,M₂,1,T}, τ) where {M₁<:TimeSeriesModel{1,T},M₂<:TimeSeriesModel{1,T}} where {T}
     return vcat(grad_acv(model.model1, τ), grad_acv(model.model2, τ))
 end
 
@@ -333,6 +333,6 @@ end
 function hess_acv(model::AdditiveTimeSeriesModel, τ)
     return hcat(hess_acv(model.model1, τ), hess_acv(model.model2, τ))
 end
-function hess_acv(model::AdditiveTimeSeriesModel{M₁,M₂,1}, τ) where {M₁<:TimeSeriesModel{1,T},M₂<:TimeSeriesModel{1,T}} where {T}
+function hess_acv(model::AdditiveTimeSeriesModel{M₁,M₂,1,T}, τ) where {M₁<:TimeSeriesModel{1,T},M₂<:TimeSeriesModel{1,T}} where {T}
     return vcat(hess_acv(model.model1, τ), hess_acv(model.model2, τ))
 end

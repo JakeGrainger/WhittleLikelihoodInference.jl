@@ -6,6 +6,12 @@ WhittleLikelihoodInference.npars(::Type{TestAcvModel}) = 2
 WhittleLikelihoodInference.npars(::Type{TestAcvModelUni}) = 2
 WhittleLikelihoodInference.npars(::Type{TestUnknownAcv}) = 2
 WhittleLikelihoodInference.npars(::Type{TestUnknownAcvUni}) = 2
+WhittleLikelihoodInference.add_sdf!(out,::TestUnknownAcv,ω) = (out .+= 0.2; nothing)
+WhittleLikelihoodInference.grad_add_sdf!(out,::TestUnknownAcv,ω) = (out .+= 0.2; nothing)
+WhittleLikelihoodInference.hess_add_sdf!(out,::TestUnknownAcv,ω) = (out .+= 0.2; nothing)
+WhittleLikelihoodInference.sdf(::TestUnknownAcvUni,ω) = 0.2
+WhittleLikelihoodInference.grad_add_sdf!(out,::TestUnknownAcvUni,ω) = (out .+= 0.2; nothing)
+WhittleLikelihoodInference.hess_add_sdf!(out,::TestUnknownAcvUni,ω) = (out .+= 0.2; nothing)
 struct TestAcv2 <: WhittleLikelihoodInference.TimeSeriesModel{2,Float64} end
 struct TestAcvUni2 <: WhittleLikelihoodInference.TimeSeriesModel{1,Float64} end
 struct TestAcv3 <: WhittleLikelihoodInference.TimeSeriesModel{2,Float64} end
@@ -50,6 +56,16 @@ const AcvDoubleUni = TestAcvUni2 + TestAcvUni3
             @testset "Custom lag when acv unknown error" begin
                 @test_throws ArgumentError acv(TestUnknownAcv(), 1.0)
                 @test_throws ArgumentError acv(TestUnknownAcvUni(), 1.0)
+            end
+            @testset "UnknownAcv" begin
+                store = allocate_memory_EI_FGH(TestUnknownAcv, 100, 1)
+                @test WhittleLikelihoodInference.acv!(store, TestUnknownAcv()) == nothing
+                @test WhittleLikelihoodInference.grad_acv!(store, TestUnknownAcv()) == nothing
+                @test WhittleLikelihoodInference.hess_acv!(store, TestUnknownAcv()) == nothing
+                storeuni = allocate_memory_EI_FGH(TestUnknownAcvUni, 100, 1)
+                @test WhittleLikelihoodInference.acv!(storeuni, TestUnknownAcvUni()) == nothing
+                @test WhittleLikelihoodInference.grad_acv!(storeuni, TestUnknownAcvUni()) == nothing
+                @test WhittleLikelihoodInference.hess_acv!(storeuni, TestUnknownAcvUni()) == nothing
             end
         end
         @testset "Value" begin

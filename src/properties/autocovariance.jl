@@ -8,7 +8,7 @@
 Approximate the acv and allocate to storage when acv is unknown.
 """
 function acv!(store::Sdf2EIStorage, model::UnknownAcvTimeSeriesModel, encodedtime::FreqAcvEst)
-    asdf!(store.sdf2acv, model, encodedtime.Ωₘ, encodedtime.Δ)
+    asdf!(store.sdf2acv, model, encodedtime)
     
     store.sdf2acv.planned_ifft * store.sdf2acv.allocatedarray # essentially ifft!(asdf, 2)
 
@@ -95,7 +95,7 @@ end
 Approximate the acv and allocate to storage when acv is known in the univariate case.
 """
 function acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1,T}, encodedtime::FreqAcvEst) where {T}
-    asdf!(store.sdf2acv, model, encodedtime.Ωₘ, encodedtime.Δ)
+    asdf!(store.sdf2acv, model, encodedtime)
     
     store.sdf2acv.planned_ifft * store.sdf2acv.allocatedarray # essentially ifft!(asdf, 2)
 
@@ -163,7 +163,7 @@ end
 Compute the gradient of the acv and allocate to storage as appropriate.
 """
 function grad_acv!(store::Sdf2EIStorage, model::UnknownAcvTimeSeriesModel, encodedtime::FreqAcvEst)
-    grad_asdf!(store.sdf2acv, model, encodedtime.Ωₘ, encodedtime.Δ)
+    grad_asdf!(store.sdf2acv, model, encodedtime)
     
     store.sdf2acv.planned_ifft * store.sdf2acv.allocatedarray # essentially ifft!(asdf, 2)
 
@@ -207,7 +207,7 @@ end
 ### Univariate ###
 
 function grad_acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1,T}, encodedtime::FreqAcvEst) where {T}
-    grad_asdf!(store.sdf2acv, model, encodedtime.Ωₘ, encodedtime.Δ)
+    grad_asdf!(store.sdf2acv, model, encodedtime)
     
     store.sdf2acv.planned_ifft * store.sdf2acv.allocatedarray # essentially ifft!(asdf, 2)
 
@@ -258,7 +258,7 @@ end
 Compute the Hessian of the acv and allocate to storage as appropriate.
 """
 function hess_acv!(store::Sdf2EIStorage, model::UnknownAcvTimeSeriesModel, encodedtime::FreqAcvEst)
-    hess_asdf!(store.sdf2acv, model, encodedtime.Ωₘ, encodedtime.Δ)
+    hess_asdf!(store.sdf2acv, model, encodedtime)
     
     store.sdf2acv.planned_ifft * store.sdf2acv.allocatedarray # essentially ifft!(asdf, 2)
 
@@ -296,7 +296,7 @@ end
 ### Univariate ###
 
 function hess_acv!(store::Sdf2EIStorageUni, model::UnknownAcvTimeSeriesModel{1,T}, encodedtime::FreqAcvEst) where {T}
-    hess_asdf!(store.sdf2acv, model, encodedtime.Ωₘ, encodedtime.Δ)
+    hess_asdf!(store.sdf2acv, model, encodedtime)
     
     store.sdf2acv.planned_ifft * store.sdf2acv.allocatedarray # essentially ifft!(asdf, 2)
 

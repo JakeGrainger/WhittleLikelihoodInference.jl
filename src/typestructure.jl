@@ -27,10 +27,15 @@ struct AdditiveTimeSeriesModel{M₁,M₂,D,T} <: TimeSeriesModel{D,T}
 end
 
 """
-    M₁::Type{<:TimeSeriesModel{D,T}} + M₂::Type{<:TimeSeriesModel{D,T}} -> AdditiveTimeSeriesModel{M₁,M₂,D,T}
+    M₁::Type{<:TimeSeriesModel{D,T}} + M₂::Type{<:TimeSeriesModel{D,T}} -> Type{AdditiveTimeSeriesModel{M₁,M₂,D,T}}
 """
 Base.:+(M₁::Type{<:TimeSeriesModel{D,T}}, M₂::Type{<:TimeSeriesModel{D,T}}) where {D,T} =
     AdditiveTimeSeriesModel{M₁,M₂,D,T}
+
+"""
+    M₁::Type{<:TimeSeriesModel{D,T}} + M₂::Type{<:TimeSeriesModel{D,T}} -> AdditiveTimeSeriesModel{M₁,M₂,D,T}
+"""
+Base.:+(model1::TimeSeriesModel, model2::TimeSeriesModel) = AdditiveTimeSeriesModel(model1,model2)
 
 # Broadcasting support for models
 Base.broadcastable(model::TimeSeriesModel) = Ref(model)

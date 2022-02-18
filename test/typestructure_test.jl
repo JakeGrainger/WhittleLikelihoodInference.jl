@@ -1,10 +1,12 @@
 const OUDouble = OU+OU
 @testset "typestructure" begin
     @testset "AdditiveTimeSeriesModel" begin
-        @test AdditiveTimeSeriesModel(OU(1,1),OU(1,1)) == AdditiveTimeSeriesModel{OU,OU,1}(ones(4))
+        @test AdditiveTimeSeriesModel(OU(1,1),OU(1,1)) == AdditiveTimeSeriesModel{OU,OU,1,Float64}(ones(4))
         @test_throws MethodError AdditiveTimeSeriesModel(OU(1,1),CorrelatedOU(1,1,1/2))
         @test OUDouble == AdditiveTimeSeriesModel{OU,OU,1}
         @test_throws MethodError OU+CorrelatedOU
+        @test OU+OU == AdditiveTimeSeriesModel{OU,OU,1,Float64}
+        @test OU(1,1)+OU(1,1) == AdditiveTimeSeriesModel{OU,OU,1,Float64}(ones(4))
     end
     @testset "ndims" begin
         @test ndims(OU) == 1

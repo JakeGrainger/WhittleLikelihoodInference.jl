@@ -105,4 +105,5 @@ checks if the parameter vector is the correct length for the given model.
 """
 @inline function checkparameterlength(x,model::Type{<:TimeSeriesModel})
     length(x) == npars(model) || throw(ArgumentError("$model model has $(npars(model)) parameters, but $(length(x)) were provided."))
+    Base.require_one_based_indexing(x) || throw(ArgumentError("parameter vector should be a type using 1 indexing."))
 end

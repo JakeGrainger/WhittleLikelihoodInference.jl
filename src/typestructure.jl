@@ -27,7 +27,7 @@ struct AdditiveTimeSeriesModel{M₁,M₂,D,T} <: TimeSeriesModel{D,T}
 end
 
 """
-    M₁::Type{<:TimeSeriesModel{D,T}} + M₂::Type{<:TimeSeriesModel{D,T}} -> AdditiveTimeSeriesModel{M₁,M₂,D}
+    M₁::Type{<:TimeSeriesModel{D,T}} + M₂::Type{<:TimeSeriesModel{D,T}} -> AdditiveTimeSeriesModel{M₁,M₂,D,T}
 """
 Base.:+(M₁::Type{<:TimeSeriesModel{D,T}}, M₂::Type{<:TimeSeriesModel{D,T}}) where {D,T} =
     AdditiveTimeSeriesModel{M₁,M₂,D,T}

@@ -128,6 +128,10 @@ getconstructor(::Type{<:CoherancyEstimate}) = CoherancyEstimate
     HermitianPlot(getfreq(ŝ), getordinate(ŝ))
 end
 
+@recipe function f(ŝ::SpectralEstimate{1,T}) where {T} # univariate plotting
+    getfreq(ŝ), getordinate(ŝ)
+end
+
 function Base.:+(ŝ₁::T, ŝ₂::T) where {T<:SpectralEstimate}
     getfreq(ŝ₁) == getfreq(ŝ₂) || error("Frequencies must be the same to add spectral estimates.")
     getconstructor(T)(getfreq(ŝ₁), getordinate(ŝ₁) .+ getordinate(ŝ₂))

@@ -1,4 +1,4 @@
-struct CohModel <: TimeSeriesModel{2} end
+struct CohModel <: TimeSeriesModel{2,Real} end
 function WhittleLikelihoodInference.add_sdf!(out, ::CohModel, ω)
     out[1] = 4
     out[2] = 3+4im

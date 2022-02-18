@@ -3,7 +3,7 @@ module WhittleLikelihoodInference
 using FFTW, LinearAlgebra, ToeplitzMatrices, StaticArrays, RecipesBase
 using Distributions, SpecialFunctions, LazyArrays
 
-import Base: ndims, show, size, getindex
+import Base: ndims, show, size, getindex, @propagate_inbounds
 import StaticArrays: triangularnumber
 
 export

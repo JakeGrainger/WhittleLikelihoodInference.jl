@@ -16,22 +16,28 @@ end
 nalias(::OUUnknown{K}) where {K} = K
 npars(::Type{OUUnknown{K}}) where {K} = 2
 
-sdf(m::OUUnknown, ω) = m.σ²/(π*(m.θ²+ω^2))
+@inline sdf(m::OUUnknown, ω) = m.σ²/(π*(m.θ²+ω^2))
 
-function grad_add_sdf!(out, m::OUUnknown, ω)
-    σ, θ = m.σ, m.θ
-    σ_part = 2σ / (π*(m.θ²+ω^2))
-    out[1] = σ_part
-    out[2] = -π*θ/2*(σ_part)^2
+@propagate_inbounds function grad_add_sdf!(out, m::OUUnknown, ω)
+    @boundscheck checkbounds(out,1:2)
+    @inbounds begin
+        σ, θ = m.σ, m.θ
+        σ_part = 2σ / (π*(m.θ²+ω^2))
+        out[1] = σ_part
+        out[2] = -π*θ/2*(σ_part)^2
+    end
     nothing
 end
 
-function hess_add_sdf!(out, m::OUUnknown, ω)
-    σ, θ = m.σ, m.θ
-    σ_part = 2 / (π*(m.θ²+ω^2))
-    θσ_part = -π*θ*σ*(σ_part)^2
-    out[1] = σ_part
-    out[2] = θσ_part
-    out[3] = -π*σ_part*σ*(σ_part*σ/2 + θ*θσ_part)
+@propagate_inbounds function hess_add_sdf!(out, m::OUUnknown, ω)
+    @boundscheck checkbounds(out,1:3)
+    @inbounds begin
+        σ, θ = m.σ, m.θ
+        σ_part = 2 / (π*(m.θ²+ω^2))
+        θσ_part = -π*θ*σ*(σ_part)^2
+        out[1] = σ_part
+        out[2] = θσ_part
+        out[3] = -π*σ_part*σ*(σ_part*σ/2 + θ*θσ_part)
+    end
     nothing
 end

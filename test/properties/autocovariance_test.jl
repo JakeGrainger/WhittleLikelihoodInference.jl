@@ -1,15 +1,15 @@
-struct TestAcvModel <: WhittleLikelihoodInference.TimeSeriesModel{2} end
-struct TestAcvModelUni <: WhittleLikelihoodInference.TimeSeriesModel{1} end
-struct TestUnknownAcv <: WhittleLikelihoodInference.UnknownAcvTimeSeriesModel{2} end
-struct TestUnknownAcvUni <: WhittleLikelihoodInference.UnknownAcvTimeSeriesModel{1} end
+struct TestAcvModel <: WhittleLikelihoodInference.TimeSeriesModel{2,Float64} end
+struct TestAcvModelUni <: WhittleLikelihoodInference.TimeSeriesModel{1,Float64} end
+struct TestUnknownAcv <: WhittleLikelihoodInference.UnknownAcvTimeSeriesModel{2,Float64} end
+struct TestUnknownAcvUni <: WhittleLikelihoodInference.UnknownAcvTimeSeriesModel{1,Float64} end
 WhittleLikelihoodInference.npars(::Type{TestAcvModel}) = 2
 WhittleLikelihoodInference.npars(::Type{TestAcvModelUni}) = 2
 WhittleLikelihoodInference.npars(::Type{TestUnknownAcv}) = 2
 WhittleLikelihoodInference.npars(::Type{TestUnknownAcvUni}) = 2
-struct TestAcv2 <: WhittleLikelihoodInference.TimeSeriesModel{2} end
-struct TestAcvUni2 <: WhittleLikelihoodInference.TimeSeriesModel{1} end
-struct TestAcv3 <: WhittleLikelihoodInference.TimeSeriesModel{2} end
-struct TestAcvUni3 <: WhittleLikelihoodInference.TimeSeriesModel{1} end
+struct TestAcv2 <: WhittleLikelihoodInference.TimeSeriesModel{2,Float64} end
+struct TestAcvUni2 <: WhittleLikelihoodInference.TimeSeriesModel{1,Float64} end
+struct TestAcv3 <: WhittleLikelihoodInference.TimeSeriesModel{2,Float64} end
+struct TestAcvUni3 <: WhittleLikelihoodInference.TimeSeriesModel{1,Float64} end
 TestAcv2(x) = TestAcv2() # just to allow additive constructor to work
 TestAcvUni2(x) = TestAcvUni2()
 TestAcv3(x) = TestAcv3() # just to allow additive constructor to work

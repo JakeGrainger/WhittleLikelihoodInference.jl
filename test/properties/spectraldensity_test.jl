@@ -1,9 +1,9 @@
-struct TestModel <: WhittleLikelihoodInference.TimeSeriesModel{2} end
-struct TestModelUni <: WhittleLikelihoodInference.TimeSeriesModel{1} end
-struct TestModel2 <: WhittleLikelihoodInference.TimeSeriesModel{2} end
-struct TestModelUni2 <: WhittleLikelihoodInference.TimeSeriesModel{1} end
-struct TestModel3 <: WhittleLikelihoodInference.TimeSeriesModel{2} end
-struct TestModelUni3 <: WhittleLikelihoodInference.TimeSeriesModel{1} end
+struct TestModel <: WhittleLikelihoodInference.TimeSeriesModel{2,Float64} end
+struct TestModelUni <: WhittleLikelihoodInference.TimeSeriesModel{1,Float64} end
+struct TestModel2 <: WhittleLikelihoodInference.TimeSeriesModel{2,Float64} end
+struct TestModelUni2 <: WhittleLikelihoodInference.TimeSeriesModel{1,Float64} end
+struct TestModel3 <: WhittleLikelihoodInference.TimeSeriesModel{2,Float64} end
+struct TestModelUni3 <: WhittleLikelihoodInference.TimeSeriesModel{1,Float64} end
 TestModel2(x) = TestModel2() # just to allow additive constructor to work
 TestModelUni2(x) = TestModelUni2()
 TestModel3(x) = TestModel3() # just to allow additive constructor to work

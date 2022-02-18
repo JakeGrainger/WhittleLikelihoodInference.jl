@@ -1,36 +1,36 @@
 "Time series model with a parameter for the dimension of the timeseries model."
-abstract type TimeSeriesModel{D} end
+abstract type TimeSeriesModel{D,T} end
 
 """
 Sub type to specify the need for additional routines approximating the acv from the sdf.
 Such routines require additional storage and have different default functions in some cases.
 """
-abstract type UnknownAcvTimeSeriesModel{D} <: TimeSeriesModel{D} end
+abstract type UnknownAcvTimeSeriesModel{D,T} <: TimeSeriesModel{D,T} end
 
 """
     AdditiveTimeSeriesModel(model1, model2)
 
 Constructs an additive model from two timeseries models.
 """
-struct AdditiveTimeSeriesModel{M₁,M₂,D} <: TimeSeriesModel{D}
+struct AdditiveTimeSeriesModel{M₁,M₂,D,T} <: TimeSeriesModel{D,T}
     model1::M₁
     model2::M₂
     function AdditiveTimeSeriesModel(
         model1::M₁,
         model2::M₂,
-    ) where {M₁<:TimeSeriesModel{D},M₂<:TimeSeriesModel{D}} where {D}
-        new{M₁,M₂,D}(model1, model2)
+    ) where {M₁<:TimeSeriesModel{D,T},M₂<:TimeSeriesModel{D,T}} where {D,T}
+        new{M₁,M₂,D,T}(model1, model2)
     end
-    function AdditiveTimeSeriesModel{M₁,M₂,D}(θ) where {M₁<:TimeSeriesModel{D},M₂<:TimeSeriesModel{D}} where {D}
-        @views new{M₁,M₂,D}(M₁(θ[1:npars(M₁)]), M₂(θ[npars(M₁)+1:end]))
+    function AdditiveTimeSeriesModel{M₁,M₂,D}(θ) where {M₁<:TimeSeriesModel{D,T},M₂<:TimeSeriesModel{D,T}} where {D,T}
+        @views new{M₁,M₂,D,T}(M₁(θ[1:npars(M₁)]), M₂(θ[npars(M₁)+1:end]))
     end
 end
 
 """
-    M₁::Type{<:TimeSeriesModel{D}}, M₂::Type{<:TimeSeriesModel{D}} -> AdditiveTimeSeriesModel{M₁,M₂,D}
+    M₁::Type{<:TimeSeriesModel{D,T}} + M₂::Type{<:TimeSeriesModel{D,T}} -> AdditiveTimeSeriesModel{M₁,M₂,D}
 """
-Base.:+(M₁::Type{<:TimeSeriesModel{D}}, M₂::Type{<:TimeSeriesModel{D}}) where {D} =
-    AdditiveTimeSeriesModel{M₁,M₂,D}
+Base.:+(M₁::Type{<:TimeSeriesModel{D,T}}, M₂::Type{<:TimeSeriesModel{D,T}}) where {D,T} =
+    AdditiveTimeSeriesModel{M₁,M₂,D,T}
 
 # Broadcasting support for models
 Base.broadcastable(model::TimeSeriesModel) = Ref(model)
@@ -41,8 +41,8 @@ Base.broadcastable(model::TimeSeriesModel) = Ref(model)
 
 Return the dimension of a timeseries model.
 """
-ndims(::TimeSeriesModel{D}) where {D} = D
-ndims(::Type{<:TimeSeriesModel{D}}) where {D} = D
+ndims(::TimeSeriesModel{D,T}) where {D,T} = D
+ndims(::Type{<:TimeSeriesModel{D,T}}) where {D,T} = D
 
 """
     nlowertriangle_dimension(::TimeSeriesModel) -> Integer
@@ -50,8 +50,8 @@ ndims(::Type{<:TimeSeriesModel{D}}) where {D} = D
 
 Return the number of elements in the lower triangle the spectral density matrix function of a timeseries model.
 """
-nlowertriangle_dimension(::TimeSeriesModel{D}) where {D} = triangularnumber(D)
-nlowertriangle_dimension(::Type{<:TimeSeriesModel{D}}) where {D} =
+nlowertriangle_dimension(::TimeSeriesModel{D,T}) where {D,T} = triangularnumber(D)
+nlowertriangle_dimension(::Type{<:TimeSeriesModel{D,T}}) where {D,T} =
     triangularnumber(D)
 
 """
@@ -65,8 +65,8 @@ parameternames(model::Type{<:TimeSeriesModel}) = fieldnames(model)[1:npars(model
 
 npars(model::TimeSeriesModel) = npars(typeof(model))
 npars(
-    ::Type{AdditiveTimeSeriesModel{M₁,M₂,D}},
-) where {M₁<:TimeSeriesModel{D},M₂<:TimeSeriesModel{D}} where {D} = npars(M₁) + npars(M₂)
+    ::Type{AdditiveTimeSeriesModel{M₁,M₂,D,T}},
+) where {M₁<:TimeSeriesModel{D,T},M₂<:TimeSeriesModel{D,T}} where {D,T} = npars(M₁) + npars(M₂)
 
 """
     nlowertriangle_parameter(::TimeSeriesModel) -> Integer

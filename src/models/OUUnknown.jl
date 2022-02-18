@@ -9,7 +9,7 @@ struct OUUnknown{K} <: UnknownAcvTimeSeriesModel{1}
         new(σ,θ,σ^2,θ^2)
     end
     function OUUnknown{K}(x::Vector{Float64}) where {K}
-        @boundscheck checkparameterlength(x,OUUnknown)
+        @boundscheck checkparameterlength(x,OUUnknown{K})
         @inbounds OUUnknown{K}(x[1], x[2])
     end
 end

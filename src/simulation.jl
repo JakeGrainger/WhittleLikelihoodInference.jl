@@ -45,7 +45,7 @@ end
 struct GaussianProcess{T}
     X::T
     Δ::Float64
-    function GaussianProcess(model::TimeSeriesModel, n::Int, Δ::Number)
+    function GaussianProcess(model::TimeSeriesModel, n::Int, Δ::Real)
         Δ > 0 || throw(ArgumentError("Δ should be positive."))
         n > 0 || throw(ArgumentError("n should be positive."))
         C = covmatrix(model, n, Δ)

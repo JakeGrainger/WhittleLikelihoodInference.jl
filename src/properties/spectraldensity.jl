@@ -54,7 +54,7 @@ function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{D,T}, freq:
         @views asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], freq.Δ)
     end
     @inbounds for i in startcopyind:length(freq.Ωₘ) 
-        @views store.allocatedarray[:, i] .= store.allocatedarray[:, m-i+2]
+        @views store.allocatedarray[:, i] .= conj.(store.allocatedarray[:, m-i+2])
     end
     return nothing
 end
@@ -202,7 +202,7 @@ function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{D,T}, 
         @views grad_asdf!(store.allocatedarray[:, :, i], model, freq.Ωₘ[i], freq.Δ)
     end
     @inbounds for i in startcopyind:length(freq.Ωₘ) 
-        @views store.allocatedarray[:, :, i] .= store.allocatedarray[:, :, m-i+2]
+        @views store.allocatedarray[:, :, i] .= conj.(store.allocatedarray[:, :, m-i+2])
     end
     return nothing
 end
@@ -331,7 +331,7 @@ function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{D,T}, 
         @views grad_asdf!(store.allocatedarray[:, :, i], model, freq.Ωₘ[i], freq.Δ)
     end
     @inbounds for i in startcopyind:length(freq.Ωₘ) 
-        @views store.allocatedarray[:, :, i] .= store.allocatedarray[:, :, m-i+2]
+        @views store.allocatedarray[:, :, i] .= conj.(store.allocatedarray[:, :, m-i+2])
     end
     return nothing
 end

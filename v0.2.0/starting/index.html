@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Getting Started · WhittleLikelihoodInference.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><script src="../../copy.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">WhittleLikelihoodInference.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../background/">Background</a></li><li class="is-active"><a class="tocitem" href>Getting Started</a><ul class="internal"><li><a class="tocitem" href="#Installation"><span>Installation</span></a></li><li><a class="tocitem" href="#A-basic-example-(univariate)"><span>A basic example (univariate)</span></a></li><li><a class="tocitem" href="#A-basic-example-(multivariate)"><span>A basic example (multivariate)</span></a></li></ul></li><li><a class="tocitem" href="../models/">Models</a></li><li><span class="tocitem">Likelihood functions</span><ul><li><a class="tocitem" href="../WhittleLikelihood/">Whittle likelihood</a></li><li><a class="tocitem" href="../debiasedwhittlelikelihood/">Debiased Whittle likelihood</a></li></ul></li><li><a class="tocitem" href="../docstrings/">Docstrings</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Getting Started</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Getting Started</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JakeGrainger/WhittleLikelihoodInference.jl/blob/master/docs/src/starting.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Getting-Started"><a class="docs-heading-anchor" href="#Getting-Started">Getting Started</a><a id="Getting-Started-1"></a><a class="docs-heading-anchor-permalink" href="#Getting-Started" title="Permalink"></a></h1><h2 id="Installation"><a class="docs-heading-anchor" href="#Installation">Installation</a><a id="Installation-1"></a><a class="docs-heading-anchor-permalink" href="#Installation" title="Permalink"></a></h2><p>WhittleLikelihoodInference.jl can be installed by running the following command:</p><pre><code class="language-julia hljs">] add https://github.com/JakeGrainger/WhittleLikelihoodInference.jl</code></pre><p>The package can then be used by running</p><pre><code class="language-julia hljs">using WhittleLikelihoodInference</code></pre><h2 id="A-basic-example-(univariate)"><a class="docs-heading-anchor" href="#A-basic-example-(univariate)">A basic example (univariate)</a><a id="A-basic-example-(univariate)-1"></a><a class="docs-heading-anchor-permalink" href="#A-basic-example-(univariate)" title="Permalink"></a></h2><p>For a simple univariate example, consider a stationary OU process. The stationary OU process has parameters <span>$\theta$</span> and <span>$\sigma$</span> with autocovariance</p><p class="math-container">\[c(\tau) = \frac{\sigma^2}{\theta}\exp\{-\theta|\tau|\}\]</p><p>and spectral density function</p><p class="math-container">\[f(\omega) = \frac{\sigma^2}{\pi(\theta^2+\omega^2)}.\]</p><p>The OU process is a continuous time Gaussian process, which we are interested in fitting to a sampled process which has finite length. We can simulate such a process with length <span>$n$</span> and sampling interval <span>$\Delta$</span> with the following code:</p><pre><code class="language-julia hljs">σ = 2
+θ = 0.5
+n = 1000
+Δ = 0.5
+nreps = 1
+ts = simulate_gp(OU(σ,θ),n,Δ,nreps)[1]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">WhittleLikelihoodInference.TimeSeries{Float64, 1}([2.4532283525716148, 0.310710140980738, -0.6353185948906843, -2.0967292921396816, -0.09932113629970707, 3.8469424085764734, 3.941314442967765, 2.5873882025432957, 2.9062974448223606, 1.3461988905930908  …  -0.19740090802332633, 0.6115849150892679, -1.5652354777080923, -1.7119898043444117, -2.5803699473209, -1.223115115659889, -3.3581289784651625, -1.398816200801506, 0.18276780465571485, -0.08319260475713292], 0.5)</code></pre><p>In this case, we only wanted one series, but <code>simulate_gp</code> will simulate a vector of TimeSeries of length nreps. Therefore, we pull out the first index of this array as we only want one series.</p><p>Alternatively, simulation can be performed by running the following:</p><pre><code class="language-julia hljs">import WhittleLikelihoodInference: GaussianProcess
+X = GaussianProcess(OU(σ,θ),n,Δ)
+ts = rand(X)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">WhittleLikelihoodInference.TimeSeries{Float64, 1}([2.4532283525716148, 0.310710140980738, -0.6353185948906843, -2.0967292921396816, -0.09932113629970707, 3.8469424085764734, 3.941314442967765, 2.5873882025432957, 2.9062974448223606, 1.3461988905930908  …  -0.19740090802332633, 0.6115849150892679, -1.5652354777080923, -1.7119898043444117, -2.5803699473209, -1.223115115659889, -3.3581289784651625, -1.398816200801506, 0.18276780465571485, -0.08319260475713292], 0.5)</code></pre><p>To perform Whittle likelihood inference we need to first create the objective function. This is done with the following:</p><pre><code class="language-julia hljs">whittle_objective = WhittleLikelihood(OU,ts)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Whittle likelihood for the OU model.</code></pre><p>The resulting objective function is set up to work with <code>Optim</code> so we can use</p><pre><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; whittle_objective([2, 0.5])</code><code class="nohighlight hljs ansi" style="display:block;">-372.04805671473923</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; F,G,H = 0,zeros(2),zeros(2,2)</code><code class="nohighlight hljs ansi" style="display:block;">(0, [0.0, 0.0], [0.0 0.0; 0.0 0.0])</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; whittle_objective(F,G,H,[2, 0.5])</code><code class="nohighlight hljs ansi" style="display:block;">-372.04805671473923</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; G</code><code class="nohighlight hljs ansi" style="display:block;">2-element Vector{Float64}:
+ -0.04112201462105905
+  8.936910021365347e-6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; H</code><code class="nohighlight hljs ansi" style="display:block;">2×2 Matrix{Float64}:
+ -0.0359777   7.81142e-6
+  7.81142e-6  2.46355e-10</code></pre><p>We can optimise this function with <code>Optim</code> by using</p><pre><code class="language-julia hljs">using Optim
+constraints = Optim.TwiceDifferentiableConstraints(zeros(2),fill(Inf,2))
+obj = TwiceDifferentiable(Optim.only_fgh!(whittle_objective),ones(2))
+res = optimize(obj, constraints, [1.5, 0.2], IPNewton())</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"> * Status: success
+
+ * Candidate solution
+    Final objective value:     -2.919696e+02
+
+ * Found with
+    Algorithm:     Interior Point Newton
+
+ * Convergence measures
+    |x - x&#39;|               = 0.00e+00 ≤ 0.0e+00
+    |x - x&#39;|/|x&#39;|          = 0.00e+00 ≤ 0.0e+00
+    |f(x) - f(x&#39;)|         = 0.00e+00 ≤ 0.0e+00
+    |f(x) - f(x&#39;)|/|f(x&#39;)| = 0.00e+00 ≤ 0.0e+00
+    |g(x)|                 = 4.40e-01 ≰ 1.0e-08
+
+ * Work counters
+    Seconds run:   1  (vs limit Inf)
+    Iterations:    3
+    f(x) calls:    36
+    ∇f(x) calls:   36
+</code></pre><p>The full example is:</p><pre><code class="language-julia hljs">using WhittleLikelihoodInference, Optim
+import WhittleLikelihoodInference: GaussianProcess
+σ = 2
+θ = 0.5
+n = 1000
+Δ = 0.5
+ts = rand(GaussianProcess(OU(σ,θ),n,Δ))
+whittle_objective = WhittleLikelihood(OU,ts)
+constraints = Optim.TwiceDifferentiableConstraints(zeros(2),fill(Inf,2))
+obj = TwiceDifferentiable(Optim.only_fgh!(whittle_objective),ones(2))
+res = optimize(obj, constraints, [1.5, 0.2], IPNewton())</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"> * Status: success
+
+ * Candidate solution
+    Final objective value:     -2.919696e+02
+
+ * Found with
+    Algorithm:     Interior Point Newton
+
+ * Convergence measures
+    |x - x&#39;|               = 0.00e+00 ≤ 0.0e+00
+    |x - x&#39;|/|x&#39;|          = 0.00e+00 ≤ 0.0e+00
+    |f(x) - f(x&#39;)|         = 0.00e+00 ≤ 0.0e+00
+    |f(x) - f(x&#39;)|/|f(x&#39;)| = 0.00e+00 ≤ 0.0e+00
+    |g(x)|                 = 4.40e-01 ≰ 1.0e-08
+
+ * Work counters
+    Seconds run:   0  (vs limit Inf)
+    Iterations:    3
+    f(x) calls:    36
+    ∇f(x) calls:   36
+</code></pre><h2 id="A-basic-example-(multivariate)"><a class="docs-heading-anchor" href="#A-basic-example-(multivariate)">A basic example (multivariate)</a><a id="A-basic-example-(multivariate)-1"></a><a class="docs-heading-anchor-permalink" href="#A-basic-example-(multivariate)" title="Permalink"></a></h2><p>An analagous example for a multivariate process is a bivariate correlated OU process. Consider two independent OU processes <span>$X_1$</span> and <span>$X_2$</span> with the same <span>$\sigma$</span> and <span>$\theta$</span> parameters. Then define <span>$Y_1 = X_1$</span> and <span>$Y_2 = \rho X_1 + \sqrt{1-\rho^2}X_2$</span>. We have that</p><p class="math-container">\[\mathbb{E}[Y_1(\tau)Y_1(0)] = \mathbb{E}[X_1(\tau)X_1(0)]\]</p><p>and</p><p class="math-container">\[\begin{align*} 
+    \mathbb{E}[Y_2(\tau)Y_2(0)] &amp;= \rho^2\mathbb{E}[X_1(\tau)X_1(0)] + (1-\rho^2)\mathbb{E}[X_2(\tau)X_2(0)]\\
+    &amp;= \mathbb{E}[X_1(\tau)X_1(0)]
+\end{align*}\]</p><p>and</p><p class="math-container">\[\begin{align*} 
+    \mathbb{E}[Y_2(\tau)Y_1(0)] &amp;= \rho\mathbb{E}[X_1(\tau)X_1(0)]
+\end{align*}.\]</p><p>So we have taken two OU processes and correlated them with correlation parameter <span>$\rho$</span>. We can fit the Whittle likelihood to a simulated example with the below code.</p><pre><code class="language-julia hljs">using WhittleLikelihoodInference, Optim
+import WhittleLikelihoodInference: GaussianProcess
+σ = 2
+θ = 0.5
+ρ = 0.7
+n = 1000
+Δ = 0.5
+ts = rand(GaussianProcess(CorrelatedOU(σ,θ,ρ),n,Δ))
+whittle_objective = WhittleLikelihood(CorrelatedOU,ts)
+constraints = Optim.TwiceDifferentiableConstraints(zeros(3),[Inf,Inf,1])
+obj = TwiceDifferentiable(Optim.only_fgh!(whittle_objective),ones(3))
+res = optimize(obj, constraints, [1.5, 0.2, 0.5], IPNewton())</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"> * Status: success
+
+ * Candidate solution
+    Final objective value:     -1.258312e+03
+
+ * Found with
+    Algorithm:     Interior Point Newton
+
+ * Convergence measures
+    |x - x&#39;|               = 0.00e+00 ≤ 0.0e+00
+    |x - x&#39;|/|x&#39;|          = 0.00e+00 ≤ 0.0e+00
+    |f(x) - f(x&#39;)|         = 0.00e+00 ≤ 0.0e+00
+    |f(x) - f(x&#39;)|/|f(x&#39;)| = 0.00e+00 ≤ 0.0e+00
+    |g(x)|                 = 1.62e+00 ≰ 1.0e-08
+
+ * Work counters
+    Seconds run:   0  (vs limit Inf)
+    Iterations:    4
+    f(x) calls:    38
+    ∇f(x) calls:   38
+</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../background/">« Background</a><a class="docs-footer-nextpage" href="../models/">Models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.12 on <span class="colophon-date" title="Saturday 19 February 2022 14:26">Saturday 19 February 2022</span>. Using Julia version 1.6.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

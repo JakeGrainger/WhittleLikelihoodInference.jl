@@ -16,9 +16,9 @@ WhittleLikelihoodInference.npars(::Type{TestModel3}) = 4
 WhittleLikelihoodInference.npars(::Type{TestModelUni3}) = 4
 const TestDouble = TestModel2 + TestModel3
 const TestDoubleUni = TestModelUni2 + TestModelUni3
-WhittleLikelihoodInference.add_sdf!(out,::Union{TestModel2,TestModel2C},ω) = (out[2] += ω>0 ? 0.5im : -0.5im; nothing)
-WhittleLikelihoodInference.grad_add_sdf!(out,::Union{TestModel2,TestModel2C},ω) = (out[2,:] .+= ω>0 ? 0.5im : -0.5im; nothing)
-WhittleLikelihoodInference.hess_add_sdf!(out,::Union{TestModel2,TestModel2C},ω) = (out[2,:] .+= ω>0 ? 0.5im : -0.5im; nothing)
+WhittleLikelihoodInference.add_sdf!(out,::Union{TestModel2,TestModel2C},ω) = (out[2] += ω>0 ? 0.5+0.5im : 0.5-0.5im; nothing)
+WhittleLikelihoodInference.grad_add_sdf!(out,::Union{TestModel2,TestModel2C},ω) = (out[2,:] .+= ω>0 ? 0.5+0.5im : 0.5-0.5im; nothing)
+WhittleLikelihoodInference.hess_add_sdf!(out,::Union{TestModel2,TestModel2C},ω) = (out[2,:] .+= ω>0 ? 0.5+0.5im : 0.5-0.5im; nothing)
 WhittleLikelihoodInference.sdf(::Union{TestModelUni2,TestModelUni2C},ω) = 0.5
 WhittleLikelihoodInference.grad_add_sdf!(out,::Union{TestModelUni2,TestModelUni2C},ω) = (out .+= 0.5; nothing)
 WhittleLikelihoodInference.hess_add_sdf!(out,::Union{TestModelUni2,TestModelUni2C},ω) = (out .+= 0.5; nothing)
@@ -39,15 +39,15 @@ WhittleLikelihoodInference.nalias(::TestModelUni3) = 1
             @test_throws ErrorException WhittleLikelihoodInference.sdf(TestModelUni(),1.0)
         end
         @testset "sdf" begin
-            @test sdf(TestModel2(),1.0) == SHermitianCompact(@SVector [complex(0.5) for i in 1:3])
+            @test sdf(TestModel2(),1.0) == SHermitianCompact(@SVector [0, complex(0.5,0.5), 0])
             @test sdf(TestModelUni2(),1.0) == 0.5
-            @test sdf(TestDouble(zeros(8)),1.0) == SHermitianCompact(@SVector [complex(0.7) for i in 1:3])
+            @test sdf(TestDouble(zeros(8)),1.0) == SHermitianCompact(@SVector [0.2, complex(0.7,0.5), 0.2])
             @test sdf(TestDoubleUni(zeros(8)),1.0) == 0.7
         end
         @testset "asdf" begin
-            @test asdf(TestModel2(),1.0,1.0) == SHermitianCompact(@SVector [complex(2.5) for i in 1:3]) 
+            @test asdf(TestModel2(),1.0,1.0) == SHermitianCompact(@SVector [0, complex(2.5,0.5), 0]) 
             @test asdf(TestModelUni2(),1.0,1.0) == 2.5 # two lots of aliasing
-            @test asdf(TestDouble(zeros(8)),1.0,1.0) ≈ SHermitianCompact(@SVector [complex(3.1) for i in 1:3])
+            @test asdf(TestDouble(zeros(8)),1.0,1.0) ≈ SHermitianCompact(@SVector [0.6, complex(3.1,0.5), 0.6])
             @test asdf(TestDoubleUni(zeros(8)),1.0,1.0) == 3.1 # two lots of aliasing of 0.5 plus one lot of 0.2 (but has floating point error)
         end
         @testset "Bounds check" begin
@@ -82,9 +82,9 @@ WhittleLikelihoodInference.nalias(::TestModelUni3) = 1
             @test_throws ErrorException WhittleLikelihoodInference.sdf(TestModelUni(),1.0)
         end
         @testset "sdf" begin
-            @test grad_sdf(TestModel2(),1.0) == fill(complex(0.5),3,4)
+            @test grad_sdf(TestModel2(),1.0) == repeat([0.0,complex(0.5,0.5),0.0],inner=(1,4))
             @test grad_sdf(TestModelUni2(),1.0) == fill(complex(0.5),4)
-            @test grad_sdf(TestDouble(zeros(8)),1.0) == hcat(fill(complex(0.5),3,4),fill(complex(0.2),3,4))
+            @test grad_sdf(TestDouble(zeros(8)),1.0) == hcat(repeat([0.0,complex(0.5,0.5),0.0],inner=(1,4)),fill(complex(0.2),3,4))
             @test grad_sdf(TestDoubleUni(zeros(8)),1.0) == [fill(complex(0.5),4);fill(complex(0.2),4)]
         end
         @testset "Bounds check" begin
@@ -115,9 +115,9 @@ WhittleLikelihoodInference.nalias(::TestModelUni3) = 1
             @test_throws ErrorException WhittleLikelihoodInference.sdf(TestModelUni(),1.0)
         end
         @testset "sdf" begin
-            @test hess_sdf(TestModel2(),1.0) == fill(complex(0.5),3,10)
+            @test hess_sdf(TestModel2(),1.0) == repeat([0.0,complex(0.5,0.5),0.0],inner=(1,10))
             @test hess_sdf(TestModelUni2(),1.0) == fill(complex(0.5),10)
-            @test hess_sdf(TestDouble(zeros(8)),1.0) == hcat(fill(complex(0.5),3,10),fill(complex(0.2),3,10))
+            @test hess_sdf(TestDouble(zeros(8)),1.0) == hcat(repeat([0.0,complex(0.5,0.5),0.0],inner=(1,10)),fill(complex(0.2),3,10))
             @test hess_sdf(TestDoubleUni(zeros(8)),1.0) == [fill(complex(0.5),10);fill(complex(0.2),10)]
         end
         @testset "Bounds check" begin

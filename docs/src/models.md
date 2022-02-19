@@ -2,13 +2,13 @@
 
 ## Generic model framework
 
-Models for time series in `WhittleLikelihoodInference` are specified by defining a new type which is a subtype of `TimeSeriesModel{D}` where `D` is the dimension of the time series.
+Models for time series in `WhittleLikelihoodInference` are specified by defining a new type which is a subtype of `TimeSeriesModel{D,T}` where `D` is the dimension of the time series and `T` is the type of the entry in the time series (i.e. Float64 for real valued and ComplexF64 for complex valued).
 
 ### Univariate
-So if we wish to define a univariate time series model, we would write the following:
+So if we wish to define a univariate time series model which is real valued, we would write the following:
 
 ```julia
-struct MyUniModel <: TimeSeriesModel{1}
+struct MyUniModel <: TimeSeriesModel{1,Float64}
     α::Float64
     β::Float64
 end
@@ -18,18 +18,18 @@ In this case, we created a model called `MyUniModel` with parameters `α` and `�
 We then need to define the `npars` function to return the number of parameters, and `sdf` and `acv`.
 
 ### Multivariate
-Similarly, if we wish to define a bivariate model, we write
+Similarly, if we wish to define a bivariate real model, we write
 
 ```julia
-struct My2dModel <: TimeSeriesModel{2}
+struct My2dModel <: TimeSeriesModel{2,Float64}
     α::Float64
     β::Float64
 end
 ```
 In this case, we again need to define the `npars` function to return the number of parameters, and now `add_sdf!` and `acv!`.
 `add_sdf!` takes a preallocated vector as its first argument.
-This vector is the lower triangle of the spectral density matrix at $\omega$, and the spectral density should be added to it. The lower triangle is encoded so that it goes down each column in order, i.e. in the case `D=2` we have $[s_{1,1},s_{2,1},s_{2,2}]$. The remaining entries are recovered by conjugate symetry.
-`acv!` is analagous, but the acv replaces the preallocated vector, and not added to it.
+This vector is the lower triangle of the spectral density matrix at $\omega$, and the spectral density should be added to it. The lower triangle is encoded so that it goes down each column in order, i.e. in the case `D=2` we have $[s_{1,1},s_{2,1},s_{2,2}]$. The remaining entries are recovered by conjugate symmetry.
+`acv!` is analogous, but the acv replaces the preallocated vector, and not added to it.
 
 ### Unknown autocovariance
 Sometimes, the autocovariance may not be known analytically (or may be expensive to compute). In this case, the autocovariance can be approximated from the spectral density function. To specify such a model, do the following:
@@ -104,7 +104,7 @@ CorrelatedOU(σ,θ,ρ)
 ```
 
 ### Matern
-The package also includes an implementation of the multivariate Matern model described by Gneiting et al. (2010).
+The package also includes an implementation of the multivariate Matérn model described by Gneiting et al. (2010).
 Care should be taken when using this model to ensure the correct bounds are placed on the parameter space.
 
 ### References

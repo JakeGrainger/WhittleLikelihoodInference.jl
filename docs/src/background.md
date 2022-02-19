@@ -15,7 +15,7 @@ The main concepts are as follows:
 $$f(\omega)=\frac{1}{2\pi}\int_{-\infty}^{\infty} c(\tau) e^{-i\omega\tau}\text{d}\tau.$$
 - The spectral density of the sampled process (also referred to as the aliased spectral density) is
 $$f_\Delta(\omega)=\frac{\Delta}{2\pi}\sum_{\tau-\infty}^{\infty} c(\tau\Delta) e^{-i\omega\tau\Delta}.$$
-- **Warning: Note that the convention for the Fourier transform used here (dividing by $2\pi$) is essentially arbitrary, and different authors use different convensions. This only matters if you add a new model, or expect the ouput of a spectral density function to be the Fourier transform of the autocovariance under another convention.**
+- **Warning: Note that the convention for the Fourier transform used here (dividing by $2\pi$) is essentially arbitrary, and different authors use different conventions. This only matters if you add a new model, or expect the output of a spectral density function to be the Fourier transform of the autocovariance under another convention.**
 - We also have the inverse relations:
 $\begin{align*}
 	c(\tau) &= \int_{-\infty}^{\infty} f(\omega) e^{i\omega\tau} \text{d}\omega & \text{for }\tau\in\mathbb{R},\\

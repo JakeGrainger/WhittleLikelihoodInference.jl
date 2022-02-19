@@ -17,8 +17,8 @@ WhittleLikelihoodInference.npars(::Type{TestModelUni3}) = 4
 const TestDouble = TestModel2 + TestModel3
 const TestDoubleUni = TestModelUni2 + TestModelUni3
 WhittleLikelihoodInference.add_sdf!(out,::Union{TestModel2,TestModel2C},ω) = (out[2] += ω>0 ? 0.5im : -0.5im; nothing)
-WhittleLikelihoodInference.grad_add_sdf!(out,::Union{TestModel2,TestModel2C},ω) = (out[2,:] += ω>0 ? 0.5im : -0.5im; nothing)
-WhittleLikelihoodInference.hess_add_sdf!(out,::Union{TestModel2,TestModel2C},ω) = (out[2,:] += ω>0 ? 0.5im : -0.5im; nothing)
+WhittleLikelihoodInference.grad_add_sdf!(out,::Union{TestModel2,TestModel2C},ω) = (out[2,:] .+= ω>0 ? 0.5im : -0.5im; nothing)
+WhittleLikelihoodInference.hess_add_sdf!(out,::Union{TestModel2,TestModel2C},ω) = (out[2,:] .+= ω>0 ? 0.5im : -0.5im; nothing)
 WhittleLikelihoodInference.sdf(::Union{TestModelUni2,TestModelUni2C},ω) = 0.5
 WhittleLikelihoodInference.grad_add_sdf!(out,::Union{TestModelUni2,TestModelUni2C},ω) = (out .+= 0.5; nothing)
 WhittleLikelihoodInference.hess_add_sdf!(out,::Union{TestModelUni2,TestModelUni2C},ω) = (out .+= 0.5; nothing)

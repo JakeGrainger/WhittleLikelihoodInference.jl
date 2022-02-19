@@ -50,10 +50,10 @@ function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{D,T}, freq:
     size(store.allocatedarray,2) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,2) != length(Ω)."))
     m = length(freq.Ωₘ)
     startcopyind = m÷2+2
-    for i ∈ 1:startcopyind-1
+    @inbounds for i ∈ 1:startcopyind-1
         @views asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], freq.Δ)
     end
-    for i in startcopyind:length(freq.Ωₘ) 
+    @inbounds for i in startcopyind:length(freq.Ωₘ) 
         @views store.allocatedarray[:, i] .= store.allocatedarray[:, m-i+2]
     end
     return nothing
@@ -108,10 +108,10 @@ function asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1,T}, freq:
     length(store.allocatedarray) == length(freq.Ωₘ) || throw(ArgumentError("length(store.allocatedarray) != length(Ω)."))
     m = length(freq.Ωₘ)
     startcopyind = m÷2+2
-    for i ∈ 1:startcopyind-1
+    @inbounds for i ∈ 1:startcopyind-1
         store.allocatedarray[i] = asdf(model, freq.Ωₘ[i], freq.Δ)
     end
-    for i ∈ startcopyind:length(freq.Ωₘ) 
+    @inbounds for i ∈ startcopyind:length(freq.Ωₘ) 
         store.allocatedarray[i] = store.allocatedarray[m-i+2]
     end
     return nothing
@@ -198,10 +198,10 @@ function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{D,T}, 
     size(store.allocatedarray,3) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,3) != length(freq.Ωₘ)."))
     m = length(freq.Ωₘ)
     startcopyind = m÷2+2
-    for i ∈ 1:startcopyind-1
+    @inbounds for i ∈ 1:startcopyind-1
         @views grad_asdf!(store.allocatedarray[:, :, i], model, freq.Ωₘ[i], freq.Δ)
     end
-    for i in startcopyind:length(freq.Ωₘ) 
+    @inbounds for i in startcopyind:length(freq.Ωₘ) 
         @views store.allocatedarray[:, :, i] .= store.allocatedarray[:, :, m-i+2]
     end
     return nothing
@@ -235,10 +235,10 @@ function grad_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1,T}, 
     size(store.allocatedarray,2) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,2) != length(freq.Ωₘ)."))
     m = length(freq.Ωₘ)
     startcopyind = m÷2+2
-    for i ∈ 1:startcopyind-1
+    @inbounds for i ∈ 1:startcopyind-1
         @views grad_asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], freq.Δ)
     end
-    for i in startcopyind:length(freq.Ωₘ) 
+    @inbounds for i in startcopyind:length(freq.Ωₘ) 
         @views store.allocatedarray[:, i] .= store.allocatedarray[:, m-i+2]
     end
     return nothing
@@ -327,10 +327,10 @@ function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{D,T}, 
     size(store.allocatedarray,3) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,3) != length(freq.Ωₘ)."))
     m = length(freq.Ωₘ)
     startcopyind = m÷2+2
-    for i ∈ 1:startcopyind-1
+    @inbounds for i ∈ 1:startcopyind-1
         @views grad_asdf!(store.allocatedarray[:, :, i], model, freq.Ωₘ[i], freq.Δ)
     end
-    for i in startcopyind:length(freq.Ωₘ) 
+    @inbounds for i in startcopyind:length(freq.Ωₘ) 
         @views store.allocatedarray[:, :, i] .= store.allocatedarray[:, :, m-i+2]
     end
     return nothing
@@ -364,10 +364,10 @@ function hess_asdf!(store::TimeSeriesModelStorage, model::TimeSeriesModel{1,T}, 
     size(store.allocatedarray,2) == length(freq.Ωₘ) || throw(ArgumentError("size(store.allocatedarray,2) != length(freq.Ωₘ)."))
     m = length(freq.Ωₘ)
     startcopyind = m÷2+2
-    for i ∈ 1:startcopyind-1
+    @inbounds for i ∈ 1:startcopyind-1
         @views grad_asdf!(store.allocatedarray[:, i], model, freq.Ωₘ[i], freq.Δ)
     end
-    for i in startcopyind:length(freq.Ωₘ) 
+    @inbounds for i in startcopyind:length(freq.Ωₘ) 
         @views store.allocatedarray[:, i] .= store.allocatedarray[:, m-i+2]
     end
     return nothing

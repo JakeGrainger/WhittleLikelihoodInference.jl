@@ -13,7 +13,7 @@ import WhittleLikelihoodInference:
     AdditiveStorage, extract_asdf,
     CorrelatedOUUnknown, OUUnknown,
     FreqAcvEst, LagsEI, encodetimescale,
-    grad_sdf, hess_sdf, grad_acv, hess_acv
+    grad_sdf, hess_sdf, grad_acv, hess_acv, EI!, grad_EI!, hess_EI!
 
 ## define useful functions
 # Function for approximating the gradient using finite differences.

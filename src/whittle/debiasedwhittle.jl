@@ -65,14 +65,19 @@ struct DebiasedWhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
         
         Δ > 0 || throw(ArgumentError("Δ should be a positive."))
         D == size(ts,2) || throw(ArgumentError("timeseries is $(size(ts,2)) dimensional, but model is $D dimensional."))
-        taper .*= inv(sqrt(sum(abs2,taper))) # normalise the taper
+        if taper !== nothing
+            taper .*= inv(sqrt(sum(abs2,taper))) # normalise the taper
+        end
         wdata = DebiasedWhittleData(model, ts, Δ, lowerΩcutoff = lowerΩcutoff, upperΩcutoff = upperΩcutoff, taper = taper)
         mem = allocate_memory_EI_FG(model, size(ts,1), Δ, taper = taper)
         new{eltype(wdata.I),typeof(mem),typeof(model)}(wdata,mem,model)
     end
 end
 (f::DebiasedWhittleLikelihood)(θ) = debiasedwhittle!(f.memory,f.model(θ),f.data)
-(f::DebiasedWhittleLikelihood)(F,G,EH,θ) = debiasedwhittle_Fisher!(F,G,EH,f.memory,f.model(θ),f.data)
+function (f::DebiasedWhittleLikelihood)(F,G,EH,θ)
+    checksize(G,EH,θ)
+    debiasedwhittle_Fisher!(F,G,EH,f.memory,f.model(θ),f.data)
+end
 Base.show(io::IO, W::DebiasedWhittleLikelihood) = print(io, "Debiased Whittle likelihood for the $(W.model) model.")
 
 ## Interior functions

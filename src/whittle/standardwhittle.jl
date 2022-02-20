@@ -66,15 +66,24 @@ struct WhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
         
         Δ > 0 || throw(ArgumentError("Δ should be a positive."))
         D == size(ts,2) || throw(ArgumentError("timeseries is $(size(ts,2)) dimensional, but model is $D dimensional."))
-        taper .*= inv(sqrt(sum(abs2,taper))) # normalise the taper
+        if taper !== nothing
+            taper .*= inv(sqrt(sum(abs2,taper))) # normalise the taper
+        end
         wdata = WhittleData(model, ts, Δ, lowerΩcutoff = lowerΩcutoff, upperΩcutoff = upperΩcutoff, taper = taper)
         mem = allocate_memory_sdf_FGH(model, size(ts,1), Δ)
         new{eltype(wdata.I),typeof(mem),typeof(model)}(wdata,mem,model)
     end
 end
 (f::WhittleLikelihood)(θ) = whittle!(f.memory,f.model(θ),f.data)
-(f::WhittleLikelihood)(F,G,H,θ) = whittle_FGH!(F,G,H,f.memory,f.model(θ),f.data)
-
+function checksize(G,H,θ)
+    G === nothing || size(G) == size(θ) || throw(ArgumentError("G should be nothing or same size as θ"))
+    H === nothing || size(H) == (length(θ),length(θ)) || throw(ArgumentError("H should be nothing or size (length(θ),length(θ))"))
+    nothing
+end
+function (f::WhittleLikelihood)(F,G,H,θ)
+    checksize(G,H,θ)
+    whittle_FGH!(F,G,H,f.memory,f.model(θ),f.data)
+end
 Base.show(io::IO, W::WhittleLikelihood) = print(io, "Whittle likelihood for the $(W.model) model.")
 
 ## internal functions

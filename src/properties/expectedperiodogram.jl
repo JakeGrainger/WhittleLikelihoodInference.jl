@@ -3,11 +3,11 @@
 ### Multivariate ###
 
 """
-    EI!(store::TimeSeriesModelStorageFunction, model::TimeSeriesModel)
+    EI!(store, model::TimeSeriesModel)
 
 Compute the expected periodogram and assign to appropriate place in memory (note this computes at twice the desired resolution).
 """
-function EI!(store::TimeSeriesModelStorageFunction, model::TimeSeriesModel)
+function EI!(store::Union{TimeSeriesModelStorageFunction,AdditiveStorage}, model::TimeSeriesModel)
     acv!(store, model)
     _func_EI!(store)
     return nothing

@@ -38,7 +38,7 @@ Compute the Hessian of the expected periodogram and assign to appropriate place 
 """
 function hess_EI!(store::TimeSeriesModelStorageHessian, model::TimeSeriesModel)
     hess_acv!(store, model)
-    _hess_EI!(store.hessmemory, store.encodedtime.n, store.encodedtime.Δ)
+    _EI!(store.hessmemory, store.encodedtime.n, store.encodedtime.Δ)
     return nothing
 end
 function hess_EI!(store::AdditiveStorage, model::AdditiveTimeSeriesModel)

@@ -66,6 +66,7 @@ struct WhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
         
         Δ > 0 || throw(ArgumentError("Δ should be a positive."))
         D == size(ts,2) || throw(ArgumentError("timeseries is $(size(ts,2)) dimensional, but model is $D dimensional."))
+        taper .*= inv(sqrt(sum(abs2,taper))) # normalise the taper
         wdata = WhittleData(model, ts, Δ, lowerΩcutoff = lowerΩcutoff, upperΩcutoff = upperΩcutoff, taper = taper)
         mem = allocate_memory_sdf_FGH(model, size(ts,1), Δ)
         new{eltype(wdata.I),typeof(mem),typeof(model)}(wdata,mem,model)

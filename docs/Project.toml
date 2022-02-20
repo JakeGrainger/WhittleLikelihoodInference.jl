@@ -5,5 +5,5 @@ Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 WhittleLikelihoodInference = "3fdf5847-2998-4bb9-885b-ec39b41f41a6"
 
 [compat]
-WhittleLikelihoodInference = "0.2"
+WhittleLikelihoodInference = "0.2.1"
 julia = "1.7"

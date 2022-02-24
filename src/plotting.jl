@@ -230,11 +230,13 @@ plotei
                 count += 1
                 seriestype := :line
                 if i<j
+                    yscale := :identity
                     ylims --> (0,1)
                 elseif i>j
+                    yscale := :identity
                     ylims --> (-π,π)
                 end
-                x, getindex.(y,i,j)
+                Ω, getindex.(y,i,j)
             end
         end
     else

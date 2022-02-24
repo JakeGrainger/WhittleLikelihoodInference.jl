@@ -63,10 +63,12 @@ nlowertriangle_dimension(::Type{<:TimeSeriesModel{D,T}}) where {D,T} =
     parameternames(::TimeSeriesModel)
     parameternames(::Type{<:TimeSeriesModel})
 
-Return the parameter names for a given timeseries model
+Return the parameter names for a given timeseries model.
 """
 parameternames(model::TimeSeriesModel) = parameternames(typeof(model))
 parameternames(model::Type{<:TimeSeriesModel}) = fieldnames(model)[1:npars(model)]
+parameternames(model::Type{<:AdditiveTimeSeriesModel{M₁,M₂,D,T}}) where {M₁<:TimeSeriesModel{D,T},M₂<:TimeSeriesModel{D,T}} where {D,T} =
+    (parameternames(M₁)...,parameternames(M₂))
 
 npars(model::TimeSeriesModel) = npars(typeof(model))
 npars(

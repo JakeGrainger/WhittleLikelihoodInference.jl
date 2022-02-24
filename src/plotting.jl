@@ -200,8 +200,8 @@ By default, `n = 1024` and `Δ = 1`.
 """
 plotei
 
-@userplot PlotLogSdf
-@recipe function f(p::PlotLogSdf)
+@userplot PlotCoh
+@recipe function f(p::PlotCoh)
     if length(p.args) == 1
         p.args[1] isa TimeSeriesModel || throw(ArgumentError("If only one argument is provided to plotsdf, it must be a TimeSeriesModel."))
         Ω = range(-π,π,length=200)
@@ -220,21 +220,37 @@ plotei
         y = [
             [i==j ? real(s[i,j]) : (i<j ? c[i,j] : g[i,j]) for i in 1:ndims(model), j in 1:ndims(model)] 
         for (s,c,g) in zip(S,C,G)]
-        return MatrixPlot(Ω, y)
+        layout --> size(y[1])
+        link --> :none
+        label --> false
+        count = 1
+        for i = 1:size(y[1],1), j = 1:size(y[1],2)
+            @series begin
+                subplot --> count
+                count += 1
+                seriestype := :line
+                if i<j
+                    ylims --> (0,1)
+                elseif i>j
+                    ylims --> (-π,π)
+                end
+                x, getindex.(y,i,j)
+            end
+        end
     else
-        yaxis := :log
         return Ω, real.(sdf.(model, Ω))
     end
 end
 
 """
-    plotlogsdf(model)
-    plotlogsdf!(model)
-    plotlogsdf(model, Ω)
-    plotlogsdf!(model, Ω)
+    plotcoh(model)
+    plotcoh!(model)
+    plotcoh(model, Ω)
+    plotcoh!(model, Ω)
 
-Plot the log spectral density function of a model at the frequencies `Ω`. 
-If multivariate, above the diagonal is the coherance, and below is the group delay.
+Plot the coherance and group delay of a model at the frequencies `Ω`. 
+If multivariate, above the diagonal is the coherance, and below is the group delay
+and on the diagonal is the spectral density function.
 By default, `Ω = range(-π,π,length=200)` and `Δ = 1`.
 """
-plotlogsdf
+plotcoh

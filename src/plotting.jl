@@ -199,3 +199,42 @@ Plot the aliased spectral density function of a model at the angular Fourier fre
 By default, `n = 1024` and `Δ = 1`.
 """
 plotei
+
+@userplot PlotLogSdf
+@recipe function f(p::PlotLogSdf)
+    if length(p.args) == 1
+        p.args[1] isa TimeSeriesModel || throw(ArgumentError("If only one argument is provided to plotsdf, it must be a TimeSeriesModel."))
+        Ω = range(-π,π,length=200)
+    elseif length(p.args) == 2
+        p.args[1] isa TimeSeriesModel || throw(ArgumentError("First argument to plotsdf must be a TimeSeriesModel."))
+        p.args[2] isa AbstractVector{T} where {T<:Number} || throw(ArgumentError("Second argument to plotasdf should be the frequencies, a vector of numbers."))
+        Ω = p.args[2]
+    else
+        throw(ArgumentError("A maximum of two numbers should be passed to plotsdf."))
+    end
+    model = p.args[1]
+    if ndims(model) > 1
+        S = sdf.(model, Ω)
+        C = coherance.(model, Ω)
+        G = groupdelay.(model, Ω)
+        y = [
+            [i==j ? real(s[i,j]) : (i<j ? c[i,j] : g[i,j]) for i in 1:ndims(model), j in 1:ndims(model)] 
+        for (s,c,g) in zip(S,C,G)]
+        return MatrixPlot(Ω, y)
+    else
+        yaxis := :log
+        return Ω, real.(sdf.(model, Ω))
+    end
+end
+
+"""
+    plotlogsdf(model)
+    plotlogsdf!(model)
+    plotlogsdf(model, Ω)
+    plotlogsdf!(model, Ω)
+
+Plot the log spectral density function of a model at the frequencies `Ω`. 
+If multivariate, above the diagonal is the coherance, and below is the group delay.
+By default, `Ω = range(-π,π,length=200)` and `Δ = 1`.
+"""
+plotlogsdf

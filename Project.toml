@@ -1,7 +1,7 @@
 name = "WhittleLikelihoodInference"
 uuid = "3fdf5847-2998-4bb9-885b-ec39b41f41a6"
 authors = ["Jake Grainger <j.p.grainger2@outlook.com>"]
-version = "0.2.1"
+version = "0.2.2"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"

@@ -2,6 +2,7 @@ module WhittleLikelihoodInference
 
 using FFTW, LinearAlgebra, ToeplitzMatrices, StaticArrays, RecipesBase
 using Distributions, SpecialFunctions, LazyArrays
+using ChainRulesCore
 
 import Base: ndims, show, size, getindex, @propagate_inbounds
 import StaticArrays: triangularnumber
@@ -54,6 +55,7 @@ export
     include("whittle/generalwhittle.jl")
     include("whittle/standardwhittle.jl")
     include("whittle/debiasedwhittle.jl")
+    include("whittle/chainrules.jl")
 
     include("models/OU.jl")
     include("models/CorrelatedOU.jl")

@@ -1,4 +1,6 @@
 using Test, WhittleLikelihoodInference, FiniteDifferences, StaticArrays, FFTW
+using ChainRulesTestUtils
+import WhittleLikelihoodInference.ChainRulesCore: NoTangent
 import WhittleLikelihoodInference: 
     nlowertriangle_dimension, nlowertriangle_parameter,
     indexLT, nalias, minbins,
@@ -50,6 +52,7 @@ include("whittle/whittledata_test.jl")
 include("whittle/generalwhittle_test.jl")
 include("whittle/standardwhittle_test.jl")
 include("whittle/debiasedwhittle_test.jl")
+include("whittle/chainrules_test.jl")
 
 include("models/OU_test.jl")
 include("models/CorrelatedOU_test.jl")

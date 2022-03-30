@@ -8,13 +8,13 @@ A julia package for Whittle and debiased Whittle likelihood inference. Provides 
 
 - Simulating Gaussian processes with a given autocovariance.
 - Computation of the (negative) Whittle likelihood, its gradient and its Hessian (including with an arbitrary taper).
-- Computation of the (negative) Debiased Whittle likelihood, its gradient and its Hessian (including with an arbitrary taper).
+- Computation of the (negative) debiased Whittle likelihood, its gradient and its Hessian (including with an arbitrary taper).
 - Support for reverse-mode automatic differentiation via [*ChainRules.jl*](https://github.com/JuliaDiff/ChainRules.jl).
 - A fit function which uses solvers from [*Optim.jl*](https://github.com/JuliaNLSolvers/Optim.jl) with the option to use dpss tapers from [*DSP.jl*](https://github.com/JuliaDSP/DSP.jl).
 - Plotting recipes for second-order properties of interest, including the spectral density function and autocovariance.
 - Approximation of the autocovariance from the spectral density function (and for gradients and Hessians).
-- Example models including 1D OU and 1D Matern, 2D correlated OU process and arbitrary dimentional Matern.
-- Basic non-parametric estimators including the Periodogram and Bartlett's method with plotting recipes.
+- Example models including 1D OU and 1D Matern, 2D correlated OU process and arbitrary dimensional Matern.
+- Basic non-parametric estimators including the periodogram and Bartlett's method with plotting recipes.
 
 ## References
 

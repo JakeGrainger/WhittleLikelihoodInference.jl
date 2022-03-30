@@ -15,6 +15,8 @@ struct OU <: TimeSeriesModel{1,Float64}
 end
 
 npars(::Type{OU}) = 2
+lowerbounds(::Type{OU}) = [0,0]
+upperbounds(::Type{OU}) = [Inf,Inf]
 
 @inline sdf(m::OU, ω) = m.σ²/(π*(m.θ²+ω^2))
 

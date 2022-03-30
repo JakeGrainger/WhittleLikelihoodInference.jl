@@ -15,6 +15,8 @@ struct OUUnknown{K} <: UnknownAcvTimeSeriesModel{1,Float64}
 end
 nalias(::OUUnknown{K}) where {K} = K
 npars(::Type{OUUnknown{K}}) where {K} = 2
+lowerbounds(::Type{OUUnknown{K}}) where {K} = [0,0]
+upperbounds(::Type{OUUnknown{K}}) where {K} = [Inf,Inf]
 
 @inline sdf(m::OUUnknown, ω) = m.σ²/(π*(m.θ²+ω^2))
 

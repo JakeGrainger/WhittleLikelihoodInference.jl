@@ -3,6 +3,7 @@ module WhittleLikelihoodInference
 using FFTW, LinearAlgebra, ToeplitzMatrices, StaticArrays, RecipesBase
 using Distributions, SpecialFunctions, LazyArrays
 using ChainRulesCore
+using Optim, DSP
 
 import Base: ndims, show, size, getindex, @propagate_inbounds
 import StaticArrays: triangularnumber
@@ -14,6 +15,8 @@ export
     npars,
     ndims,
     parameternames,
+    lowerbounds,
+    upperbounds,
     parameter,
     sdf, 
     asdf, 
@@ -23,6 +26,7 @@ export
     coherance,
     groupdelay,
     simulate_gp,
+    fit,
     ## non-parametrics
     Periodogram,
     BartlettPeriodogram,
@@ -56,6 +60,7 @@ export
     include("whittle/standardwhittle.jl")
     include("whittle/debiasedwhittle.jl")
     include("whittle/chainrules.jl")
+    include("fit.jl")
 
     include("models/OU.jl")
     include("models/CorrelatedOU.jl")

@@ -17,6 +17,8 @@ function CorrelatedOUUnknown{K}(x::Vector{Float64}) where {K}
 end
 nalias(::CorrelatedOUUnknown{K}) where {K} = K
 npars(::Type{CorrelatedOUUnknown{K}}) where {K} = 3
+lowerbounds(::Type{CorrelatedOUUnknown{K}}) where {K} = lowerbounds(CorrelatedOU)
+upperbounds(::Type{CorrelatedOUUnknown{K}}) where {K} = upperbounds(CorrelatedOU)
 
 @propagate_inbounds function add_sdf!(out, m::CorrelatedOUUnknown, ω)
     @boundscheck checkbounds(out,1:3)

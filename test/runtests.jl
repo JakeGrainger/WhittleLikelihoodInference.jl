@@ -53,6 +53,7 @@ include("whittle/generalwhittle_test.jl")
 include("whittle/standardwhittle_test.jl")
 include("whittle/debiasedwhittle_test.jl")
 include("whittle/chainrules_test.jl")
+include("fit_test.jl")
 
 include("models/OU_test.jl")
 include("models/CorrelatedOU_test.jl")

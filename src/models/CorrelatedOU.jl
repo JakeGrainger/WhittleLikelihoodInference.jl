@@ -17,6 +17,8 @@ function CorrelatedOU(x::AbstractVector{Float64})
 end
 
 npars(::Type{CorrelatedOU}) = 3
+lowerbounds(::Type{CorrelatedOU}) = [0,0,0]
+upperbounds(::Type{CorrelatedOU}) = [Inf,Inf,1.0]
 
 @propagate_inbounds function add_sdf!(out, m::CorrelatedOU, ω)
     @boundscheck checkbounds(out,1:3)

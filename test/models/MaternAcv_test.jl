@@ -28,4 +28,10 @@ import WhittleLikelihoodInference: MaternAcv, MaternAcv1D
         @test_throws ArgumentError MaternAcv{2,3}(fill(0.5,8))
         @test_throws ErrorException MaternAcv{2,5}(fill(0.5,9))
     end
+    @testset "parameter bounds" begin
+        @test_throws ErrorException lowerbounds(Matern2D)
+        @test_throws ErrorException upperbounds(Matern2D)
+        @test lowerbounds(Matern1D) == zeros(3)
+        @test upperbounds(Matern1D) == fill(Inf,3)
+    end
 end

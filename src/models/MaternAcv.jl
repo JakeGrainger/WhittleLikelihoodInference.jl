@@ -27,6 +27,8 @@ end
 matern_acv_normalising(ν) = 2^(1-ν) / gamma(ν)
 
 npars(::Type{MaternAcv{D,L}}) where {D,L} = 3triangularnumber(D)
+lowerbounds(::Type{MaternAcv{D,L}}) where {D,L} = lowerbounds(Matern{D,L})
+upperbounds(::Type{MaternAcv{D,L}}) where {D,L} = upperbounds(Matern{D,L})
 
 parameternames(::Type{MaternAcv{D,L}}) where {D,L} = parameternames(Matern{D,L})
 

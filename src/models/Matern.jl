@@ -43,6 +43,10 @@ const Matern4D = Matern{4,10}
 npars(::Type{Matern{D,L}}) where {D,L} = 3triangularnumber(D)
 minbins(::Type{Matern{D,L}}) where {D,L} = 4096
 nalias(model::Matern) = 3
+lowerbounds(m::Type{Matern{D,L}}) where {D,L} = upperbounds(m)
+upperbounds(::Type{Matern{D,L}}) where {D,L} = 
+    error("Bounds not specified for the multivariate matern model here as parameter space is complicated in 
+    this formulation. This should be treated with greater care than fit currently does.")
 
 function parameternames(::Type{Matern{D,L}}) where {D,L}
     σ = reduce(vcat,[i==j ? "σ_$i" : "ρ_$i$j" for j in i:D] for i in 1:D)
@@ -159,6 +163,8 @@ end
 npars(::Type{Matern1D}) = 3
 minbins(::Type{Matern1D}) = 4096
 nalias(model::Matern1D) = 3
+lowerbounds(::Type{Matern1D}) = [0,0,0]
+upperbounds(::Type{Matern1D}) = [Inf,Inf,Inf]
 
 sdf(model::Matern1D, ω) = model.sdfconst/((model.a²+ω^2)^(model.νplushalf))
 

@@ -56,7 +56,6 @@ julia> H
 struct WhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
     data::WhittleData{T}
     memory::S
-    model::M
     function WhittleLikelihood(model, timeseries::TimeSeries; lowerΩcutoff = 0, upperΩcutoff = Inf, taper = nothing)
         WhittleLikelihood(model, timeseries.ts, timeseries.Δ; lowerΩcutoff = lowerΩcutoff, upperΩcutoff = upperΩcutoff, taper = taper)
     end
@@ -71,21 +70,21 @@ struct WhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
         end
         wdata = WhittleData(model, ts, Δ, lowerΩcutoff = lowerΩcutoff, upperΩcutoff = upperΩcutoff, taper = taper)
         mem = allocate_memory_sdf_FGH(model, size(ts,1), Δ)
-        new{eltype(wdata.I),typeof(mem),typeof(model)}(wdata,mem,model)
+        new{eltype(wdata.I),typeof(mem),model}(wdata,mem)
     end
 end
-(f::WhittleLikelihood)(θ) = whittle!(f.memory,f.model(θ),f.data)
+(f::WhittleLikelihood{T,S,M})(θ) where {T,S,M} = whittle!(f.memory,M(θ),f.data)
 function checksize(G,H,θ)
     G === nothing || size(G) == size(θ) || throw(ArgumentError("G should be nothing or same size as θ"))
     H === nothing || size(H) == (length(θ),length(θ)) || throw(ArgumentError("H should be nothing or size (length(θ),length(θ))"))
     nothing
 end
-function (f::WhittleLikelihood)(F,G,H,θ)
+function (f::WhittleLikelihood{T,S,M})(F,G,H,θ) where {T,S,M}
     checksize(G,H,θ)
-    whittle_FGH!(F,G,H,f.memory,f.model(θ),f.data)
+    whittle_FGH!(F,G,H,f.memory,M(θ),f.data)
 end
-Base.show(io::IO, W::WhittleLikelihood) = print(io, "Whittle likelihood for the $(W.model) model.")
-
+Base.show(io::IO, ::WhittleLikelihood{T,S,M}) where {T,S,M} = print(io, "Whittle likelihood for the $M model.")
+getmodel(::WhittleLikelihood{T,S,M}) where {T,S,M} = M
 ## internal functions
 
 """
@@ -108,7 +107,7 @@ function whittle_FG!(F, G, store, model::TimeSeriesModel, data::GenWhittleData)
         asdf!(model, store)
     end
     if G !== nothing
-        grad_asdf!(model, store)
+        grad_asdf!(store, model)
         grad_generalwhittle!(G, store, data)
     end
     if F !== nothing

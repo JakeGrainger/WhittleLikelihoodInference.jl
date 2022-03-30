@@ -55,7 +55,6 @@ julia> H
 struct DebiasedWhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
     data::DebiasedWhittleData{T}
     memory::S
-    model::M
     function DebiasedWhittleLikelihood(model, timeseries::TimeSeries; lowerΩcutoff = 0, upperΩcutoff = Inf, taper = nothing)
         DebiasedWhittleLikelihood(model, timeseries.ts, timeseries.Δ; lowerΩcutoff = lowerΩcutoff, upperΩcutoff = upperΩcutoff, taper = taper)
     end
@@ -70,19 +69,19 @@ struct DebiasedWhittleLikelihood{T,S<:TimeSeriesModelStorage,M}
         end
         wdata = DebiasedWhittleData(model, ts, Δ, lowerΩcutoff = lowerΩcutoff, upperΩcutoff = upperΩcutoff, taper = taper)
         mem = allocate_memory_EI_FG(model, size(ts,1), Δ, taper = taper)
-        new{eltype(wdata.I),typeof(mem),typeof(model)}(wdata,mem,model)
+        new{eltype(wdata.I),typeof(mem),model}(wdata,mem)
     end
 end
-(f::DebiasedWhittleLikelihood)(θ) = debiasedwhittle!(f.memory,f.model(θ),f.data)
-function (f::DebiasedWhittleLikelihood)(F,G,EH,θ)
+(f::DebiasedWhittleLikelihood{T,S,M})(θ) where {T,S,M} = debiasedwhittle!(f.memory,M(θ),f.data)
+function (f::DebiasedWhittleLikelihood{T,S,M})(F,G,EH,θ) where {T,S,M}
     checksize(G,EH,θ)
-    debiasedwhittle_Fisher!(F,G,EH,f.memory,f.model(θ),f.data)
+    debiasedwhittle_Fisher!(F,G,EH,f.memory,M(θ),f.data)
 end
-Base.show(io::IO, W::DebiasedWhittleLikelihood) = print(io, "Debiased Whittle likelihood for the $(W.model) model.")
+Base.show(io::IO, ::DebiasedWhittleLikelihood{T,S,M}) where {T,S,M} = print(io, "Debiased Whittle likelihood for the $(M) model.")
+getmodel(::DebiasedWhittleLikelihood{T,S,M}) where {T,S,M} = M
 
 ## Interior functions
 
-##
 """
     debiasedwhittle!(store::TimeSeriesModelStorage, model::TimeSeriesModel, data::GenWhittleData)
 

@@ -11,6 +11,7 @@ makedocs(sitename="WhittleLikelihoodInference.jl",
             "WhittleLikelihood.md",
             "debiasedwhittlelikelihood.md"
         ],
+        "fit.md",
         "docstrings.md"
     ]
 )

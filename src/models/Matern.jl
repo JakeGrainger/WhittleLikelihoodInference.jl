@@ -111,11 +111,11 @@ function hess_add_sdf!(out, model::Matern{D,L}, ω) where {D,L}
             out[count,indexLT(jind, count+2L,3L)] += sdf∂a/model.σ[j,j] # ∂σⱼ∂aᵢⱼ
         end
         # ∂νᵢⱼ²
-        out[count,indexLT(count+L, count+L, 3L)] = sdf∂ν^2/sdf + sdf*model.∂ν²_part[i,j]
+        out[count,indexLT(count+L, count+L, 3L)] += sdf∂ν^2/sdf + sdf*model.∂ν²_part[i,j]
         # ∂νᵢⱼ∂aᵢⱼ
-        out[count,indexLT(count+L, count+2L,3L)] = sdf∂ν*sdf∂a/sdf + 2sdf*(model.∂ν∂a_part[i,j]-model.a[i,j]/asq_plus_omsq)
+        out[count,indexLT(count+L, count+2L,3L)] += sdf∂ν*sdf∂a/sdf + 2sdf*(model.∂ν∂a_part[i,j]-model.a[i,j]/asq_plus_omsq)
         # ∂aᵢⱼ²
-        out[count,indexLT(count+2L,count+2L,3L)] = sdf∂a^2/sdf + 2sdf*(model.νplushalf[i,j]*(2model.a²[i,j]/(asq_plus_omsq^2) - 1/asq_plus_omsq) - model.∂a²_part[i,j])
+        out[count,indexLT(count+2L,count+2L,3L)] += sdf∂a^2/sdf + 2sdf*(model.νplushalf[i,j]*(2model.a²[i,j]/(asq_plus_omsq^2) - 1/asq_plus_omsq) - model.∂a²_part[i,j])
         count += 1
     end
     return nothing
@@ -184,17 +184,17 @@ function hess_add_sdf!(out, model::Matern1D, ω)
     sdf∂a = sdf * (model.∂a_part1 - (model.∂a_part2)/asq_plus_omsq)
     
     # ∂σ²
-    out[1]   += 2sdf/model.σ²
+    out[1] += 2sdf/model.σ²
     # ∂σ∂ν
-    out[2]   += 2sdf∂ν/model.σ 
+    out[2] += 2sdf∂ν/model.σ 
     # ∂σ∂a
-    out[3]   += 2sdf∂a/model.σ 
+    out[3] += 2sdf∂a/model.σ 
     # ∂ν²
-    out[4] = sdf∂ν^2/sdf + sdf*model.∂ν²_part
+    out[4] += sdf∂ν^2/sdf + sdf*model.∂ν²_part
     # ∂ν∂a
-    out[5] = sdf∂ν*sdf∂a/sdf + 2sdf*(model.∂ν∂a_part-model.a/asq_plus_omsq)
+    out[5] += sdf∂ν*sdf∂a/sdf + 2sdf*(model.∂ν∂a_part-model.a/asq_plus_omsq)
     # ∂a²
-    out[6] = sdf∂a^2/sdf + 2sdf*(model.νplushalf*(2model.a²/(asq_plus_omsq^2) - 1/asq_plus_omsq) - model.∂a²_part)
+    out[6] += sdf∂a^2/sdf + 2sdf*(model.νplushalf*(2model.a²/(asq_plus_omsq^2) - 1/asq_plus_omsq) - model.∂a²_part)
     
     return nothing
 end

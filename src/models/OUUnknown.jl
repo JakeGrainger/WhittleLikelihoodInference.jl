@@ -23,8 +23,8 @@ npars(::Type{OUUnknown{K}}) where {K} = 2
     @inbounds begin
         σ, θ = m.σ, m.θ
         σ_part = 2σ / (π*(m.θ²+ω^2))
-        out[1] = σ_part
-        out[2] = -π*θ/2*(σ_part)^2
+        out[1] += σ_part
+        out[2] += -π*θ/2*(σ_part)^2
     end
     nothing
 end
@@ -35,9 +35,9 @@ end
         σ, θ = m.σ, m.θ
         σ_part = 2 / (π*(m.θ²+ω^2))
         θσ_part = -π*θ*σ*(σ_part)^2
-        out[1] = σ_part
-        out[2] = θσ_part
-        out[3] = -π*σ_part*σ*(σ_part*σ/2 + θ*θσ_part)
+        out[1] += σ_part
+        out[2] += θσ_part
+        out[3] += -π*σ_part*σ*(σ_part*σ/2 + θ*θσ_part)
     end
     nothing
 end

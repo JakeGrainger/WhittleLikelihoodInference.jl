@@ -8,5 +8,6 @@
         @test w(par) isa Float64
         @test w(1,ones(length(par)),ones(length(par),length(par)),par) isa Float64
         @test w(nothing,ones(length(par)),ones(length(par),length(par)),par) == nothing
+        @test grad(central_fdm(5, 1), w, par)[1] ≈ gradgen(w, par)
     end
 end

@@ -1,3 +1,8 @@
+function gradgen(f!,θ)
+	G = zeros(length(θ))
+	f!(nothing,G,nothing,θ)
+	return G
+end
 @testset "standardwhittle" begin
     @test_throws ArgumentError WhittleLikelihood(OU,ones(10),-1)
     @test_throws ArgumentError WhittleLikelihood(OU,ones(10,2),1)
@@ -8,5 +13,6 @@
         @test w(par) isa Float64
         @test w(1,ones(length(par)),ones(length(par),length(par)),par) isa Float64
         @test w(nothing,ones(length(par)),ones(length(par),length(par)),par) == nothing
+        @test grad(central_fdm(5, 1), w, par)[1] ≈ gradgen(w, par)
     end
 end

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Fitting · WhittleLikelihoodInference.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">WhittleLikelihoodInference.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../background/">Background</a></li><li><a class="tocitem" href="../starting/">Getting Started</a></li><li><a class="tocitem" href="../models/">Models</a></li><li><span class="tocitem">Likelihood functions</span><ul><li><a class="tocitem" href="../WhittleLikelihood/">Whittle likelihood</a></li><li><a class="tocitem" href="../debiasedwhittlelikelihood/">Debiased Whittle likelihood</a></li></ul></li><li class="is-active"><a class="tocitem" href>Fitting</a></li><li><a class="tocitem" href="../docstrings/">Docstrings</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Fitting</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Fitting</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JakeGrainger/WhittleLikelihoodInference.jl/blob/master/docs/src/fit.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Fitting"><a class="docs-heading-anchor" href="#Fitting">Fitting</a><a id="Fitting-1"></a><a class="docs-heading-anchor-permalink" href="#Fitting" title="Permalink"></a></h1><p>The fit function can be used to fit a model to a recorded series with either the Whittle or debiased Whittle likelihoods using the interior point Newton method as implemented in <a href="https://github.com/JuliaNLSolvers/Optim.jl"><em>Optim.jl</em></a>.</p><p>First load the package:</p><pre><code class="language- hljs">using OceanWaveSpectralFitting</code></pre><p>As a basic example, consider a univariate Gaussian process with JONSWAP spectral density function. We can simulate such a process with the following:</p><pre><code class="language- hljs">import Random # hide
+Random.seed!(1234) # hide
+using OceanWaveSpectralFitting # hide
+n = 2304
+Δ = 1/1.28
+nreps = 1
+α = 0.7
+ωₚ = 1.1
+γ = 3.3
+r = 5.0
+ts = simulate_gp(JONSWAP{1}(α,ωₚ,γ,r),n,Δ,nreps)[1]</code></pre><p>In this case, we have simulated a Gaussian process with JONSWAP spectral density function with parameters <code>α = 0.7, ωₚ = 1.1, γ = 3.3, r = 5.0</code> of length <code>2304</code> sampled every <code>1/1.28</code> seconds. This corresponds to 30 minutes of data. The function <code>simulate_gp</code> will simulate a vector of <code>nreps</code> series, which is why we recover the first of these to get one series.</p><p>We can now fit a model with the following:</p><pre><code class="language- hljs">import Random # hide
+Random.seed!(1234) # hide
+using OceanWaveSpectralFitting # hide
+n = 2304 # hide
+Δ = 1/1.28 # hide
+nreps = 1 # hide
+α = 0.7 # hide
+ωₚ = 1.1 # hide
+γ = 3.3 # hide
+r = 5.0 # hide
+ts = simulate_gp(JONSWAP{1}(α,ωₚ,γ,r),n,Δ,nreps)[1] # hide
+x₀ = [α,ωₚ,γ,r] .+ 0.1
+res = fit(ts,model=JONSWAP{1},x₀=x₀)</code></pre><p>Here <code>x₀</code> is the vector of initial parameter guesses.  The estimated parameter vector can be recovered by doing:</p><pre><code class="language- hljs">import Random # hide
+Random.seed!(1234) # hide
+using OceanWaveSpectralFitting # hide
+n = 2304 # hide
+Δ = 1/1.28 # hide
+nreps = 1 # hide
+α = 0.7 # hide
+ωₚ = 1.1 # hide
+γ = 3.3 # hide
+r = 5.0 # hide
+ts = simulate_gp(JONSWAP{1}(α,ωₚ,γ,r),n,Δ,nreps)[1] # hide
+x₀ = [α,ωₚ,γ,r] .+ 0.1 # hide
+res = fit(ts,model=JONSWAP{1},x₀=x₀) # hide
+x̂ = res.minimizer</code></pre><p>The full example is:</p><pre><code class="language- hljs">import Random # hide
+Random.seed!(1234) # hide
+using OceanWaveSpectralFitting
+n = 2304
+Δ = 1/1.28
+nreps = 1
+α = 0.7
+ωₚ = 1.1
+γ = 3.3
+r = 5.0
+ts = simulate_gp(JONSWAP{1}(α,ωₚ,γ,r),n,Δ,nreps)[1]
+x₀ = [α,ωₚ,γ,r] .+ 0.1
+res = fit(ts,model=JONSWAP{1},x₀=x₀)
+x̂ = res.minimizer</code></pre><p>For more options, see below:</p><article class="docstring"><header><a class="docstring-binding" id="WhittleLikelihoodInference.fit" href="#WhittleLikelihoodInference.fit"><code>WhittleLikelihoodInference.fit</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia hljs">fit(ts,Δ;model::Type{&lt;:TimeSeriesModel},x₀,lowerΩcutoff,upperΩcutoff,x_lowerbounds,x_upperbounds,method,taper)
+fit(timeseries::TimeSeries;model::Type{&lt;:TimeSeriesModel},x₀,lowerΩcutoff,upperΩcutoff,x_lowerbounds,x_upperbounds,method,taper)</code></pre><p>Fit a time series model using the <code>IPNewton</code> method from Optim.jl.</p><p><strong>Arguments</strong></p><ul><li><code>ts</code>: <code>n</code> by <code>D</code> matrix containing the timeseries (or vector if <code>D=1</code>), where <code>n</code> is the number of observations and <code>D</code> is the number of series.</li><li><code>Δ</code>: The sampling rate, which should be a positive real number.</li><li><code>timeseries</code>: Can be provided in place of <code>ts</code> and <code>Δ</code>.</li><li><code>model</code>: The model which will be fitted. Should be a type (not a realisation of the model) e.g. JONSWAP{k} not JONSWAP{K}(x).</li><li><code>x₀</code>: The initial parameter guess.</li><li><code>lowerΩcutoff</code>: The lower cutoff for the frequency range to be used in fitting. Default is <code>0</code>.</li><li><code>upperΩcutoff</code>: The upper cutoff for the frequency range to be used in fitting. Default is <code>Inf</code>.</li><li><code>x_lowerbounds</code>: The lower bounds on the parameter space. If <code>nothing</code> is provided (the default) then these are set to default values based on the model.</li><li><code>x_upperbounds</code>: The upper bounds on the parameter space. If <code>nothing</code> is provided (the default) then these are set to default values based on the model.</li><li><code>method</code>: Either <code>:Whittle</code> or <code>:debiasedWhittle</code>.</li><li><code>taper</code>: The choice of tapering to be used. This should be <code>nothing</code> (in which case no taper is used) or <code>dpss_nw</code> where <code>nw</code> time-bandwith product (see DSP.dpss for more details).</li><li><code>options</code>: Options for optimisation of type <code>Optim.Options</code>.</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JakeGrainger/WhittleLikelihoodInference.jl/blob/caae26e08450dbaac131ca7143f181536fbc9609/src/fit.jl#L1-L20">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../debiasedwhittlelikelihood/">« Debiased Whittle likelihood</a><a class="docs-footer-nextpage" href="../docstrings/">Docstrings »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.15 on <span class="colophon-date" title="Wednesday 30 March 2022 16:21">Wednesday 30 March 2022</span>. Using Julia version 1.6.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

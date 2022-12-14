@@ -104,7 +104,7 @@ Compute the Whittle likelihood and its gradient using a preallocated store.
 """
 function whittle_FG!(F, G, store, model::TimeSeriesModel, data::GenWhittleData)
     if F !== nothing || G !== nothing
-        asdf!(model, store)
+        asdf!(store, model)
     end
     if G !== nothing
         grad_asdf!(store, model)

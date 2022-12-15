@@ -111,7 +111,8 @@ function whittle_FG!(F, G, store, model::TimeSeriesModel, data::GenWhittleData)
         grad_generalwhittle!(G, store, data)
     end
     if F !== nothing
-        return generalwhittle(store, data)
+        F = generalwhittle(store, data)
+        return F
     end
     return nothing
 end
@@ -136,7 +137,8 @@ function whittle_FGH!(F, G, H, store, model::TimeSeriesModel, data::GenWhittleDa
         grad_generalwhittle!(G, store, data)
     end
     if F !== nothing
-        return generalwhittle(store, data)
+        F = generalwhittle(store, data)
+        return F
     end
     return nothing
 end

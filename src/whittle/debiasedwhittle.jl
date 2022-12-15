@@ -106,7 +106,8 @@ function debiasedwhittle_FG!(F, G, store, model::TimeSeriesModel ,data::GenWhitt
         grad_generalwhittle!(G, store, data)
     end
     if F !== nothing
-        return generalwhittle(store, data)
+        F = generalwhittle(store, data)
+        return F
     end
     return nothing
 end
@@ -131,7 +132,8 @@ function debiasedwhittle_FGH!(F, G, H, store, model::TimeSeriesModel, data::GenW
         grad_generalwhittle!(G, store, data)
     end
     if F !== nothing
-        return generalwhittle(store, data)
+        F = generalwhittle(store, data)
+        return F
     end
     return nothing
 end
@@ -201,7 +203,8 @@ function debiasedwhittle_Fisher!(F, G, H, store, model::TimeSeriesModel, data::G
         grad_generalwhittle!(G, store, data)
     end
     if F !== nothing
-        return generalwhittle(store, data)
+        F = generalwhittle(store, data)
+        return F
     end
     return nothing
 end

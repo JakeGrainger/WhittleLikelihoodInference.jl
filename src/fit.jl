@@ -22,7 +22,7 @@ function fit(ts::VecOrMat{Float64},Δ::Real;model::Type{<:TimeSeriesModel},x₀,
             x_lowerbounds=nothing,x_upperbounds=nothing,method=:debiasedWhittle,taper=nothing,options::Optim.Options=Optim.Options(iterations=1000))
     Δ > 0 || throw(ArgumentError("Δ should be a positive number."))
     model(x₀) # to check that the model can be constructed from the initial vector provided.
-    size(ts,2) == ndims(model) || throw(ArgumentError("ts should by of size `(n,D)` where `D` is the dimension of the timeseries."))
+    size(ts,2) == ndims(model) || throw(ArgumentError("Dimension of the TimeSeries ($(size(ts,2))) does not match the dimension of the TimeSeriesModel ($(ndims(model)))."))
     lowerΩcutoff < upperΩcutoff || throw(ArgumentError("lower frequency cutoff should be below upper frequency cutoff."))
     if x_lowerbounds === nothing
         x_lowerbounds = lowerbounds(model)
